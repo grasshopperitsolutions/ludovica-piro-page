@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ludovica Piro - Creative Copywriter</title>
+    <style>
+      :root {
+        --color-bg: #ffffff;
+        --color-text: #1a1a1a;
+        --color-accent: #000000;
+        --color-border: #e0e0e0;
+        --color-hover: #666666;
+        --font-main:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica",
+          "Arial", sans-serif;
+        --transition: all 0.3s ease;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: var(--font-main);
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+
+      /* Header */
+      header {
+        padding: 3rem 2rem;
+        border-bottom: 1px solid var(--color-border);
+        text-align: center;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        font-weight: 300;
+        letter-spacing: -0.02em;
+        margin-bottom: 0.5rem;
+      }
+
+      .subtitle {
+        font-size: 1.1rem;
+        color: var(--color-hover);
+        font-weight: 300;
+      }
+
+      /* Navigation */
+      nav {
+        padding: 2rem;
+        text-align: center;
+        border-bottom: 1px solid var(--color-border);
+      }
+
+      nav a {
+        display: inline-block;
+        margin: 0 1.5rem;
+        color: var(--color-text);
+        text-decoration: none;
+        font-size: 0.95rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        transition: var(--transition);
+        padding: 0.5rem 0;
+        border-bottom: 2px solid transparent;
+      }
+
+      nav a:hover {
+        color: var(--color-accent);
+        border-bottom-color: var(--color-accent);
+      }
+
+      /* Main Content */
+      main {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 4rem 2rem;
+      }
+
+      /* Contact Section */
+      .contact-section {
+        margin-bottom: 4rem;
+        text-align: center;
+      }
+
+      .contact-section h2 {
+        font-size: 1.2rem;
+        font-weight: 400;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-bottom: 2rem;
+        color: var(--color-accent);
+      }
+
+      .contact-info {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .contact-info a {
+        color: var(--color-text);
+        text-decoration: none;
+        transition: var(--transition);
+        font-size: 0.95rem;
+      }
+
+      .contact-info a:hover {
+        color: var(--color-accent);
+      }
+
+      /* Projects Grid */
+      .projects-section {
+        margin-bottom: 4rem;
+      }
+
+      .projects-section h2 {
+        font-size: 1.2rem;
+        font-weight: 400;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-bottom: 2rem;
+        text-align: center;
+        color: var(--color-accent);
+      }
+
+      .projects-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+      }
+
+      .project-card {
+        border: 1px solid var(--color-border);
+        padding: 1.5rem;
+        cursor: pointer;
+        transition: var(--transition);
+        background: var(--color-bg);
+      }
+
+      .project-card:hover {
+        border-color: var(--color-accent);
+        transform: translateY(-2px);
+      }
+
+      .project-card h3 {
+        font-size: 1rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+      }
+
+      .project-card p {
+        font-size: 0.85rem;
+        color: var(--color-hover);
+      }
+
+      /* Stories Section */
+      .stories-section {
+        margin-bottom: 4rem;
+      }
+
+      .stories-section h2 {
+        font-size: 1.2rem;
+        font-weight: 400;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+        text-align: center;
+        color: var(--color-accent);
+      }
+
+      .stories-note {
+        text-align: center;
+        font-size: 0.9rem;
+        color: var(--color-hover);
+        margin-bottom: 2rem;
+        font-style: italic;
+      }
+
+      .stories-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .story-card {
+        border: 1px solid var(--color-border);
+        padding: 1.5rem;
+        cursor: pointer;
+        transition: var(--transition);
+        text-align: center;
+      }
+
+      .story-card:hover {
+        border-color: var(--color-accent);
+        transform: translateY(-2px);
+      }
+
+      .story-card h3 {
+        font-size: 1rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+      }
+
+      .story-card .language {
+        font-size: 0.8rem;
+        color: var(--color-hover);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      /* Modal */
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.85);
+        z-index: 1000;
+        overflow-y: auto;
+        animation: fadeIn 0.3s ease;
+      }
+
+      .modal.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal-content {
+        background-color: var(--color-bg);
+        max-width: 800px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 3rem;
+        position: relative;
+        animation: slideUp 0.3s ease;
+      }
+
+      .modal-close {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        font-size: 2rem;
+        cursor: pointer;
+        color: var(--color-hover);
+        transition: var(--transition);
+        background: none;
+        border: none;
+        line-height: 1;
+      }
+
+      .modal-close:hover {
+        color: var(--color-accent);
+      }
+
+      .modal-content h2 {
+        font-size: 1.8rem;
+        font-weight: 400;
+        margin-bottom: 0.5rem;
+      }
+
+      .modal-content .company {
+        font-size: 1rem;
+        color: var(--color-hover);
+        margin-bottom: 2rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .modal-content .description {
+        font-size: 1rem;
+        line-height: 1.8;
+        color: var(--color-text);
+      }
+
+      /* Footer */
+      footer {
+        border-top: 1px solid var(--color-border);
+        padding: 2rem;
+        text-align: center;
+        font-size: 0.85rem;
+        color: var(--color-hover);
+      }
+
+      footer a {
+        color: var(--color-text);
+        text-decoration: none;
+        transition: var(--transition);
+      }
+
+      footer a:hover {
+        color: var(--color-accent);
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        h1 {
+          font-size: 2rem;
+        }
+
+        nav a {
+          display: block;
+          margin: 0.5rem 0;
+        }
+
+        .projects-grid,
+        .stories-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .modal-content {
+          padding: 2rem;
+          width: 95%;
+        }
+
+        .contact-info {
+          flex-direction: column;
+          gap: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <header>
+      <h1>Ludovica Piro</h1>
+      <p class="subtitle">Creative Copywriter &amp; Author</p>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+      <a href="#contact">Contact</a>
+      <a href="#works">Works</a>
+      <a href="#competitions">Competitions</a>
+      <a href="#stories">Stories</a>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+      <!-- Contact Section -->
+      <section id="contact" class="contact-section">
+        <h2>Contact &amp; Info</h2>
+        <div class="contact-info">
+          <a
+            href="https://drive.google.com/file/d/19knh34s5OSi6R4MJEXwWxe8kJXrXQjH/view?usp=sharing"
+            target="_blank"
+            >CV</a
+          >
+          <a href="mailto:ludovicapiro411@gmail.com"
+            >ludovicapiro411@gmail.com</a
+          >
+          <a href="https://www.behance.net/LudovicaPiro" target="_blank"
+            >Behance: ludovicapiro</a
+          >
+          <a href="https://www.instagram.com/lodevicapire" target="_blank"
+            >Instagram: @lodevicapire</a
+          >
+          <span>Phone: +39 3463057831</span>
+        </div>
+      </section>
+
+      <!-- My Works Section -->
+      <section id="works" class="projects-section">
+        <h2>My Works</h2>
+        <div class="projects-grid" id="worksGrid"></div>
+      </section>
+
+      <!-- Competitions Section -->
+      <section id="competitions" class="projects-section">
+        <h2>Personal Projects for Competitions</h2>
+        <div class="projects-grid" id="competitionsGrid"></div>
+      </section>
+
+      <!-- Stories Section -->
+      <section id="stories" class="stories-section">
+        <h2>Short Stories</h2>
+        <p class="stories-note">
+          Full of copywriting. Fully covered by copyright.
+        </p>
+        <div class="stories-grid" id="storiesGrid"></div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <p>&copy; 2026 Ludovica Piro. All rights reserved.</p>
+      <p style="margin-top: 1rem">
+        Website designed and developed by
+        <a href="https://grasshopper-it.com" target="_blank"
+          >Grasshopper IT Solutions, LLC</a
+        >
+      </p>
+    </footer>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+        <h2 id="modalTitle"></h2>
+        <p class="company" id="modalCompany"></p>
+        <div class="description" id="modalDescription"></div>
+      </div>
+    </div>
+
+    <script>
+      // Projects Data
+      const works = [
+        {
+          title: "Säkerhet",
+          company: "IKEA",
+          description:
+            "Säkerhet (safety, protection) - The first lock designed to convert a closet into a shelter from domestic violence. In Italy 9 out of 10 women don't report domestic violence, fearing not to be supported by the institutions. Six Cannes Lions shortlists, Gold at Eurobest and Gerety Awards, Silver at Epica Awards and Golden Drum. Agency: DDB Italy.",
+        },
+        {
+          title: "No More Excuses",
+          company: "VOLKSWAGEN",
+          description:
+            "Prejudices have slowed down the shift to electric. To promote the ID. family, Francesco Totti plays with these very prejudices, turning them into excuses that protect his car from everyday challenges. Because everything has already been said about electric. And today, the only barriers left are the ones we make up. Agency: DDB Italy.",
+        },
+        {
+          title: "365 Days",
+          company: "EMERGENCY ONG",
+          description:
+            "The most special day of all will be the day with no more war. Every day is dedicated to an international day to travel, lovers, animals, family. But for millions of people in many parts of the world, war changes the meaning of every day. The film shows people seemingly enjoying their passions, families and ideals. A girl travels, children play hide-and-seek and lovers kiss. However, a twist reveals war's impact: the girl is fleeing, the children are hiding from a soldier and the lovers are sharing a farewell kiss. Agency: Ogilvy Italy.",
+        },
+        {
+          title: "Everyday Emergencies",
+          company: "EMERGENCY ONG",
+          description:
+            "Everyday there are real emergencies. We often use war-related expressions to describe intense work situations, even though they're not connected to war. The most commonly used expressions help reveal the real meaning of the word emergency for all the people who are living in war zones. A reminder for everyone to consider how devastating the consequences of war can be on people's lives. Agency: Ogilvy Italy.",
+        },
+        {
+          title: "Ci sta",
+          company: "SANBITTÈR",
+          description:
+            "The goal of this pitch was to win it, but first and foremost, it was about finding a new positioning for this non-alcoholic beverage from the Nestlé Group. Among gen-z and millennials, the expression 'ci sta' is widely used with a meaning similar to 'cool'. This richness of meanings allowed us to build on a phrase already used by our target audience, while clearly communicating the many features and strengths of the product. Agency: Ogilvy Italy.",
+        },
+        {
+          title: "Not open to discriminations",
+          company: "WPP",
+          description:
+            "For over 40% of the LGBTQIA+ community, sexual orientation is a penalizing factor in the workplace. WPP is not open to discriminations and demonstrates that terms such as orientation, tendencies, and inclination in the workplace should refer exclusively to the professional sphere, and never to sexual orientation or gender identity. Agency: Ogilvy Italy.",
+        },
+        {
+          title: "The Couples",
+          company: "VOLKSWAGEN",
+          description:
+            "On Valentine's Day, streets fill with couples in love, openly exchanging affection without paying attention to those around them. For the celebration of lovers, Volkswagen invites couples not to forget to take the car to kiss and, above all, to give singles a gift. Agency: DDB Italy.",
+        },
+        {
+          title: "Safelist",
+          company: "VOLKSWAGEN",
+          description:
+            "Music influences the way we drive, unconsciously pushing us to match our speed to a song's BPM. As a brand focused on safety, Volkswagen turned this insight into a solution. By collaborating with scientists and musicians, it created an algorithm that matches BPM to safe driving speeds. The result is Safelist: four playlists designed to help drivers respect speed limits, simply by listening. Agency: DDB Italy.",
+        },
+        {
+          title: "More Than Mechanics",
+          company: "IVECO",
+          description:
+            "Many technical careers are still affected by a social bias that sees them as Plan B options. IVECO elevates the role of its mechanics to the same level as so-called dream jobs. Because being an IVECO mechanic means much more than just being a mechanic. Agency: Ogilvy Italy.",
+        },
+        {
+          title: "Inspired by Sicily and Liguria",
+          company: "SANBITTÈR",
+          description:
+            "A campaign celebrating the Mediterranean flavors and heritage of Sanbittèr, drawing inspiration from the rich culinary traditions of Sicily and Liguria.",
+        },
+        {
+          title: "Radio",
+          company: "VOLKSWAGEN",
+          description:
+            "A creative radio campaign for Volkswagen showcasing the brand's innovative approach to automotive advertising.",
+        },
+        {
+          title: "Copyad em português",
+          company: "IKEA",
+          description:
+            "A Portuguese-language copywriting campaign for IKEA, demonstrating multilingual creative capabilities and cultural adaptation.",
+        },
+      ];
+
+      const competitions = [
+        {
+          title: "The Next Move",
+          company: "YOUTUBE COMPETITION",
+          description:
+            "GOLD award-winning campaign for YouTube Competition. A creative project exploring the next generation of content creation and digital storytelling.",
+        },
+        {
+          title: "Aspettare una vita",
+          company: "YOUNG LIONS COMPETITION",
+          description:
+            "BRONZE award at Young Lions Competition. An Italian-language campaign addressing the theme of waiting and life's expectations.",
+        },
+        {
+          title: "Spot The Artist",
+          company: "SPOTIFY - YOUNG ONES COMPETITION",
+          description:
+            "SILVER award at Young Ones Competition. An innovative campaign for Spotify that helps users discover new artists through creative engagement.",
+        },
+        {
+          title: "Lego B&Bee",
+          company: "ADCI AWARDS",
+          description:
+            "BRONZE award at ADCI Awards. A sustainable and creative campaign combining Lego's playful nature with environmental consciousness.",
+        },
+      ];
+
+      const stories = [
+        {
+          title: "Di desideri e sederi",
+          language: "ITA",
+        },
+        {
+          title: "De vontades e verdades",
+          language: "PT",
+        },
+        {
+          title: "De creencias y consecuencias",
+          language: "ES",
+        },
+        {
+          title: "Desires and conspires",
+          language: "ENG",
+        },
+        {
+          title: "Serialità",
+          language: "ITA",
+        },
+        {
+          title: "Serialidade",
+          language: "PT",
+        },
+        {
+          title: "Serialidad",
+          language: "ES",
+        },
+        {
+          title: "Seriality",
+          language: "ENG",
+        },
+      ];
+
+      // Render projects
+      function renderProjects(projects, containerId) {
+        const container = document.getElementById(containerId);
+        projects.forEach((project, index) => {
+          const card = document.createElement("div");
+          card.className = "project-card";
+          card.innerHTML = `
+                    <h3>${project.title}</h3>
+                    <p>${project.company}</p>
+                `;
+          card.onclick = () =>
+            openModal(project.title, project.company, project.description);
+          container.appendChild(card);
+        });
+      }
+
+      // Render stories
+      function renderStories() {
+        const container = document.getElementById("storiesGrid");
+        stories.forEach((story) => {
+          const card = document.createElement("div");
+          card.className = "story-card";
+          card.innerHTML = `
+                    <h3>${story.title}</h3>
+                    <p class="language">${story.language}</p>
+                `;
+          card.onclick = () =>
+            openModal(
+              story.title,
+              story.language,
+              "A short story full of copywriting. Fully covered by copyright. This creative work showcases multilingual storytelling abilities and unique narrative perspectives.",
+            );
+          container.appendChild(card);
+        });
+      }
+
+      // Modal functions
+      function openModal(title, company, description) {
+        document.getElementById("modalTitle").textContent = title;
+        document.getElementById("modalCompany").textContent = company;
+        document.getElementById("modalDescription").innerHTML = description;
+        document.getElementById("modal").classList.add("active");
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeModal() {
+        document.getElementById("modal").classList.remove("active");
+        document.body.style.overflow = "auto";
+      }
+
+      // Close modal on background click
+      document.getElementById("modal").addEventListener("click", function (e) {
+        if (e.target === this) {
+          closeModal();
+        }
+      });
+
+      // Close modal on Escape key
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+          closeModal();
+        }
+      });
+
+      // Initialize
+      renderProjects(works, "worksGrid");
+      renderProjects(competitions, "competitionsGrid");
+      renderStories();
+
+      // Smooth scrolling
+      document.querySelectorAll("nav a").forEach((anchor) => {
+        anchor.addEventListener("click", function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute("href"));
+          target.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

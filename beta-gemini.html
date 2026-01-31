@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ludovica Piro - Creative Copywriter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+              serif: ["Playfair Display", "serif"],
+            },
+            colors: {
+              stone: {
+                50: "#fafaf9",
+                100: "#f5f5f4",
+                200: "#e7e5e4",
+                800: "#292524",
+                900: "#1c1917",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f5f5f4;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #d6d3d1;
+        border-radius: 10px;
+      }
+
+      .page-transition {
+        transition:
+          opacity 0.4s ease-in-out,
+          transform 0.4s ease-in-out;
+      }
+      .hidden-page {
+        display: none;
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      .active-page {
+        display: block;
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .project-hero-gradient {
+        background: linear-gradient(
+          to bottom,
+          rgba(28, 25, 23, 0) 0%,
+          rgba(28, 25, 23, 0.95) 100%
+        );
+      }
+
+      #story-modal-content {
+        max-height: 75vh;
+        overflow-y: auto;
+        padding-right: 1.5rem;
+      }
+
+      .story-card {
+        border-color: rgba(168, 162, 158, 0.2);
+      }
+      .story-card:hover {
+        border-color: rgba(168, 162, 158, 0.8);
+        background: rgba(255, 255, 255, 0.03);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-stone-50 text-stone-900 font-sans antialiased selection:bg-stone-200"
+  >
+    <!-- NAV -->
+    <nav
+      class="fixed w-full z-50 bg-stone-50/80 backdrop-blur-md border-b border-stone-200"
+    >
+      <div
+        class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center"
+      >
+        <a
+          href="javascript:void(0)"
+          onclick="navigateTo('home')"
+          class="font-serif text-2xl font-bold tracking-tight"
+          >Ludovica Piro</a
+        >
+        <div
+          class="hidden md:flex space-x-8 items-center text-sm uppercase tracking-widest font-medium"
+        >
+          <a
+            href="javascript:void(0)"
+            onclick="navigateTo('home', 'works')"
+            class="hover:text-stone-500 transition-colors"
+            >Works</a
+          >
+          <a
+            href="javascript:void(0)"
+            onclick="navigateTo('home', 'stories')"
+            class="hover:text-stone-500 transition-colors"
+            >Stories</a
+          >
+          <a
+            href="javascript:void(0)"
+            onclick="navigateTo('home', 'about')"
+            class="hover:text-stone-500 transition-colors"
+            >About</a
+          >
+          <a
+            href="mailto:ludovicapiro411@gmail.com"
+            class="px-5 py-2 border border-stone-900 hover:bg-stone-900 hover:text-white transition-all"
+            >Contact</a
+          >
+        </div>
+      </div>
+    </nav>
+
+    <!-- HOME PAGE -->
+    <main id="page-home" class="page-transition active-page">
+      <section
+        class="min-h-screen flex flex-col justify-center items-center text-center px-6"
+      >
+        <h1 class="font-serif text-6xl md:text-8xl mb-6">Ludovica Piro</h1>
+        <p
+          class="text-xl md:text-2xl text-stone-500 font-light max-w-2xl mx-auto mb-10 italic font-serif"
+        >
+          I write a lot, sleep less and dream big.
+        </p>
+      </section>
+
+      <section id="works" class="py-24 max-w-7xl mx-auto px-6">
+        <div class="mb-16">
+          <h2 class="font-serif text-4xl md:text-5xl">Selected Works</h2>
+          <div class="h-1 w-20 bg-stone-900 mt-4"></div>
+        </div>
+        <div
+          id="project-grid"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"
+        ></div>
+      </section>
+
+      <section id="stories" class="py-24 bg-stone-900 text-stone-100">
+        <div class="max-w-7xl mx-auto px-6">
+          <div class="mb-16 text-center">
+            <h2 class="font-serif text-4xl md:text-5xl mb-4">Short Stories</h2>
+            <p class="text-stone-400">
+              Two stories, four languages. Fully covered by copyright.
+            </p>
+          </div>
+          <div
+            id="stories-list"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          ></div>
+        </div>
+      </section>
+
+      <section
+        id="about"
+        class="py-24 max-w-7xl mx-auto px-6 border-t border-stone-200"
+      >
+        <div class="flex flex-col md:flex-row items-center gap-16">
+          <div
+            class="w-full md:w-1/2 bg-stone-200 aspect-[3/4] flex items-center justify-center overflow-hidden"
+          >
+            <div class="text-stone-400 italic">Ludovica Piro Portrait</div>
+          </div>
+          <div class="w-full md:w-1/2">
+            <h2 class="font-serif text-4xl mb-6">About</h2>
+            <p class="text-lg text-stone-600 mb-6 leading-relaxed font-light">
+              The room I love the most is the movie theater. The room I love the
+              least is the waiting room. I currently speak four languages.
+              Spinning stories, chasing insights and learning are the things I
+              love doing the most. I've worked as a Copywriter at international
+              agencies like DDB and Ogilvy.
+            </p>
+            <div class="flex space-x-4 pt-4">
+              <span class="px-3 py-1 bg-stone-100 text-xs rounded-full"
+                >Italian</span
+              >
+              <span class="px-3 py-1 bg-stone-100 text-xs rounded-full"
+                >English</span
+              >
+              <span class="px-3 py-1 bg-stone-100 text-xs rounded-full"
+                >Spanish</span
+              >
+              <span class="px-3 py-1 bg-stone-100 text-xs rounded-full"
+                >Portuguese</span
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- PROJECT PAGE -->
+    <main id="page-project" class="page-transition hidden-page pt-20">
+      <div id="project-content"></div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-stone-50 py-16 border-t border-stone-200">
+      <div class="max-w-7xl mx-auto px-6 text-center">
+        <div class="flex justify-center space-x-6 mb-8">
+          <a
+            href="#"
+            class="text-stone-400 hover:text-stone-900 text-xl transition-colors"
+            ><i class="fab fa-behance"></i
+          ></a>
+          <a
+            href="#"
+            class="text-stone-400 hover:text-stone-900 text-xl transition-colors"
+            ><i class="fab fa-instagram"></i
+          ></a>
+          <a
+            href="#"
+            class="text-stone-400 hover:text-stone-900 text-xl transition-colors"
+            ><i class="fab fa-linkedin"></i
+          ></a>
+        </div>
+        <p class="text-xs uppercase tracking-[0.2em] text-stone-400">
+          &copy; 2026 Ludovica Piro. All rights reserved.
+        </p>
+        <p class="mt-2 text-xs uppercase tracking-[0.2em] text-stone-400">
+          Website designed and developed by
+          <a
+            class="text-stone-900"
+            href="https://grasshoppersolutions.online"
+            target="_blank"
+            >Grasshopper IT Solutions, LLC</a
+          >
+        </p>
+      </div>
+    </footer>
+
+    <!-- STORY MODAL -->
+    <div
+      id="story-modal"
+      class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4"
+    >
+      <div
+        class="absolute inset-0 bg-stone-900/95 backdrop-blur-md"
+        onclick="closeStory()"
+      ></div>
+      <div
+        class="relative bg-white max-w-2xl w-full p-8 md:p-12 shadow-2xl rounded-sm"
+      >
+        <button
+          onclick="closeStory()"
+          class="absolute top-6 right-6 text-stone-400 hover:text-stone-900 transition-colors"
+        >
+          <i class="fas fa-times text-xl"></i>
+        </button>
+        <div
+          id="story-modal-content"
+          class="prose prose-stone max-w-none"
+        ></div>
+      </div>
+    </div>
+
+    <script>
+      const projects = [
+        {
+          id: "sakerhet",
+          title: "Säkerhet",
+          brand: "IKEA",
+          agency: "DDB Italy",
+          icon: "fas fa-shield-alt",
+          color: "bg-blue-50",
+          summary:
+            "The first lock designed to convert a closet into a shelter from domestic violence.",
+          fullText:
+            "In Italy 9 out of 10 women don’t report domestic violence, fearing not to be supported by the institutions. The draft law A.S.2530 would be a way to protect them by assuring the rightful persecution of violent partners. But it’s still pending since February 2022. IKEA stepped in with Säkerhet. Six Cannes Lions shortlists, Gold at Eurobest and Gerety Awards, Silver at Epica Awards and Golden Drum.",
+        },
+        {
+          id: "no-more-excuses",
+          title: "No More Excuses",
+          brand: "Volkswagen",
+          agency: "DDB Italy",
+          icon: "fas fa-car",
+          color: "bg-stone-200",
+          summary:
+            "Francesco Totti debunks electric car myths for the ID. family.",
+          fullText:
+            "Prejudices have slowed down the shift to electric. To promote the ID. family, Francesco Totti plays with these very prejudices, turning them into excuses that protect his car from everyday challenges. Because everything has already been said about electric. And today, the only barriers left are the ones we make up.",
+        },
+        {
+          id: "365-days",
+          title: "365 Days",
+          brand: "Emergency ONG",
+          agency: "Ogilvy Italy",
+          icon: "fas fa-calendar-alt",
+          color: "bg-red-50",
+          summary:
+            "The most special day of all will be the day with no more war.",
+          fullText:
+            "Every day is dedicated to an international day: to travel, lovers, animals, family. But for millions of people, war changes the meaning of every day. The film shows a girl traveling (fleeing), children playing hide-and-seek (hiding from soldiers), and lovers kissing (farewell).",
+        },
+        {
+          id: "ci-sta",
+          title: "Ci Sta",
+          brand: "Sanbittèr",
+          agency: "Ogilvy Italy",
+          icon: "fas fa-glass-martini-alt",
+          color: "bg-orange-50",
+          summary: "Repositioning a classic drink for Gen-Z and Millennials.",
+          fullText:
+            "Among Gen-Z and Millennials, the expression “ci sta” is widely used with a meaning similar to “cool.” It describes something appealing but also something that “works” and “fits”. We used this double meaning to build a fresh, young positioning for the Nestlé Group brand.",
+        },
+        {
+          id: "durex-for-all",
+          title: "Durex for all",
+          brand: "Durex",
+          agency: "Ogilvy Italy",
+          icon: "fas fa-heart",
+          color: "bg-pink-50",
+          summary: "Celebrating love in all its forms.",
+          fullText:
+            "Durex believes in a world where everyone can express their sexuality freely. This campaign celebrates diversity and inclusivity, focusing on the human connection that goes beyond labels.",
+        },
+        {
+          id: "discrimination",
+          title: "Not Open to Discriminations",
+          brand: "WPP",
+          agency: "Ogilvy Italy",
+          icon: "fas fa-briefcase",
+          color: "bg-purple-50",
+          summary: "Fighting orientation bias in professional settings.",
+          fullText:
+            "For over 40% of the LGBTQIA+ community, sexual orientation is a penalizing factor in the workplace. WPP demonstrates that terms such as “orientation,” “tendencies,” and “inclination” should refer exclusively to the professional sphere.",
+        },
+        {
+          id: "safelist",
+          title: "Safelist",
+          brand: "Volkswagen",
+          agency: "DDB Italy",
+          icon: "fas fa-headphones",
+          color: "bg-emerald-50",
+          summary: "The first speed-limit respecting playlist.",
+          fullText:
+            "Music influences the way we drive, matching our speed to a song’s BPM. Collaborating with scientists, VW created an algorithm that matches BPM to safe driving speeds. Safelist: four playlists to help drivers respect speed limits.",
+        },
+        {
+          id: "gorgonzola",
+          title: "The sweet side of sharpness",
+          brand: "Gorgonzola",
+          agency: "Ogilvy Italy",
+          icon: "fas fa-cheese",
+          color: "bg-yellow-50",
+          summary: "Discovering the complexity of an Italian icon.",
+          fullText:
+            'Gorgonzola is more than just cheese; it is a balance of flavors. This campaign explores the heritage and the "sweetness" found within its famous sharp bite.',
+        },
+        {
+          id: "gatorade",
+          title: "The fuel of greatness",
+          brand: "Gatorade",
+          agency: "Ogilvy Italy",
+          icon: "fas fa-bolt",
+          color: "bg-orange-100",
+          summary: "Sweat is just the beginning.",
+          fullText:
+            "Gatorade supports athletes at every level. This project focuses on the science of hydration and the mental grit required to push past limits.",
+        },
+        {
+          id: "royal-canin",
+          title: "Unconditional",
+          brand: "Royal Canin",
+          agency: "Ogilvy Italy",
+          icon: "fas fa-dog",
+          color: "bg-red-100",
+          summary: "Precision nutrition for our best friends.",
+          fullText:
+            "Every breed is unique. We created a series of contents highlighting how specific nutrition respects the biology and health of every single pet.",
+        },
+        {
+          id: "nutella",
+          title: "World Nutella Day",
+          brand: "Nutella",
+          agency: "Ogilvy Italy",
+          icon: "fas fa-cookie",
+          color: "bg-amber-100",
+          summary: "Spreading optimism one jar at a time.",
+          fullText:
+            "A global celebration of a legendary product. We focused on the small moments of joy that Nutella brings to breakfast tables across the world.",
+        },
+        {
+          id: "kinder",
+          title: "Kinder Cards",
+          brand: "Kinder",
+          agency: "Ogilvy Italy",
+          icon: "fas fa-layers-group",
+          color: "bg-blue-100",
+          summary: "The simple joy of a crispy break.",
+          fullText:
+            "Launching Kinder Cards as the go-to snack for families. Thin, crunchy, and surprisingly full of flavor.",
+        },
+      ];
+
+      const stories = [
+        {
+          id: "d-ita",
+          title: "Di desideri e sederi",
+          lang: "ITA",
+          content: `Era un martedì qualunque quando realizzai che i desideri, proprio come i sederi, hanno forme diverse. Ci sono quelli ingombranti che non riesci a nascondere, quelli sodi che richiedono impegno e quelli flaccidi, che si sono lasciati andare perché nessuno li guardava più da un pezzo. I miei desideri, in quel periodo, erano decisamente del primo tipo: ingombranti, vistosi, quasi imbarazzanti. Volevo tutto. Volevo il pacchetto completo: la carriera, l’amore da film francese, la capacità di digerire la cipolla cruda e, magari, un paio di scarpe che non mi facessero venire le vesciche dopo dieci minuti.`,
+        },
+        {
+          id: "d-pt",
+          title: "De vontades e verdades",
+          lang: "PT",
+          content: `Era uma terça-feira qualquer quando percebi que as vontades, tal como as verdades, têm formas diferentes. Há aquelas volumosas que não consegues esconder, as firmes que exigem esforço e as flácidas, que se deixaram levar porque ninguém as olhava há muito tempo. As minhas vontades, naquela altura, eram decididamente do primeiro tipo: volumosas, vistosas, quase embaraçosas. Queria tudo. Queria o pacote completo: a carreira, o amor de filme francês, a capacidade de digerir cebola crua e, quem sabe, um par de sapatos que não me fizesse bolhas passados dez minutos.`,
+        },
+        {
+          id: "d-es",
+          title: "De creencias y consecuencias",
+          lang: "ES",
+          content: `Era un martes cualquiera cuando me di cuenta de que las creencias, al igual que las consecuencias, tienen formas distintas. Están las que son tan grandes que no puedes ocultarlas, las que son sólidas y requieren esfuerzo, y las que son flojas, que se han abandonado porque nadie las miraba desde hacía tiempo. Mis creencias, en aquel entonces, eran decididamente del primer tipo: grandes, llamativas, casi vergonzosas. Lo quería todo. Quería el pack completo: la carrera, el amor de película francesa, la capacidad de digerir cebolla cruda y, quizás, un par de zapatos que no me sacaran ampollas a los diez minutos.`,
+        },
+        {
+          id: "d-en",
+          title: "Desires and conspires",
+          lang: "ENG",
+          content: `It was a random Tuesday when I realized that desires, much like conspires, come in different shapes. There are the bulky ones you can't hide, the firm ones that require effort, and the flabby ones, which let themselves go because no one had looked at them for a long time. My desires, at that time, were definitely of the first type: bulky, flashy, almost embarrassing. I wanted everything. I wanted the full package: the career, the French movie love, the ability to digest raw onions and, maybe, a pair of shoes that didn't give me blisters after ten minutes.`,
+        },
+        {
+          id: "s-ita",
+          title: "Serialità",
+          lang: "ITA",
+          content: `Siamo esseri seriali. Mangiamo le stesse cose, facciamo gli stessi errori, cerchiamo lo stesso tipo di persona sperando, ogni volta, in un finale diverso. È la sindrome del "prossimo episodio", quella che ti tiene incollato al divano alle tre di notte anche se sai benissimo che domani mattina avrai le occhiaie fino agli zigomi. La mia serialità era fatta di caffè lunghi, scuse brevi e una tendenza preoccupante a innamorarmi di uomini che avevano la stessa stabilità emotiva di un castello di carte durante un uragano.`,
+        },
+        {
+          id: "s-pt",
+          title: "Serialidade",
+          lang: "PT",
+          content: `Somos seres seriais. Comemos as mesmas coisas, cometemos os mesmos erros, procuramos o mesmo tipo de pessoa esperando, de cada vez, um final diferente. É a síndrome do "próximo episódio", aquela que te mantém colado ao sofá às três da manhã mesmo sabendo perfeitamente que amanhã terás olheiras até às maçãs do rosto. A minha serialidade era feita de cafés longos, desculpas curtas e uma tendência preocupante para me apaixonar por homens que tinham a mesma estabilidade emocional que um castelo de cartas durante um furacão.`,
+        },
+        {
+          id: "s-es",
+          title: "Serialidad",
+          lang: "ES",
+          content: `Somos seres seriales. Comemos lo mismo, cometemos los mismos errores, buscamos al mismo tipo de persona esperando, cada vez, un final diferente. Es el síndrome del "próximo episodio", ese que te mantiene pegado al sofá a las tres de la mañana aunque sepas perfectamente que mañana tendrás ojeras hasta los pómulos. Mi serialidad estaba hecha de cafés largos, excusas cortas y una tendencia preocupante a enamorarme de hombres que tenían la misma estabilidad emocional que un castillo de naipes durante un huracán.`,
+        },
+        {
+          id: "s-en",
+          title: "Seriality",
+          lang: "ENG",
+          content: `We are serial beings. We eat the same things, make the same mistakes, look for the same kind of person hoping, every time, for a different ending. It's the "next episode" syndrome, the one that keeps you glued to the sofa at three in the morning even though you know perfectly well that tomorrow morning you'll have dark circles down to your cheekbones. My seriality was made of long coffees, short excuses and a worrying tendency to fall in love with men who had the same emotional stability as a house of cards during a hurricane.`,
+        },
+      ];
+
+      function init() {
+        const grid = document.getElementById("project-grid");
+        grid.innerHTML = projects
+          .map(
+            (p) => `
+                <div onclick="navigateToProject('${p.id}')" class="group cursor-pointer">
+                    <div class="${p.color} aspect-[4/3] mb-6 flex items-center justify-center relative overflow-hidden rounded-sm transition-transform duration-500 hover:scale-[1.02]">
+                        <i class="${p.icon} text-4xl text-stone-300 group-hover:scale-110 transition-transform duration-700"></i>
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors"></div>
+                    </div>
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-serif text-xl font-bold">${p.title}</h3>
+                            <p class="text-[10px] text-stone-400 uppercase tracking-widest mt-1">${p.brand} • ${p.agency}</p>
+                        </div>
+                        <i class="fas fa-arrow-right text-[10px] mt-2 -rotate-45 group-hover:rotate-0 transition-transform"></i>
+                    </div>
+                </div>
+            `,
+          )
+          .join("");
+
+        const storyList = document.getElementById("stories-list");
+        storyList.innerHTML = stories
+          .map(
+            (s) => `
+                <button onclick="openStory('${s.id}')" class="story-card text-left p-6 border transition-all">
+                    <span class="text-[9px] uppercase tracking-[0.2em] text-stone-500 block mb-2">${s.lang}</span>
+                    <h4 class="font-serif text-base leading-tight">${s.title}</h4>
+                </button>
+            `,
+          )
+          .join("");
+      }
+
+      function navigateTo(pageId, anchor = null) {
+        document.querySelectorAll("main").forEach((m) => {
+          m.classList.remove("active-page");
+          m.classList.add("hidden-page");
+        });
+        const target = document.getElementById("page-" + pageId);
+        target.classList.remove("hidden-page");
+        target.classList.add("active-page");
+        window.scrollTo(0, 0);
+        if (anchor)
+          setTimeout(
+            () =>
+              document
+                .getElementById(anchor)
+                ?.scrollIntoView({ behavior: "smooth" }),
+            100,
+          );
+      }
+
+      function navigateToProject(id) {
+        const p = projects.find((x) => x.id === id);
+        const content = document.getElementById("project-content");
+        content.innerHTML = `
+                <header class="relative h-[60vh] bg-stone-900 flex items-end">
+                    <div class="absolute inset-0 opacity-10 flex items-center justify-center overflow-hidden"><i class="${p.icon} text-[25rem] text-white"></i></div>
+                    <div class="absolute inset-0 project-hero-gradient"></div>
+                    <div class="relative max-w-7xl mx-auto px-6 pb-16 w-full text-white">
+                        <span class="text-xs uppercase tracking-[0.4em] opacity-50">${p.brand}</span>
+                        <h1 class="font-serif text-5xl md:text-7xl mt-4 leading-tight">${p.title}</h1>
+                    </div>
+                </header>
+                <section class="max-w-4xl mx-auto px-6 py-24">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-20">
+                        <div class="md:col-span-2">
+                            <h2 class="font-serif text-3xl mb-8">The Insight</h2>
+                            <p class="text-xl leading-relaxed text-stone-600 font-light mb-12">${p.fullText}</p>
+                            <div class="aspect-video bg-stone-100 flex items-center justify-center rounded border border-stone-200">
+                                <div class="text-center opacity-30">
+                                    <i class="fas fa-play text-3xl mb-4"></i>
+                                    <p class="text-[10px] uppercase tracking-widest font-bold">Campaign Asset / Video Placeholder</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-12">
+                            <div><h4 class="text-[10px] uppercase font-bold tracking-widest text-stone-400 mb-3">Agency</h4><p class="font-medium">${p.agency}</p></div>
+                            <div><h4 class="text-[10px] uppercase font-bold tracking-widest text-stone-400 mb-3">Client</h4><p class="font-medium">${p.brand}</p></div>
+                            <div><h4 class="text-[10px] uppercase font-bold tracking-widest text-stone-400 mb-3">Role</h4><p class="font-medium">Creative Copywriter</p></div>
+                            <hr class="border-stone-200">
+                            <button onclick="navigateTo('home', 'works')" class="group flex items-center text-[10px] uppercase tracking-widest font-bold">
+                                <i class="fas fa-arrow-left mr-3 group-hover:-translate-x-1 transition-transform"></i> Back to Gallery
+                            </button>
+                        </div>
+                    </div>
+                </section>
+                <section class="bg-stone-50 py-24 px-6 border-t border-stone-200">
+                    <div class="max-w-7xl mx-auto">
+                        <h3 class="font-serif text-2xl mb-12 text-center">Visual Gallery</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="aspect-[16/10] bg-stone-200 flex items-center justify-center italic text-stone-400 text-xs">Primary Visual Overlay</div>
+                            <div class="aspect-[16/10] bg-stone-200 flex items-center justify-center italic text-stone-400 text-xs">Secondary Creative Asset</div>
+                        </div>
+                    </div>
+                </section>
+            `;
+        navigateTo("project");
+      }
+
+      function openStory(id) {
+        const s = stories.find((x) => x.id === id);
+        const modal = document.getElementById("story-modal");
+        const container = document.getElementById("story-modal-content");
+
+        container.innerHTML = `
+                <span class="text-[9px] uppercase tracking-[0.3em] text-stone-400 font-bold">${s.lang} — Series: ${s.id.startsWith("d") ? "Desideri" : "Serialità"}</span>
+                <h2 class="font-serif text-3xl md:text-5xl mt-3 mb-10 leading-tight">${s.title}</h2>
+                <div class="font-serif text-xl leading-relaxed text-stone-800 space-y-6">
+                    <p>${s.content}</p>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sola sit ista potentia, quae ad beatam vitam pertineat. Duo Reges: constructio interrete. Si enim ad populum me vocas, eum. At multis se probavit. Hoc Hieronymus summum bonum esse dixit. Illa tamen simplicia, vestra versuta. Quid ergo attinet dicere: Ne feras memini.</p>
+                </div>
+            `;
+        modal.classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeStory() {
+        document.getElementById("story-modal").classList.add("hidden");
+        document.body.style.overflow = "";
+      }
+
+      window.onload = init;
+    </script>
+  </body>
+</html>
