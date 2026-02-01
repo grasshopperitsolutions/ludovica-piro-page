@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ludovica Piro - Creative Copywriter</title>
+    <title>Ludovica Piro | Creative Copywriter</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
       rel="stylesheet"
@@ -86,6 +86,10 @@
         border-color: rgba(168, 162, 158, 0.8);
         background: rgba(255, 255, 255, 0.03);
       }
+
+      .video-placeholder {
+        background: linear-gradient(45deg, #1c1917 0%, #44403c 100%);
+      }
     </style>
   </head>
   <body
@@ -109,6 +113,12 @@
         >
           <a
             href="javascript:void(0)"
+            onclick="navigateTo('home', 'about')"
+            class="hover:text-stone-500 transition-colors"
+            >About</a
+          >
+          <a
+            href="javascript:void(0)"
             onclick="navigateTo('home', 'works')"
             class="hover:text-stone-500 transition-colors"
             >Works</a
@@ -118,12 +128,6 @@
             onclick="navigateTo('home', 'stories')"
             class="hover:text-stone-500 transition-colors"
             >Stories</a
-          >
-          <a
-            href="javascript:void(0)"
-            onclick="navigateTo('home', 'about')"
-            class="hover:text-stone-500 transition-colors"
-            >About</a
           >
           <a
             href="mailto:ludovicapiro411@gmail.com"
@@ -136,6 +140,7 @@
 
     <!-- HOME PAGE -->
     <main id="page-home" class="page-transition active-page">
+      <!-- HERO -->
       <section
         class="min-h-screen flex flex-col justify-center items-center text-center px-6"
       >
@@ -147,9 +152,101 @@
         </p>
       </section>
 
-      <section id="works" class="py-24 max-w-7xl mx-auto px-6">
+      <!-- ABOUT (Moved up) -->
+      <section
+        id="about"
+        class="py-24 max-w-7xl mx-auto px-6 border-t border-stone-200"
+      >
+        <div class="flex flex-col md:flex-row items-center gap-16">
+          <div
+            class="w-full md:w-1/2 bg-stone-100 aspect-[3/4] flex items-center justify-center overflow-hidden rounded-sm relative shadow-inner"
+          >
+            <!-- Profile Picture -->
+            <img
+              src="./assets/profile-pic.jpeg"
+              alt="Ludovica Piro Profile"
+              class="w-full h-full object-cover"
+            />
+            <div
+              class="absolute bottom-6 text-stone-400 text-xs tracking-[0.2em] uppercase"
+            >
+              Creative Copywriter
+            </div>
+          </div>
+          <div class="w-full md:w-1/2">
+            <h2 class="font-serif text-4xl mb-6">About</h2>
+            <div
+              class="space-y-6 text-lg text-stone-600 leading-relaxed font-light"
+            >
+              <p>
+                The room I love the most is the movie theater. The room I love
+                the least is the waiting room.
+              </p>
+              <p>
+                I'm passionate about spinning stories, chasing insights and
+                learning languages. I currently speak four. So I could call
+                myself a polyglot wannabe. Or maybe I'm just hyperactive. Surely
+                deeply curious.
+              </p>
+              <p>
+                Here you'll find the work I created at international advertising
+                agencies, along with personal projects and short stories.
+                Because when I go nowhere, my mind goes everywhere.
+              </p>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mt-8">
+              <div class="border-l-2 border-stone-200 pl-4">
+                <span
+                  class="text-[10px] uppercase tracking-widest text-stone-400 block mb-1"
+                  >Languages</span
+                >
+                <p class="text-sm font-medium">ITA, ENG, ESP, POR</p>
+              </div>
+              <div class="border-l-2 border-stone-200 pl-4">
+                <span
+                  class="text-[10px] uppercase tracking-widest text-stone-400 block mb-1"
+                  >Expertise</span
+                >
+                <p class="text-sm font-medium">Creative Copywriter</p>
+              </div>
+            </div>
+          </div>
+          <div class="w-full md:w-1/2 space-y-8">
+            <div
+              class="bg-stone-100 aspect-[3/4] flex items-center justify-center overflow-hidden rounded-sm relative shadow-inner"
+            >
+              <!-- Munari Image Reference -->
+              <img
+                src="./assets/munari.jpg"
+                alt="Forchette Parlanti by Bruno Munari"
+                class="w-full h-full object-cover"
+              />
+              <div
+                class="absolute bottom-6 text-stone-400 text-xs tracking-[0.2em] uppercase"
+              >
+                Forchette Parlanti by Bruno Munari
+              </div>
+            </div>
+            <div class="text-sm text-stone-500 leading-relaxed">
+              <p class="italic">
+                "I've always found his teachings on mental gymnastics inspiring.
+                He is one of my favourite artists, together with Erik Kessels
+                and many others."
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- WORKS -->
+      <section
+        id="works"
+        class="py-24 max-w-7xl mx-auto px-6 border-t border-stone-200"
+      >
         <div class="mb-16">
-          <h2 class="font-serif text-4xl md:text-5xl">Selected Works</h2>
+          <h2 class="font-serif text-4xl md:text-5xl text-stone-900">
+            Selected Works
+          </h2>
           <div class="h-1 w-20 bg-stone-900 mt-4"></div>
         </div>
         <div
@@ -158,55 +255,20 @@
         ></div>
       </section>
 
+      <!-- STORIES -->
       <section id="stories" class="py-24 bg-stone-900 text-stone-100">
         <div class="max-w-7xl mx-auto px-6">
           <div class="mb-16 text-center">
             <h2 class="font-serif text-4xl md:text-5xl mb-4">Short Stories</h2>
             <p class="text-stone-400">
-              Two stories, four languages. Fully covered by copyright.
+              Two narratives across four languages. Creative exploration of
+              human patterns.
             </p>
           </div>
           <div
             id="stories-list"
             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
           ></div>
-        </div>
-      </section>
-
-      <section
-        id="about"
-        class="py-24 max-w-7xl mx-auto px-6 border-t border-stone-200"
-      >
-        <div class="flex flex-col md:flex-row items-center gap-16">
-          <div
-            class="w-full md:w-1/2 bg-stone-200 aspect-[3/4] flex items-center justify-center overflow-hidden"
-          >
-            <div class="text-stone-400 italic">Ludovica Piro Portrait</div>
-          </div>
-          <div class="w-full md:w-1/2">
-            <h2 class="font-serif text-4xl mb-6">About</h2>
-            <p class="text-lg text-stone-600 mb-6 leading-relaxed font-light">
-              The room I love the most is the movie theater. The room I love the
-              least is the waiting room. I currently speak four languages.
-              Spinning stories, chasing insights and learning are the things I
-              love doing the most. I've worked as a Copywriter at international
-              agencies like DDB and Ogilvy.
-            </p>
-            <div class="flex space-x-4 pt-4">
-              <span class="px-3 py-1 bg-stone-100 text-xs rounded-full"
-                >Italian</span
-              >
-              <span class="px-3 py-1 bg-stone-100 text-xs rounded-full"
-                >English</span
-              >
-              <span class="px-3 py-1 bg-stone-100 text-xs rounded-full"
-                >Spanish</span
-              >
-              <span class="px-3 py-1 bg-stone-100 text-xs rounded-full"
-                >Portuguese</span
-              >
-            </div>
-          </div>
         </div>
       </section>
     </main>
@@ -237,16 +299,7 @@
           ></a>
         </div>
         <p class="text-xs uppercase tracking-[0.2em] text-stone-400">
-          &copy; 2026 Ludovica Piro. All rights reserved.
-        </p>
-        <p class="mt-2 text-xs uppercase tracking-[0.2em] text-stone-400">
-          Website designed and developed by
-          <a
-            class="text-stone-900"
-            href="https://grasshoppersolutions.online"
-            target="_blank"
-            >Grasshopper IT Solutions, LLC</a
-          >
+          &copy; 2026 Ludovica Inés Piro. All rights reserved.
         </p>
       </div>
     </footer>
@@ -288,7 +341,9 @@
           summary:
             "The first lock designed to convert a closet into a shelter from domestic violence.",
           fullText:
-            "In Italy 9 out of 10 women don’t report domestic violence, fearing not to be supported by the institutions. The draft law A.S.2530 would be a way to protect them by assuring the rightful persecution of violent partners. But it’s still pending since February 2022. IKEA stepped in with Säkerhet. Six Cannes Lions shortlists, Gold at Eurobest and Gerety Awards, Silver at Epica Awards and Golden Drum.",
+            "In Italy 9 out of 10 women don’t report domestic violence, fearing not to be supported by the institutions. The draft law A.S.2530 would be a way to protect them by assuring the rightful persecution of violent partners. But it’s still pending since February 2022. IKEA stepped in with Säkerhet. The closet, usually a symbol of domesticity, becomes a secure space for those in need.",
+          achievements:
+            "6 Cannes Lions Shortlists, Gold Eurobest, Gold Gerety, Silver Epica.",
         },
         {
           id: "no-more-excuses",
@@ -334,7 +389,7 @@
           color: "bg-pink-50",
           summary: "Celebrating love in all its forms.",
           fullText:
-            "Durex believes in a world where everyone can express their sexuality freely. This campaign celebrates diversity and inclusivity, focusing on the human connection that goes beyond labels.",
+            "Durex believes in a world where everyone can express their sexuality freely. This campaign celebrates diversity and inclusivity, focusing on the human connection that goes beyond labels. It moved away from technical specs to emotional truths.",
         },
         {
           id: "discrimination",
@@ -356,29 +411,29 @@
           color: "bg-emerald-50",
           summary: "The first speed-limit respecting playlist.",
           fullText:
-            "Music influences the way we drive, matching our speed to a song’s BPM. Collaborating with scientists, VW created an algorithm that matches BPM to safe driving speeds. Safelist: four playlists to help drivers respect speed limits.",
+            "Music influences the way we drive, matching our speed to a song’s BPM. Collaborating with scientists, VW created an algorithm that matches BPM to safe driving speeds. Safelist: four playlists to help drivers respect speed limits automatically.",
         },
         {
           id: "gorgonzola",
-          title: "The sweet side of sharpness",
+          title: "Sweet Sharpness",
           brand: "Gorgonzola",
           agency: "Ogilvy Italy",
           icon: "fas fa-cheese",
           color: "bg-yellow-50",
           summary: "Discovering the complexity of an Italian icon.",
           fullText:
-            'Gorgonzola is more than just cheese; it is a balance of flavors. This campaign explores the heritage and the "sweetness" found within its famous sharp bite.',
+            'Gorgonzola is more than just cheese; it is a balance of flavors. This campaign explores the heritage and the "sweetness" found within its famous sharp bite, targeting a younger, more adventurous culinary audience.',
         },
         {
           id: "gatorade",
-          title: "The fuel of greatness",
+          title: "Fuel of Greatness",
           brand: "Gatorade",
           agency: "Ogilvy Italy",
           icon: "fas fa-bolt",
           color: "bg-orange-100",
           summary: "Sweat is just the beginning.",
           fullText:
-            "Gatorade supports athletes at every level. This project focuses on the science of hydration and the mental grit required to push past limits.",
+            "Gatorade supports athletes at every level. This project focuses on the science of hydration and the mental grit required to push past limits, using high-impact visual storytelling.",
         },
         {
           id: "royal-canin",
@@ -389,7 +444,7 @@
           color: "bg-red-100",
           summary: "Precision nutrition for our best friends.",
           fullText:
-            "Every breed is unique. We created a series of contents highlighting how specific nutrition respects the biology and health of every single pet.",
+            "Every breed is unique. We created a series of contents highlighting how specific nutrition respects the biology and health of every single pet, focusing on the specialized care of owners.",
         },
         {
           id: "nutella",
@@ -400,7 +455,7 @@
           color: "bg-amber-100",
           summary: "Spreading optimism one jar at a time.",
           fullText:
-            "A global celebration of a legendary product. We focused on the small moments of joy that Nutella brings to breakfast tables across the world.",
+            "A global celebration of a legendary product. We focused on the small moments of joy that Nutella brings to breakfast tables across the world, driving social engagement through optimism.",
         },
         {
           id: "kinder",
@@ -411,7 +466,7 @@
           color: "bg-blue-100",
           summary: "The simple joy of a crispy break.",
           fullText:
-            "Launching Kinder Cards as the go-to snack for families. Thin, crunchy, and surprisingly full of flavor.",
+            "Launching Kinder Cards as the go-to snack for families. We emphasized the unique texture—thin, crunchy, and surprisingly full of chocolate flavor.",
         },
       ];
 
@@ -420,49 +475,49 @@
           id: "d-ita",
           title: "Di desideri e sederi",
           lang: "ITA",
-          content: `Era un martedì qualunque quando realizzai che i desideri, proprio come i sederi, hanno forme diverse. Ci sono quelli ingombranti che non riesci a nascondere, quelli sodi che richiedono impegno e quelli flaccidi, che si sono lasciati andare perché nessuno li guardava più da un pezzo. I miei desideri, in quel periodo, erano decisamente del primo tipo: ingombranti, vistosi, quasi imbarazzanti. Volevo tutto. Volevo il pacchetto completo: la carriera, l’amore da film francese, la capacità di digerire la cipolla cruda e, magari, un paio di scarpe che non mi facessero venire le vesciche dopo dieci minuti.`,
+          full: `Era un martedì qualunque quando realizzai che i desideri, proprio come i sederi, hanno forme diverse...`,
         },
         {
           id: "d-pt",
           title: "De vontades e verdades",
           lang: "PT",
-          content: `Era uma terça-feira qualquer quando percebi que as vontades, tal como as verdades, têm formas diferentes. Há aquelas volumosas que não consegues esconder, as firmes que exigem esforço e as flácidas, que se deixaram levar porque ninguém as olhava há muito tempo. As minhas vontades, naquela altura, eram decididamente do primeiro tipo: volumosas, vistosas, quase embaraçosas. Queria tudo. Queria o pacote completo: a carreira, o amor de filme francês, a capacidade de digerir cebola crua e, quem sabe, um par de sapatos que não me fizesse bolhas passados dez minutos.`,
+          full: `Era uma terça-feira qualquer quando percebi que as vontades, tal como as verdades, têm formas diferentes...`,
         },
         {
           id: "d-es",
           title: "De creencias y consecuencias",
           lang: "ES",
-          content: `Era un martes cualquiera cuando me di cuenta de que las creencias, al igual que las consecuencias, tienen formas distintas. Están las que son tan grandes que no puedes ocultarlas, las que son sólidas y requieren esfuerzo, y las que son flojas, que se han abandonado porque nadie las miraba desde hacía tiempo. Mis creencias, en aquel entonces, eran decididamente del primer tipo: grandes, llamativas, casi vergonzosas. Lo quería todo. Quería el pack completo: la carrera, el amor de película francesa, la capacidad de digerir cebolla cruda y, quizás, un par de zapatos que no me sacaran ampollas a los diez minutos.`,
+          full: `Era un martes cualquiera cuando me di cuenta de que las creencias, al igual que las consecuencias...`,
         },
         {
           id: "d-en",
           title: "Desires and conspires",
           lang: "ENG",
-          content: `It was a random Tuesday when I realized that desires, much like conspires, come in different shapes. There are the bulky ones you can't hide, the firm ones that require effort, and the flabby ones, which let themselves go because no one had looked at them for a long time. My desires, at that time, were definitely of the first type: bulky, flashy, almost embarrassing. I wanted everything. I wanted the full package: the career, the French movie love, the ability to digest raw onions and, maybe, a pair of shoes that didn't give me blisters after ten minutes.`,
+          full: `It was a random Tuesday when I realized that desires, much like conspires, come in different shapes...`,
         },
         {
           id: "s-ita",
           title: "Serialità",
           lang: "ITA",
-          content: `Siamo esseri seriali. Mangiamo le stesse cose, facciamo gli stessi errori, cerchiamo lo stesso tipo di persona sperando, ogni volta, in un finale diverso. È la sindrome del "prossimo episodio", quella che ti tiene incollato al divano alle tre di notte anche se sai benissimo che domani mattina avrai le occhiaie fino agli zigomi. La mia serialità era fatta di caffè lunghi, scuse brevi e una tendenza preoccupante a innamorarmi di uomini che avevano la stessa stabilità emotiva di un castello di carte durante un uragano.`,
+          full: `Siamo esseri seriali. Mangiamo le stesse cose, facciamo gli stessi errori, cerchiamo lo stesso tipo di persona...`,
         },
         {
           id: "s-pt",
           title: "Serialidade",
           lang: "PT",
-          content: `Somos seres seriais. Comemos as mesmas coisas, cometemos os mesmos erros, procuramos o mesmo tipo de pessoa esperando, de cada vez, um final diferente. É a síndrome do "próximo episódio", aquela que te mantém colado ao sofá às três da manhã mesmo sabendo perfeitamente que amanhã terás olheiras até às maçãs do rosto. A minha serialidade era feita de cafés longos, desculpas curtas e uma tendência preocupante para me apaixonar por homens que tinham a mesma estabilidade emocional que um castelo de cartas durante um furacão.`,
+          full: `Somos seres seriais. Comemos as mesmas coisas, cometemos os mesmos erros, procuramos o mesmo tipo de pessoa...`,
         },
         {
           id: "s-es",
           title: "Serialidad",
           lang: "ES",
-          content: `Somos seres seriales. Comemos lo mismo, cometemos los mismos errores, buscamos al mismo tipo de persona esperando, cada vez, un final diferente. Es el síndrome del "próximo episodio", ese que te mantiene pegado al sofá a las tres de la mañana aunque sepas perfectamente que mañana tendrás ojeras hasta los pómulos. Mi serialidad estaba hecha de cafés largos, excusas cortas y una tendencia preocupante a enamorarme de hombres que tenían la misma estabilidad emocional que un castillo de naipes durante un huracán.`,
+          full: `Somos seres seriales. Comemos lo mismo, cometemos los mismos errores, buscamos al mismo tipo de persona...`,
         },
         {
           id: "s-en",
           title: "Seriality",
           lang: "ENG",
-          content: `We are serial beings. We eat the same things, make the same mistakes, look for the same kind of person hoping, every time, for a different ending. It's the "next episode" syndrome, the one that keeps you glued to the sofa at three in the morning even though you know perfectly well that tomorrow morning you'll have dark circles down to your cheekbones. My seriality was made of long coffees, short excuses and a worrying tendency to fall in love with men who had the same emotional stability as a house of cards during a hurricane.`,
+          full: `We are serial beings. We eat the same things, make the same mistakes, look for the same kind of person...`,
         },
       ];
 
@@ -472,7 +527,7 @@
           .map(
             (p) => `
                 <div onclick="navigateToProject('${p.id}')" class="group cursor-pointer">
-                    <div class="${p.color} aspect-[4/3] mb-6 flex items-center justify-center relative overflow-hidden rounded-sm transition-transform duration-500 hover:scale-[1.02]">
+                    <div class="${p.color} aspect-[4/3] mb-6 flex items-center justify-center relative overflow-hidden rounded-sm transition-all duration-500 hover:shadow-xl">
                         <i class="${p.icon} text-4xl text-stone-300 group-hover:scale-110 transition-transform duration-700"></i>
                         <div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors"></div>
                     </div>
@@ -535,32 +590,36 @@
                 <section class="max-w-4xl mx-auto px-6 py-24">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-20">
                         <div class="md:col-span-2">
-                            <h2 class="font-serif text-3xl mb-8">The Insight</h2>
+                            <h2 class="font-serif text-3xl mb-8">The Story</h2>
                             <p class="text-xl leading-relaxed text-stone-600 font-light mb-12">${p.fullText}</p>
-                            <div class="aspect-video bg-stone-100 flex items-center justify-center rounded border border-stone-200">
-                                <div class="text-center opacity-30">
-                                    <i class="fas fa-play text-3xl mb-4"></i>
-                                    <p class="text-[10px] uppercase tracking-widest font-bold">Campaign Asset / Video Placeholder</p>
+                            <div class="video-placeholder aspect-video flex items-center justify-center rounded border border-stone-800 shadow-2xl overflow-hidden relative group">
+                                <div class="absolute inset-0 bg-stone-900/40 group-hover:bg-transparent transition-colors"></div>
+                                <div class="text-center z-10">
+                                    <div class="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-4 backdrop-blur-md group-hover:scale-110 transition-transform">
+                                        <i class="fas fa-play text-white ml-1"></i>
+                                    </div>
+                                    <p class="text-[10px] uppercase tracking-widest font-bold text-white/60">Watch Campaign Film</p>
                                 </div>
                             </div>
+                            ${
+                              p.achievements
+                                ? `
+                                <div class="mt-16 p-8 bg-stone-100 rounded-sm">
+                                    <h4 class="text-[10px] uppercase tracking-widest text-stone-400 font-bold mb-4">Recognition</h4>
+                                    <p class="font-serif italic text-lg text-stone-800 leading-relaxed">"${p.achievements}"</p>
+                                </div>
+                            `
+                                : ""
+                            }
                         </div>
                         <div class="space-y-12">
                             <div><h4 class="text-[10px] uppercase font-bold tracking-widest text-stone-400 mb-3">Agency</h4><p class="font-medium">${p.agency}</p></div>
-                            <div><h4 class="text-[10px] uppercase font-bold tracking-widest text-stone-400 mb-3">Client</h4><p class="font-medium">${p.brand}</p></div>
+                            <div><h4 class="text-[10px] uppercase font-bold tracking-widest text-stone-400 mb-3">Brand</h4><p class="font-medium">${p.brand}</p></div>
                             <div><h4 class="text-[10px] uppercase font-bold tracking-widest text-stone-400 mb-3">Role</h4><p class="font-medium">Creative Copywriter</p></div>
                             <hr class="border-stone-200">
-                            <button onclick="navigateTo('home', 'works')" class="group flex items-center text-[10px] uppercase tracking-widest font-bold">
+                            <button onclick="navigateTo('home', 'works')" class="group flex items-center text-[10px] uppercase tracking-widest font-bold text-stone-900">
                                 <i class="fas fa-arrow-left mr-3 group-hover:-translate-x-1 transition-transform"></i> Back to Gallery
                             </button>
-                        </div>
-                    </div>
-                </section>
-                <section class="bg-stone-50 py-24 px-6 border-t border-stone-200">
-                    <div class="max-w-7xl mx-auto">
-                        <h3 class="font-serif text-2xl mb-12 text-center">Visual Gallery</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div class="aspect-[16/10] bg-stone-200 flex items-center justify-center italic text-stone-400 text-xs">Primary Visual Overlay</div>
-                            <div class="aspect-[16/10] bg-stone-200 flex items-center justify-center italic text-stone-400 text-xs">Secondary Creative Asset</div>
                         </div>
                     </div>
                 </section>
@@ -572,13 +631,11 @@
         const s = stories.find((x) => x.id === id);
         const modal = document.getElementById("story-modal");
         const container = document.getElementById("story-modal-content");
-
         container.innerHTML = `
-                <span class="text-[9px] uppercase tracking-[0.3em] text-stone-400 font-bold">${s.lang} — Series: ${s.id.startsWith("d") ? "Desideri" : "Serialità"}</span>
+                <span class="text-[9px] uppercase tracking-[0.3em] text-stone-400 font-bold">${s.lang} — Narrative Series</span>
                 <h2 class="font-serif text-3xl md:text-5xl mt-3 mb-10 leading-tight">${s.title}</h2>
-                <div class="font-serif text-xl leading-relaxed text-stone-800 space-y-6">
-                    <p>${s.content}</p>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sola sit ista potentia, quae ad beatam vitam pertineat. Duo Reges: constructio interrete. Si enim ad populum me vocas, eum. At multis se probavit. Hoc Hieronymus summum bonum esse dixit. Illa tamen simplicia, vestra versuta. Quid ergo attinet dicere: Ne feras memini.</p>
+                <div class="font-serif text-xl leading-relaxed text-stone-800 space-y-8">
+                    <p class="first-letter:text-5xl first-letter:font-bold first-letter:mr-3 first-letter:float-left">${s.full}</p>
                 </div>
             `;
         modal.classList.remove("hidden");
