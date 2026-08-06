@@ -1,2 +1,6 @@
 # ignore files with ignore in the name
 *-ignore*
+
+node_modules
+dist
+.vite

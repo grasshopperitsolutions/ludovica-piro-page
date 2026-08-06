@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Page not found — Ludovica Piro</title>
+    <meta name="robots" content="noindex" />
+    <style>
+      :root {
+        --bg: #ffffff;
+        --text: #0a0a0a;
+        --muted: #666360;
+        --accent: #000000;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0a0a0a;
+          --text: #f5f4f2;
+          --muted: #9a978f;
+          --accent: #ffffff;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Georgia, "Times New Roman", serif;
+        padding: 2rem;
+      }
+      .mark {
+        width: 3rem;
+        height: 3rem;
+        border: 1.5px solid var(--text);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        margin-bottom: 2rem;
+      }
+      h1 {
+        font-size: clamp(1.6rem, 5vw, 2.4rem);
+        margin: 0 0 0.75rem;
+      }
+      p {
+        color: var(--muted);
+        font-family: -apple-system, sans-serif;
+        margin: 0 0 2rem;
+        max-width: 40ch;
+      }
+      a {
+        color: var(--accent);
+        font-family: -apple-system, sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-size: 0.8rem;
+        text-decoration: none;
+        border: 1px solid var(--accent);
+        padding: 0.8rem 1.75rem;
+        border-radius: 999px;
+      }
+    </style>
+  </head>
+  <body>
+    <span class="mark">L</span>
+    <h1>Page not found</h1>
+    <p>This page doesn't exist, or has moved.</p>
+    <a href="/">Back to Ludovica Piro</a>
+  </body>
+</html>
