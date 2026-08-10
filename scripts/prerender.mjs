@@ -120,7 +120,18 @@ async function main() {
     const url = SITE + urlPath;
 
     const bodyHtml = `
-      ${renderChrome(en, locales, "en", route, projects, stories, false, BASE)}
+      ${renderChrome({
+        strings: en,
+        locales,
+        activeLang: "en",
+        route,
+        projects,
+        stories,
+        theme: "auto",
+        isDark: false,
+        base: BASE,
+        navCollapsed: false,
+      })}
       <main id="main">
         ${renderPage(route, en, ctx)}
         ${renderFooter(en)}

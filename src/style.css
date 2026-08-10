@@ -38,6 +38,7 @@
   --accent: #000000;
   --accent-soft: rgba(0, 0, 0, 0.08);
   --nav-w: 300px;
+  --nav-w-collapsed: 84px;
   --serif: "Coconat", Georgia, "Times New Roman", serif;
   --sans: "Inter", -apple-system, sans-serif;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -186,6 +187,26 @@ button {
   flex-shrink: 0;
 }
 
+/* The desktop sidebar's brand doubles as the collapse/expand toggle, so it's
+   a <button>, not a link — reset it back to look like the plain brand mark. */
+.brand-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  width: 100%;
+}
+.brand-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition:
+    opacity 0.25s var(--ease),
+    max-width 0.35s var(--ease);
+  opacity: 1;
+  max-width: 12rem;
+}
+
 .brand-mark {
   display: inline-flex;
   align-items: center;
@@ -279,6 +300,10 @@ button {
 }
 .lang-dropdown.open .lang-caret {
   transform: rotate(180deg);
+}
+.theme-glyph {
+  font-size: 0.95rem;
+  line-height: 1;
 }
 
 .lang-menu {
@@ -382,6 +407,9 @@ main {
 }
 .nav-drawer .topbar-controls {
   margin-top: 2rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.9rem;
 }
 .nav-scrim {
   position: fixed;
@@ -438,24 +466,46 @@ main {
 .nav-drawer nav {
   display: flex;
   flex-direction: column;
-  gap: 1.3rem;
+  gap: 0.85rem;
 }
 .nav-drawer .nav-top-link {
   font-size: 1.3rem;
+  padding: 0.3rem 0;
 }
 .nav-drawer .nav-sub-list {
-  gap: 0.6rem;
+  gap: 0.1rem;
   margin-top: 0.7rem;
   padding-left: 1rem;
 }
 .nav-drawer .nav-sub-link {
   font-family: var(--sans);
   font-size: 0.85rem;
+  padding: 0.45rem 0;
+}
+
+/* Comfortable touch targets below the desktop breakpoint */
+@media (max-width: 899px) {
+  .icon-btn {
+    width: 2.75rem;
+    height: 2.75rem;
+    font-size: 1.05rem;
+  }
+  .lang-trigger {
+    padding: 0.6rem 0.85rem 0.6rem 1rem;
+    font-size: 0.78rem;
+  }
+  .lang-option {
+    padding: 0.75rem 0.8rem;
+  }
 }
 
 @media (min-width: 900px) {
   .topbar {
     display: none;
+  }
+
+  html.nav-collapsed {
+    --nav-w: var(--nav-w-collapsed);
   }
 
   .side-nav {
@@ -469,7 +519,32 @@ main {
     padding: 2.75rem 2.25rem 2rem;
     border-right: 1px solid var(--line);
     background: var(--bg);
-    transition: background 0.5s var(--ease);
+    transition:
+      width 0.35s var(--ease),
+      padding 0.35s var(--ease),
+      background 0.5s var(--ease);
+  }
+
+  .side-nav.collapsed {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    align-items: center;
+  }
+  .side-nav.collapsed .brand {
+    justify-content: center;
+  }
+  .side-nav.collapsed .brand-text {
+    opacity: 0;
+    max-width: 0;
+  }
+  .side-nav.collapsed .topbar-controls {
+    align-items: center;
+  }
+  .side-nav.collapsed .lang-caret {
+    display: none;
+  }
+  .side-nav.collapsed .lang-trigger {
+    padding: 0.5rem;
   }
 
   .side-nav .brand {
@@ -485,6 +560,11 @@ main {
     gap: 1.5rem;
     padding-right: 0.5rem;
     scrollbar-width: thin;
+    transition: opacity 0.2s var(--ease);
+  }
+  .side-nav.collapsed .nav-scroll {
+    opacity: 0;
+    pointer-events: none;
   }
 
   .side-nav .nav-top-link {
@@ -514,6 +594,9 @@ main {
   main {
     margin-left: var(--nav-w);
     width: calc(100% - var(--nav-w));
+    transition:
+      margin-left 0.35s var(--ease),
+      width 0.35s var(--ease);
   }
 
   .nav-drawer,

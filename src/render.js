@@ -195,30 +195,66 @@ function langDropdown(idSuffix, locales, activeLang) {
   `;
 }
 
-export function renderChrome(
+const THEME_ICONS = { light: "☀", dark: "☾", auto: "◐" };
+const THEME_ORDER = ["light", "dark", "auto"];
+
+function themeDropdown(idSuffix, theme, isDark, strings) {
+  const suffix = idSuffix ? `-${idSuffix}` : "";
+  const triggerIcon = THEME_ICONS[theme] || (isDark ? "☾" : "☀");
+  return `
+    <div class="lang-dropdown" data-theme-dropdown>
+      <button type="button" class="lang-trigger" id="theme-trigger${suffix}" aria-haspopup="listbox" aria-expanded="false" aria-label="${strings.theme[theme] || strings.theme.auto}">
+        <span class="theme-glyph">${triggerIcon}</span>
+        <span class="lang-caret">⌄</span>
+      </button>
+      <ul class="lang-menu" role="listbox" id="theme-menu${suffix}">
+        ${THEME_ORDER.map(
+          (key) => `
+          <li role="option" class="lang-option ${key === theme ? "active" : ""}" data-theme-option="${key}" aria-selected="${key === theme}">
+            <span class="lang-option-code">${THEME_ICONS[key]}</span>
+            <span class="lang-option-name">${strings.theme[key]}</span>
+          </li>`,
+        ).join("")}
+      </ul>
+    </div>
+  `;
+}
+
+export function renderChrome({
   strings,
   locales,
   activeLang,
   route,
   projects,
   stories,
+  theme,
   isDark,
   base,
-) {
+  navCollapsed,
+}) {
   const navHtml = renderNav(strings, projects, stories, route, base);
+  const collapseLabel = navCollapsed ? strings.nav.expand : strings.nav.collapse;
   return `
     <div class="topbar">
       <a href="${hrefFor(base, "home")}" data-link class="brand"><span class="brand-mark">L</span> Ludovica Piro</a>
       <button class="icon-btn menu-toggle" id="menu-toggle" aria-label="Open menu">☰</button>
     </div>
-    <aside class="side-nav">
-      <a href="${hrefFor(base, "home")}" data-link class="brand"><span class="brand-mark">L</span> Ludovica Piro</a>
+    <aside class="side-nav ${navCollapsed ? "collapsed" : ""}">
+      <button
+        type="button"
+        class="brand brand-toggle"
+        id="nav-collapse-toggle"
+        aria-label="${collapseLabel}"
+        title="${collapseLabel}"
+        aria-expanded="${!navCollapsed}"
+      >
+        <span class="brand-mark">L</span>
+        <span class="brand-text">Ludovica Piro</span>
+      </button>
       <nav class="nav-scroll">${navHtml}</nav>
       <div class="topbar-controls">
         ${langDropdown("", locales, activeLang)}
-        <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">
-          <span class="glyph">${isDark ? "☀" : "☾"}</span>
-        </button>
+        ${themeDropdown("", theme, isDark, strings)}
       </div>
     </aside>
     <div class="nav-scrim" id="nav-scrim"></div>
@@ -226,9 +262,7 @@ export function renderChrome(
       <nav>${navHtml}</nav>
       <div class="topbar-controls">
         ${langDropdown("mobile", locales, activeLang)}
-        <button class="icon-btn" id="theme-toggle-mobile" aria-label="Toggle theme">
-          <span class="glyph">${isDark ? "☀" : "☾"}</span>
-        </button>
+        ${themeDropdown("mobile", theme, isDark, strings)}
       </div>
     </div>
     <div class="hover-preview" id="hover-preview" aria-hidden="true">

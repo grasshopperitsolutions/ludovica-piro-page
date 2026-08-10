@@ -11,6 +11,8 @@ export default {
     work: "Trabalhos",
     stories: "Contos",
     contact: "Contacto",
+    collapse: "Recolher menu",
+    expand: "Expandir menu",
   },
   hero: {
     greeting: "Olá, eu sou a Ludovica!",
@@ -50,6 +52,6 @@ export default {
     emailLabel: "Email",
     phoneLabel: "Telefone",
   },
-  theme: { light: "Claro", dark: "Escuro" },
+  theme: { light: "Claro", dark: "Escuro", auto: "Sistema" },
   footer: { rights: "Todos os direitos reservados." },
 };

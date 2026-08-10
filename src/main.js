@@ -28,6 +28,7 @@ const BASE = import.meta.env.BASE_URL;
 const state = {
   lang: localStorage.getItem("lp-lang") || guessLang(),
   theme: localStorage.getItem("lp-theme") || "auto",
+  navCollapsed: localStorage.getItem("lp-nav-collapsed") === "1",
   route: parsePath(window.location.pathname, BASE),
 };
 
@@ -53,11 +54,48 @@ function isDarkNow() {
   );
 }
 
-function toggleTheme() {
-  state.theme = isDarkNow() ? "light" : "dark";
-  localStorage.setItem("lp-theme", state.theme);
+// Theme is purely CSS-driven (data-theme attribute + prefers-color-scheme),
+// so switching it doesn't need a full re-render — just update the attribute
+// and the small bits of UI (trigger glyph, active option) that reflect it.
+// That also avoids an app-wide content flash / re-triggering scroll reveals.
+function setTheme(theme) {
+  state.theme = theme;
+  localStorage.setItem("lp-theme", theme);
   applyTheme();
-  render();
+  syncThemeUI();
+  closeDropdowns();
+}
+
+function syncThemeUI() {
+  const dark = isDarkNow();
+  const icon = { light: "☀", dark: "☾", auto: "◐" }[state.theme] || (dark ? "☾" : "☀");
+  document.querySelectorAll("[data-theme-dropdown]").forEach((dropdown) => {
+    const glyph = dropdown.querySelector(".theme-glyph");
+    if (glyph) glyph.textContent = icon;
+    dropdown.querySelectorAll(".lang-option").forEach((opt) => {
+      const active = opt.dataset.themeOption === state.theme;
+      opt.classList.toggle("active", active);
+      opt.setAttribute("aria-selected", String(active));
+    });
+  });
+}
+
+// The sidebar collapse is likewise a pure CSS/layout change — toggling it
+// through the DOM directly (rather than render()) keeps the width/margin
+// transitions smooth, since a full innerHTML replace would just snap.
+function setNavCollapsed(collapsed) {
+  state.navCollapsed = collapsed;
+  localStorage.setItem("lp-nav-collapsed", collapsed ? "1" : "0");
+  document.documentElement.classList.toggle("nav-collapsed", collapsed);
+  document
+    .querySelectorAll(".side-nav")
+    .forEach((el) => el.classList.toggle("collapsed", collapsed));
+  document.querySelectorAll("#nav-collapse-toggle").forEach((btn) => {
+    const label = t().nav[collapsed ? "expand" : "collapse"];
+    btn.setAttribute("aria-expanded", String(!collapsed));
+    btn.setAttribute("aria-label", label);
+    btn.setAttribute("title", label);
+  });
 }
 
 function setLang(code) {
@@ -124,13 +162,25 @@ function render() {
   };
 
   app.innerHTML = `
-    ${renderChrome(strings, localeList, state.lang, state.route, projects, stories, isDarkNow(), BASE)}
+    ${renderChrome({
+      strings,
+      locales: localeList,
+      activeLang: state.lang,
+      route: state.route,
+      projects,
+      stories,
+      theme: state.theme,
+      isDark: isDarkNow(),
+      base: BASE,
+      navCollapsed: state.navCollapsed,
+    })}
     <main id="main">
       ${renderPage(state.route, strings, ctx)}
       ${renderFooter(strings)}
     </main>
   `;
 
+  document.documentElement.classList.toggle("nav-collapsed", state.navCollapsed);
   bindEvents();
   observeReveal();
 }
@@ -140,42 +190,44 @@ function closeDrawer() {
   document.getElementById("nav-scrim")?.classList.remove("open");
 }
 
-function closeLangDropdowns(except) {
-  document.querySelectorAll("[data-lang-dropdown]").forEach((d) => {
-    if (d !== except) {
+function closeDropdowns() {
+  document
+    .querySelectorAll("[data-lang-dropdown], [data-theme-dropdown]")
+    .forEach((d) => {
       d.classList.remove("open");
       d.querySelector(".lang-trigger")?.setAttribute("aria-expanded", "false");
-    }
-  });
+    });
 }
 
 function bindEvents() {
-  document.querySelectorAll("#theme-toggle, #theme-toggle-mobile").forEach((btn) =>
-    btn.addEventListener("click", (e) => {
-      e.currentTarget.classList.add("spin");
-      toggleTheme();
-    }),
-  );
-
-  document.querySelectorAll("[data-lang-dropdown]").forEach((dropdown) => {
-    const trigger = dropdown.querySelector(".lang-trigger");
-    trigger.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const isOpen = dropdown.classList.contains("open");
-      closeLangDropdowns();
-      dropdown.classList.toggle("open", !isOpen);
-      trigger.setAttribute("aria-expanded", String(!isOpen));
+  document
+    .querySelectorAll("[data-lang-dropdown], [data-theme-dropdown]")
+    .forEach((dropdown) => {
+      const trigger = dropdown.querySelector(".lang-trigger");
+      trigger.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isOpen = dropdown.classList.contains("open");
+        closeDropdowns();
+        dropdown.classList.toggle("open", !isOpen);
+        trigger.setAttribute("aria-expanded", String(!isOpen));
+      });
+      dropdown.querySelectorAll(".lang-option").forEach((opt) =>
+        opt.addEventListener("click", () => {
+          if (opt.dataset.lang) setLang(opt.dataset.lang);
+          else if (opt.dataset.themeOption) setTheme(opt.dataset.themeOption);
+        }),
+      );
     });
-    dropdown.querySelectorAll(".lang-option").forEach((opt) =>
-      opt.addEventListener("click", () => {
-        setLang(opt.dataset.lang);
-      }),
-    );
-  });
-  document.addEventListener("click", () => closeLangDropdowns());
+  document.addEventListener("click", () => closeDropdowns());
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeLangDropdowns();
+    if (e.key === "Escape") closeDropdowns();
   });
+
+  document
+    .querySelectorAll("#nav-collapse-toggle")
+    .forEach((btn) =>
+      btn.addEventListener("click", () => setNavCollapsed(!state.navCollapsed)),
+    );
 
   const menuToggle = document.getElementById("menu-toggle");
   const scrim = document.getElementById("nav-scrim");
@@ -253,6 +305,10 @@ function observeReveal() {
   );
   targets.forEach((el) => revealObserver.observe(el));
 }
+
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+  if (state.theme === "auto") syncThemeUI();
+});
 
 applyTheme();
 render();
