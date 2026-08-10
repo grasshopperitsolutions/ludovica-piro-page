@@ -21,10 +21,15 @@ import {
   buildPath,
   excerpt,
 } from "../src/render.js";
+import viteConfig from "../vite.config.js";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url)) + "/..";
 const DIST = path.join(ROOT, "dist");
 const SITE = "https://ludovicapiro.com";
+// Vite's build `base` (e.g. "/ludovica-piro-page/" when hosted as a subpath) —
+// asset URLs baked into prerendered HTML must carry the same prefix as the
+// script/link tags Vite itself emits, or they 404 once deployed.
+const BASE = (viteConfig.base || "/").replace(/\/+$/, "");
 const locales = [
   { code: "en", label: "EN" },
   { code: "it", label: "IT" },
@@ -35,7 +40,7 @@ const locales = [
 async function assetPath(manifest, srcPath) {
   const entry = manifest[srcPath];
   if (!entry) throw new Error(`Asset not found in build manifest: ${srcPath}`);
-  return "/" + entry.file;
+  return `${BASE}/${entry.file}`;
 }
 
 function buildRoutes() {
