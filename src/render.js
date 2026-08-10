@@ -2,6 +2,14 @@
 // No `document`/`window` access here — this module is imported both by the
 // browser client (src/main.js) and by the Node prerender script
 // (scripts/prerender.mjs), so it must run in either environment unchanged.
+//
+// `buildPath()` returns app-relative paths ("/work/sakerhet") and is what
+// canonical/OG URLs, the sitemap, and the prerender output folders use —
+// those intentionally point at the eventual root-domain deployment
+// regardless of where the site is staged right now. `hrefFor()` is the
+// base-aware version used for every actual in-page `<a href>`, since the
+// site may currently be served from a subpath (e.g. when staged at
+// grasshoppersolutions.online/ludovica-piro-page/ ahead of its own domain).
 
 // Grayscale "tone" values (HSL lightness %) used to tint the plate
 // thumbnails in place of real photography — kept monochrome on purpose.
@@ -40,8 +48,10 @@ export function excerpt(html, len = 90) {
   return text.length > len ? text.slice(0, len).trim() + "…" : text;
 }
 
-export function parsePath(pathname) {
-  const segs = pathname.split("/").filter(Boolean);
+export function parsePath(pathname, base = "/") {
+  const b = (base || "/").replace(/\/+$/, "");
+  const rel = b && pathname.startsWith(b) ? pathname.slice(b.length) || "/" : pathname;
+  const segs = rel.split("/").filter(Boolean);
   if (segs.length === 0) return { page: "home" };
   if (segs[0] === "work") {
     return segs[1] ? { page: "project", id: segs[1] } : { page: "work" };
@@ -70,6 +80,16 @@ export function buildPath(page, id) {
     default:
       return "/";
   }
+}
+
+export function hrefFor(base, page, id) {
+  // Accepts `base` with or without a trailing slash (Vite's import.meta.env.BASE_URL
+  // always has one; the prerender script strips it for its own asset-path use) —
+  // normalize here so both callers get a correctly joined path either way.
+  const b = (base || "/").replace(/\/+$/, "") || "/";
+  const rel = buildPath(page, id);
+  if (b === "/") return rel;
+  return rel === "/" ? b + "/" : b + rel;
 }
 
 export function routeMeta(route, strings, projects, stories) {
@@ -109,46 +129,46 @@ export function routeMeta(route, strings, projects, stories) {
   }
 }
 
-function navWorkList(strings, projects, activePage, activeId) {
+function navWorkList(strings, projects, activePage, activeId, base) {
   return projects
     .map((p) => {
       const active = activePage === "project" && activeId === p.id;
-      return `<a href="/work/${p.id}" data-link class="nav-sub-link ${active ? "active" : ""}"
+      return `<a href="${hrefFor(base, "project", p.id)}" data-link class="nav-sub-link ${active ? "active" : ""}"
         data-preview="work" data-preview-title="${p.title}" data-preview-sub="${p.brand}"
         data-preview-tone="${toneForWork(projects, p.id)}" data-preview-mark="${initials(p.title)}">${p.title}</a>`;
     })
     .join("");
 }
 
-function navStoryList(strings, stories, activePage, activeId) {
+function navStoryList(strings, stories, activePage, activeId, base) {
   return stories
     .map((s) => {
       const active = activePage === "story" && activeId === s.id;
-      return `<a href="/stories/${s.id}" data-link class="nav-sub-link ${active ? "active" : ""}"
+      return `<a href="${hrefFor(base, "story", s.id)}" data-link class="nav-sub-link ${active ? "active" : ""}"
         data-preview="story" data-preview-title="${s.title}" data-preview-sub="${s.lang}"
         data-preview-tone="${toneForStory(s)}" data-preview-mark="${s.lang.slice(0, 2)}">${s.title}</a>`;
     })
     .join("");
 }
 
-export function renderNav(strings, projects, stories, route) {
+export function renderNav(strings, projects, stories, route, base) {
   const p = route.page;
   const id = route.id;
   const isActive = (key) => p === key;
   return `
-    <a href="/" data-link class="nav-top-link ${isActive("home") ? "active" : ""}">${strings.nav.home}</a>
+    <a href="${hrefFor(base, "home")}" data-link class="nav-top-link ${isActive("home") ? "active" : ""}">${strings.nav.home}</a>
 
     <div class="nav-group">
-      <a href="/work" data-link class="nav-top-link ${isActive("work") || isActive("project") ? "active" : ""}">${strings.nav.work}</a>
-      <div class="nav-sub-list">${navWorkList(strings, projects, p, id)}</div>
+      <a href="${hrefFor(base, "work")}" data-link class="nav-top-link ${isActive("work") || isActive("project") ? "active" : ""}">${strings.nav.work}</a>
+      <div class="nav-sub-list">${navWorkList(strings, projects, p, id, base)}</div>
     </div>
 
     <div class="nav-group">
-      <a href="/stories" data-link class="nav-top-link ${isActive("stories") || isActive("story") ? "active" : ""}">${strings.nav.stories}</a>
-      <div class="nav-sub-list">${navStoryList(strings, stories, p, id)}</div>
+      <a href="${hrefFor(base, "stories")}" data-link class="nav-top-link ${isActive("stories") || isActive("story") ? "active" : ""}">${strings.nav.stories}</a>
+      <div class="nav-sub-list">${navStoryList(strings, stories, p, id, base)}</div>
     </div>
 
-    <a href="/contact" data-link class="nav-top-link ${isActive("contact") ? "active" : ""}">${strings.nav.contact}</a>
+    <a href="${hrefFor(base, "contact")}" data-link class="nav-top-link ${isActive("contact") ? "active" : ""}">${strings.nav.contact}</a>
   `;
 }
 
@@ -183,15 +203,16 @@ export function renderChrome(
   projects,
   stories,
   isDark,
+  base,
 ) {
-  const navHtml = renderNav(strings, projects, stories, route);
+  const navHtml = renderNav(strings, projects, stories, route, base);
   return `
     <div class="topbar">
-      <a href="/" data-link class="brand"><span class="brand-mark">L</span> Ludovica Piro</a>
+      <a href="${hrefFor(base, "home")}" data-link class="brand"><span class="brand-mark">L</span> Ludovica Piro</a>
       <button class="icon-btn menu-toggle" id="menu-toggle" aria-label="Open menu">☰</button>
     </div>
     <aside class="side-nav">
-      <a href="/" data-link class="brand"><span class="brand-mark">L</span> Ludovica Piro</a>
+      <a href="${hrefFor(base, "home")}" data-link class="brand"><span class="brand-mark">L</span> Ludovica Piro</a>
       <nav class="nav-scroll">${navHtml}</nav>
       <div class="topbar-controls">
         ${langDropdown("", locales, activeLang)}
@@ -220,7 +241,14 @@ export function renderChrome(
   `;
 }
 
-export function renderHomePage(strings, projects, stories, profilePicSrc, munariPicSrc) {
+export function renderHomePage(
+  strings,
+  projects,
+  stories,
+  profilePicSrc,
+  munariPicSrc,
+  base,
+) {
   return `
     <section class="hero" id="home">
       <span class="brand-mark">L</span>
@@ -255,7 +283,7 @@ export function renderHomePage(strings, projects, stories, profilePicSrc, munari
           .slice(0, 3)
           .map(
             (p, i) => `
-          <a href="/work/${p.id}" data-link class="project-card" data-reveal style="--i:${i}">
+          <a href="${hrefFor(base, "project", p.id)}" data-link class="project-card" data-reveal style="--i:${i}">
             <div class="project-thumb" style="--tone:${toneForWork(projects, p.id)}">
               <span class="plate-mark">${initials(p.title)}</span>
             </div>
@@ -265,7 +293,7 @@ export function renderHomePage(strings, projects, stories, profilePicSrc, munari
           )
           .join("")}
       </div>
-      <a class="text-link" href="/work" data-link data-reveal>${strings.work.heading} <span class="go">↗</span></a>
+      <a class="text-link" href="${hrefFor(base, "work")}" data-link data-reveal>${strings.work.heading} <span class="go">↗</span></a>
     </section>
 
     <section class="stories-section">
@@ -275,7 +303,7 @@ export function renderHomePage(strings, projects, stories, profilePicSrc, munari
           ${stories
             .map(
               (s, i) => `
-            <a href="/stories/${s.id}" data-link class="story-card" data-reveal style="--i:${i}">
+            <a href="${hrefFor(base, "story", s.id)}" data-link class="story-card" data-reveal style="--i:${i}">
               <span class="lang">${s.lang}</span>
               <h4>${s.title}</h4>
             </a>`,
@@ -287,12 +315,12 @@ export function renderHomePage(strings, projects, stories, profilePicSrc, munari
 
     <section>
       <div class="section-heading" data-reveal><span class="kicker-num">03</span><h2>${strings.contact.heading}</h2><div class="rule"></div></div>
-      <a class="cv-btn" href="/contact" data-link data-reveal>${strings.contact.heading} <span class="go">↗</span></a>
+      <a class="cv-btn" href="${hrefFor(base, "contact")}" data-link data-reveal>${strings.contact.heading} <span class="go">↗</span></a>
     </section>
   `;
 }
 
-export function renderWorkIndexPage(strings, projects, competitions, comingSoon) {
+export function renderWorkIndexPage(strings, projects, competitions, comingSoon, base) {
   return `
     <section>
       <div class="section-heading" data-reveal><h1>${strings.work.heading}</h1><div class="rule"></div></div>
@@ -300,7 +328,7 @@ export function renderWorkIndexPage(strings, projects, competitions, comingSoon)
         ${projects
           .map(
             (p, i) => `
-          <a href="/work/${p.id}" data-link class="project-card" data-reveal style="--i:${i % 6}">
+          <a href="${hrefFor(base, "project", p.id)}" data-link class="project-card" data-reveal style="--i:${i % 6}">
             <div class="project-thumb" style="--tone:${toneForWork(projects, p.id)}">
               <span class="plate-mark">${initials(p.title)}</span>
             </div>
@@ -331,12 +359,12 @@ export function renderWorkIndexPage(strings, projects, competitions, comingSoon)
   `;
 }
 
-export function renderProjectPage(strings, projects, id) {
+export function renderProjectPage(strings, projects, id, base) {
   const p = projects.find((x) => x.id === id);
-  if (!p) return renderNotFoundPage(strings);
+  if (!p) return renderNotFoundPage(strings, base);
   return `
     <section class="project-detail">
-      <a class="back-link" href="/work" data-link><span class="arrow">←</span> ${strings.work.back}</a>
+      <a class="back-link" href="${hrefFor(base, "work")}" data-link><span class="arrow">←</span> ${strings.work.back}</a>
       <span class="kicker">${p.brand} · ${p.agency}</span>
       <h1>${p.title}</h1>
       ${p.tag ? `<p style="color:var(--text-muted)">${p.tag}</p>` : ""}
@@ -349,7 +377,7 @@ export function renderProjectPage(strings, projects, id) {
   `;
 }
 
-export function renderStoriesIndexPage(strings, stories) {
+export function renderStoriesIndexPage(strings, stories, base) {
   return `
     <section>
       <div class="section-heading" data-reveal><h1>${strings.stories.heading}</h1><div class="rule"></div></div>
@@ -358,7 +386,7 @@ export function renderStoriesIndexPage(strings, stories) {
         ${stories
           .map(
             (s, i) => `
-          <a href="/stories/${s.id}" data-link class="story-card" data-reveal style="--i:${i}">
+          <a href="${hrefFor(base, "story", s.id)}" data-link class="story-card" data-reveal style="--i:${i}">
             <span class="lang">${s.lang}</span>
             <h4>${s.title}</h4>
             <p class="story-excerpt">${excerpt(s.content, 110)}</p>
@@ -370,12 +398,12 @@ export function renderStoriesIndexPage(strings, stories) {
   `;
 }
 
-export function renderStoryPage(strings, stories, id) {
+export function renderStoryPage(strings, stories, id, base) {
   const s = stories.find((x) => x.id === id);
-  if (!s) return renderNotFoundPage(strings);
+  if (!s) return renderNotFoundPage(strings, base);
   return `
     <section class="project-detail">
-      <a class="back-link" href="/stories" data-link><span class="arrow">←</span> ${strings.stories.heading}</a>
+      <a class="back-link" href="${hrefFor(base, "stories")}" data-link><span class="arrow">←</span> ${strings.stories.heading}</a>
       <span class="kicker">${s.lang}</span>
       <h1>${s.title}</h1>
       <div class="story-body">${s.content}</div>
@@ -398,12 +426,12 @@ export function renderContactPage(strings, contact) {
   `;
 }
 
-export function renderNotFoundPage(strings) {
+export function renderNotFoundPage(strings, base) {
   return `
     <section>
       <h1>404</h1>
       <p>Page not found.</p>
-      <a class="back-link" href="/" data-link><span class="arrow">←</span> ${strings.nav.home}</a>
+      <a class="back-link" href="${hrefFor(base, "home")}" data-link><span class="arrow">←</span> ${strings.nav.home}</a>
     </section>
   `;
 }
@@ -417,19 +445,26 @@ export function renderPage(route, strings, ctx) {
         ctx.stories,
         ctx.profilePicSrc,
         ctx.munariPicSrc,
+        ctx.base,
       );
     case "work":
-      return renderWorkIndexPage(strings, ctx.projects, ctx.competitions, ctx.comingSoon);
+      return renderWorkIndexPage(
+        strings,
+        ctx.projects,
+        ctx.competitions,
+        ctx.comingSoon,
+        ctx.base,
+      );
     case "project":
-      return renderProjectPage(strings, ctx.projects, route.id);
+      return renderProjectPage(strings, ctx.projects, route.id, ctx.base);
     case "stories":
-      return renderStoriesIndexPage(strings, ctx.stories);
+      return renderStoriesIndexPage(strings, ctx.stories, ctx.base);
     case "story":
-      return renderStoryPage(strings, ctx.stories, route.id);
+      return renderStoryPage(strings, ctx.stories, route.id, ctx.base);
     case "contact":
       return renderContactPage(strings, ctx.contact);
     default:
-      return renderNotFoundPage(strings);
+      return renderNotFoundPage(strings, ctx.base);
   }
 }
 

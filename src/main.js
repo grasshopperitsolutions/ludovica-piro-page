@@ -9,6 +9,7 @@ import munariPic from "./assets/munari.jpg";
 import {
   parsePath,
   buildPath,
+  hrefFor,
   routeMeta,
   renderChrome,
   renderPage,
@@ -18,11 +19,16 @@ import {
 const locales = { en, it, es, pt };
 const localeList = Object.values(locales);
 const SITE_ORIGIN = "https://ludovicapiro.com";
+// Vite always resolves this to the configured `base`, trailing slash
+// included (e.g. "/" at the eventual domain root, or
+// "/ludovica-piro-page/" while staged as an org-domain subpath) — every
+// in-page link has to carry this prefix or it 404s once deployed.
+const BASE = import.meta.env.BASE_URL;
 
 const state = {
   lang: localStorage.getItem("lp-lang") || guessLang(),
   theme: localStorage.getItem("lp-theme") || "auto",
-  route: parsePath(window.location.pathname),
+  route: parsePath(window.location.pathname, BASE),
 };
 
 function guessLang() {
@@ -62,7 +68,7 @@ function setLang(code) {
 }
 
 function navigate(page, id) {
-  const path = buildPath(page, id);
+  const path = hrefFor(BASE, page, id);
   if (path !== window.location.pathname) {
     history.pushState(null, "", path);
   }
@@ -72,7 +78,7 @@ function navigate(page, id) {
 }
 
 window.addEventListener("popstate", () => {
-  state.route = parsePath(window.location.pathname);
+  state.route = parsePath(window.location.pathname, BASE);
   render();
   window.scrollTo({ top: 0, behavior: "instant" });
 });
@@ -114,10 +120,11 @@ function render() {
     contact,
     profilePicSrc: profilePic,
     munariPicSrc: munariPic,
+    base: BASE,
   };
 
   app.innerHTML = `
-    ${renderChrome(strings, localeList, state.lang, state.route, projects, stories, isDarkNow())}
+    ${renderChrome(strings, localeList, state.lang, state.route, projects, stories, isDarkNow(), BASE)}
     <main id="main">
       ${renderPage(state.route, strings, ctx)}
       ${renderFooter(strings)}
@@ -185,7 +192,7 @@ function bindEvents() {
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
       e.preventDefault();
       closeDrawer();
-      const route = parsePath(new URL(a.href).pathname);
+      const route = parsePath(new URL(a.href).pathname, BASE);
       navigate(route.page, route.id);
     }),
   );

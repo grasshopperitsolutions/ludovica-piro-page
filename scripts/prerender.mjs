@@ -110,6 +110,7 @@ async function main() {
     contact,
     profilePicSrc,
     munariPicSrc,
+    base: BASE,
   };
   const routes = buildRoutes();
 
@@ -119,7 +120,7 @@ async function main() {
     const url = SITE + urlPath;
 
     const bodyHtml = `
-      ${renderChrome(en, locales, "en", route, projects, stories, false)}
+      ${renderChrome(en, locales, "en", route, projects, stories, false, BASE)}
       <main id="main">
         ${renderPage(route, en, ctx)}
         ${renderFooter(en)}
