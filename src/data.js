@@ -23,10 +23,15 @@ export const PLATE_LINES = {
 
 export const contact = {
   email: "ludovicapiro411@gmail.com",
+  // `phone` is the display form; `whatsapp` is the same number in the digits-only
+  // E.164 form wa.me requires (no "+", spaces or punctuation).
   phone: "+39 346 305 7831",
+  whatsapp: "393463057831",
   behance: "https://www.behance.net/ludovicapiro",
   instagram: "https://instagram.com/lodevicapire",
-  cv: "#",
+  // TODO: real CV URL needed. While this is empty the CV button is not
+  // rendered at all, rather than shipping a dead link.
+  cv: "",
 };
 
 export const projects = [

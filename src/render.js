@@ -611,16 +611,36 @@ export function renderStoryPage(strings, stories, id, base) {
 }
 
 export function renderContactPage(strings, contact) {
+  const behanceHandle = contact.behance.replace(/^.*behance\.net\//, "");
+  const instagramHandle = "@" + contact.instagram.replace(/^.*instagram\.com\//, "");
   return `
     <section>
       <div class="section-heading" data-reveal><h1>${strings.contact.heading}</h1><div class="rule"></div></div>
       <div class="contact-list" data-reveal>
-        <div class="contact-row"><span>${strings.contact.emailLabel}</span><a href="mailto:${contact.email}">${contact.email}</a></div>
-        <div class="contact-row"><span>${strings.contact.phoneLabel}</span><span>${contact.phone}</span></div>
-        <div class="contact-row"><span>Behance</span><a href="${contact.behance}" target="_blank" rel="noopener">ludovicapiro</a></div>
-        <div class="contact-row"><span>Instagram</span><a href="${contact.instagram}" target="_blank" rel="noopener">@lodevicapire</a></div>
+        <div class="contact-row">
+          <span>${strings.contact.emailLabel}</span>
+          <a href="mailto:${contact.email}">${contact.email}</a>
+        </div>
+        <div class="contact-row">
+          <span>${strings.contact.phoneLabel}</span>
+          <a href="https://wa.me/${contact.whatsapp}" target="_blank" rel="noopener noreferrer">
+            ${contact.phone} <span class="contact-hint">WhatsApp ↗</span>
+          </a>
+        </div>
+        <div class="contact-row">
+          <span>Behance</span>
+          <a href="${contact.behance}" target="_blank" rel="noopener noreferrer">${escapeHtml(behanceHandle)} ↗</a>
+        </div>
+        <div class="contact-row">
+          <span>Instagram</span>
+          <a href="${contact.instagram}" target="_blank" rel="noopener noreferrer">${escapeHtml(instagramHandle)} ↗</a>
+        </div>
       </div>
-      <a class="cv-btn" href="${contact.cv}" target="_blank" rel="noopener" data-reveal>${strings.contact.cv} <span class="go">↗</span></a>
+      ${
+        contact.cv
+          ? `<a class="cv-btn" href="${contact.cv}" target="_blank" rel="noopener noreferrer" data-reveal>${strings.contact.cv} <span class="go">↗</span></a>`
+          : ""
+      }
     </section>
   `;
 }

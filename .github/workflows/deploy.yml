@@ -7,29 +7,32 @@ on:
     branches: [master, main]
   workflow_dispatch:
 
+# Least privilege by default — only the deploy job opts into Pages write.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
+# Never cancel an in-flight Pages deployment (GitHub's own recommendation).
+# `cancel-in-progress: true` is what aborted a deploy earlier when two pushes
+# landed in the same second.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
       - run: npm ci
       - run: npm run lint
       - run: npm run format:check
       - run: npm run build
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
         with:
           path: dist
@@ -38,9 +41,13 @@ jobs:
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

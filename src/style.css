@@ -1224,6 +1224,15 @@ section {
 }
 .contact-row a {
   transition: color 0.3s var(--ease);
+  text-align: right;
+}
+.contact-hint {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--text-muted);
+  margin-left: 0.4rem;
+  white-space: nowrap;
 }
 .contact-row a:hover {
   color: var(--text);
