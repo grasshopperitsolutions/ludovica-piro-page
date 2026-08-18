@@ -1,4 +1,7 @@
 import "./style.css";
+// Temporary: nav-mode prototypes. Imported after style.css so its rules win
+// the cascade over the base rail layout. Remove once a mode is chosen.
+import "./nav-prototypes.css";
 import en from "./i18n/en.js";
 import it from "./i18n/it.js";
 import es from "./i18n/es.js";
@@ -32,6 +35,8 @@ const state = {
   // Closed by default — the site opens on the work, not the menu. The inline
   // boot script in index.html applies the same default before first paint.
   navCollapsed: (localStorage.getItem("lp-nav-collapsed") ?? "1") === "1",
+  navMode: localStorage.getItem("lp-nav-mode") || "overture",
+  navOpen: false,
   route: parsePath(window.location.pathname, BASE),
 };
 
@@ -50,12 +55,24 @@ function reduceMotion() {
 
 // Cross-page morph where supported (Chrome/Edge/Safari 18+); everywhere else
 // this is a plain synchronous swap, so nothing depends on it.
+let activeTransition = null;
 function withTransition(fn) {
   if (!document.startViewTransition || reduceMotion()) {
     fn();
     return;
   }
-  document.startViewTransition(fn);
+  // Rapid navigation aborts the in-flight transition, which rejects its
+  // promises — swallow that rather than surfacing an unhandled rejection.
+  if (activeTransition) {
+    activeTransition.skipTransition();
+  }
+  const transition = document.startViewTransition(fn);
+  activeTransition = transition;
+  transition.finished
+    .catch(() => {})
+    .finally(() => {
+      if (activeTransition === transition) activeTransition = null;
+    });
 }
 
 function applyTheme() {
@@ -110,6 +127,28 @@ function setNavCollapsed(collapsed) {
     btn.setAttribute("aria-label", label);
     btn.setAttribute("title", label);
   });
+}
+
+/* ---------- Nav prototype modes (temporary comparison harness) ---------- */
+function applyNavMode() {
+  document.documentElement.setAttribute("data-nav-mode", state.navMode);
+}
+
+function setNavMode(mode) {
+  state.navMode = mode;
+  state.navOpen = false;
+  localStorage.setItem("lp-nav-mode", mode);
+  applyNavMode();
+  setNavOpen(false);
+  render();
+}
+
+function setNavOpen(open) {
+  state.navOpen = open;
+  document.documentElement.classList.toggle("nav-open", open);
+  document
+    .querySelectorAll("#nav-open-toggle")
+    .forEach((b) => b.setAttribute("aria-expanded", String(open)));
 }
 
 function setLang(code) {
@@ -191,6 +230,7 @@ function render() {
       isDark: isDarkNow(),
       base: BASE,
       navCollapsed: state.navCollapsed,
+      navMode: state.navMode,
     })}
     <main id="main">
       ${renderPage(state.route, strings, ctx)}
@@ -244,6 +284,19 @@ function bindEvents() {
       btn.addEventListener("click", () => setNavCollapsed(!state.navCollapsed)),
     );
 
+  document.querySelectorAll('#proto-switch input[name="nav-mode"]').forEach((radio) =>
+    radio.addEventListener("change", (e) => {
+      if (e.target.checked) setNavMode(e.target.value);
+    }),
+  );
+
+  document
+    .querySelectorAll("#nav-open-toggle")
+    .forEach((btn) => btn.addEventListener("click", () => setNavOpen(!state.navOpen)));
+  document
+    .querySelectorAll("#nav-close-toggle")
+    .forEach((btn) => btn.addEventListener("click", () => setNavOpen(false)));
+
   const menuToggle = document.getElementById("menu-toggle");
   const scrim = document.getElementById("nav-scrim");
   if (menuToggle) {
@@ -251,7 +304,10 @@ function bindEvents() {
       document.getElementById("nav-drawer").classList.add("open");
       scrim.classList.add("open");
     });
-    scrim.addEventListener("click", closeDrawer);
+    scrim.addEventListener("click", () => {
+      closeDrawer();
+      setNavOpen(false);
+    });
   }
 
   document.querySelectorAll("[data-link]").forEach((a) =>
@@ -259,6 +315,7 @@ function bindEvents() {
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
       e.preventDefault();
       closeDrawer();
+      setNavOpen(false);
       const route = parsePath(new URL(a.href).pathname, BASE);
       navigate(route.page, route.id);
     }),
@@ -446,7 +503,15 @@ function setupCursor() {
 function bindGlobalEvents() {
   document.addEventListener("click", () => closeDropdowns());
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeDropdowns();
+    if (e.key === "Escape") {
+      closeDropdowns();
+      setNavOpen(false);
+    }
+    // Dock mode also answers to ⌘K / Ctrl-K.
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      setNavOpen(!state.navOpen);
+    }
   });
 
   document.addEventListener("mousemove", (e) => {
@@ -455,7 +520,11 @@ function bindGlobalEvents() {
     positionPreview();
     if (cursorPoint) {
       cursorPoint.style.transform = `translate(${pointer.x}px, ${pointer.y}px)`;
-      const interactive = e.target.closest("a, button, [role='tab'], .lang-option");
+      // Guard the node type: an event whose target isn't an Element (document,
+      // a text node) has no closest() and would throw here.
+      const interactive =
+        e.target instanceof Element &&
+        e.target.closest("a, button, [role='tab'], .lang-option");
       cursorRing.classList.toggle("active", !!interactive);
     }
   });
@@ -488,6 +557,7 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
 });
 
 applyTheme();
+applyNavMode();
 setupCursor();
 bindGlobalEvents();
 render();

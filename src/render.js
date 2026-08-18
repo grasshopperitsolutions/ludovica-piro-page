@@ -236,27 +236,49 @@ function themeDropdown(idSuffix, theme, isDark, strings) {
   `;
 }
 
-export function renderChrome({
-  strings,
-  locales,
-  activeLang,
-  route,
-  projects,
-  stories,
-  theme,
-  isDark,
-  base,
-  navCollapsed,
-}) {
-  const navHtml = renderNav(strings, projects, stories, route, base);
+/* ---------------------------------------------------------------------------
+   Nav modes — three prototypes plus the existing rail, switchable at runtime
+   so they can be compared side by side. Each renders its own desktop chrome;
+   below 900px they all share the same top bar + drawer, since these are
+   desktop navigation concepts. Once one is chosen the others (and the
+   `.proto-switch` control) come out.
+   --------------------------------------------------------------------------- */
+export const NAV_MODES = [
+  { id: "overture", label: "1 · Overture" },
+  { id: "spine", label: "4 · Spine" },
+  { id: "dock", label: "5 · Dock" },
+  { id: "rail", label: "Rail (current)" },
+];
+
+function protoSwitch(navMode) {
+  return `
+    <div class="proto-switch" id="proto-switch">
+      <span class="proto-title">Nav prototype</span>
+      ${NAV_MODES.map(
+        (m) => `
+        <label class="proto-opt">
+          <input type="radio" name="nav-mode" value="${m.id}" ${m.id === navMode ? "checked" : ""} />
+          <span>${m.label}</span>
+        </label>`,
+      ).join("")}
+    </div>
+  `;
+}
+
+function modeControls(locales, activeLang, theme, isDark, strings, extraClass = "") {
+  return `
+    <div class="topbar-controls ${extraClass}">
+      ${langDropdown("", locales, activeLang)}
+      ${themeDropdown("", theme, isDark, strings)}
+    </div>
+  `;
+}
+
+function railChrome(ctx) {
+  const { strings, navHtml, navCollapsed } = ctx;
   const collapseLabel = navCollapsed ? strings.nav.expand : strings.nav.collapse;
   return `
-    <div class="grain" aria-hidden="true"></div>
-    <div class="topbar">
-      <a href="${hrefFor(base, "home")}" data-link class="brand"><span class="brand-mark">L</span> Ludovica Piro</a>
-      <button class="icon-btn menu-toggle" id="menu-toggle" aria-label="Open menu">☰</button>
-    </div>
-    <aside class="side-nav ${navCollapsed ? "collapsed" : ""}">
+    <aside class="side-nav">
       <button
         type="button"
         class="brand brand-toggle"
@@ -269,11 +291,115 @@ export function renderChrome({
         <span class="brand-text">Ludovica Piro</span>
       </button>
       <nav class="nav-scroll">${navHtml}</nav>
-      <div class="topbar-controls">
-        ${langDropdown("", locales, activeLang)}
-        ${themeDropdown("", theme, isDark, strings)}
-      </div>
+      ${modeControls(ctx.locales, ctx.activeLang, ctx.theme, ctx.isDark, strings)}
     </aside>
+  `;
+}
+
+/* 1 — Overture: no rail; the menu takes the whole screen. */
+function overtureChrome(ctx) {
+  const { strings, navHtml, locales, activeLang, theme, isDark } = ctx;
+  return `
+    <div class="mode-cluster">
+      <button type="button" class="brand-mark mode-trigger" id="nav-open-toggle"
+        aria-label="${strings.nav.expand}" title="${strings.nav.expand}" aria-expanded="false">L</button>
+      ${modeControls(locales, activeLang, theme, isDark, strings, "controls-down")}
+    </div>
+    <div class="overture" id="overture-panel">
+      <button type="button" class="icon-btn overture-close" id="nav-close-toggle" aria-label="${strings.stories.close}">✕</button>
+      <nav class="overture-nav">${navHtml}</nav>
+    </div>
+  `;
+}
+
+/* 4 — Spine: the rotated name along the edge is the button. */
+function spineChrome(ctx) {
+  const { strings, navHtml, locales, activeLang, theme, isDark } = ctx;
+  return `
+    <div class="spine">
+      <button type="button" class="spine-btn" id="nav-open-toggle"
+        aria-label="${strings.nav.expand}" aria-expanded="false">
+        <span class="spine-text">Ludovica Piro</span>
+      </button>
+      ${modeControls(locales, activeLang, theme, isDark, strings, "controls-stack")}
+    </div>
+    <div class="spine-panel" id="spine-panel">
+      <button type="button" class="icon-btn spine-close" id="nav-close-toggle" aria-label="${strings.stories.close}">✕</button>
+      <nav class="nav-scroll">${navHtml}</nav>
+    </div>
+  `;
+}
+
+/* 5 — Dock: floating pill, expands upward. */
+function dockChrome(ctx) {
+  const { strings, navHtml, locales, activeLang, theme, isDark, route } = ctx;
+  const current =
+    {
+      home: strings.nav.home,
+      work: strings.nav.work,
+      project: strings.nav.work,
+      stories: strings.nav.stories,
+      story: strings.nav.stories,
+      contact: strings.nav.contact,
+    }[route.page] || strings.nav.home;
+  return `
+    <div class="dock">
+      <div class="dock-panel" id="dock-panel">
+        <nav class="dock-nav">${navHtml}</nav>
+      </div>
+      <div class="dock-pill">
+        <button type="button" class="dock-brand" id="nav-open-toggle" aria-label="${strings.nav.expand}" aria-expanded="false">
+          <span class="brand-mark">L</span>
+          <span class="dock-current">${current}</span>
+        </button>
+        ${modeControls(locales, activeLang, theme, isDark, strings, "controls-dock")}
+      </div>
+    </div>
+  `;
+}
+
+const MODE_CHROME = {
+  rail: railChrome,
+  overture: overtureChrome,
+  spine: spineChrome,
+  dock: dockChrome,
+};
+
+export function renderChrome({
+  strings,
+  locales,
+  activeLang,
+  route,
+  projects,
+  stories,
+  theme,
+  isDark,
+  base,
+  navCollapsed,
+  navMode = "overture",
+}) {
+  const navHtml = renderNav(strings, projects, stories, route, base);
+  const ctx = {
+    strings,
+    navHtml,
+    locales,
+    activeLang,
+    route,
+    theme,
+    isDark,
+    base,
+    navCollapsed,
+  };
+  const chrome = (MODE_CHROME[navMode] || overtureChrome)(ctx);
+
+  return `
+    <div class="grain" aria-hidden="true"></div>
+    ${protoSwitch(navMode)}
+    <div class="topbar">
+      <a href="${hrefFor(base, "home")}" data-link class="brand"><span class="brand-mark">L</span> Ludovica Piro</a>
+      <button class="icon-btn menu-toggle" id="menu-toggle" aria-label="Open menu">☰</button>
+    </div>
+    ${chrome}
     <div class="nav-scrim" id="nav-scrim"></div>
     <div class="nav-drawer" id="nav-drawer">
       <nav>${navHtml}</nav>

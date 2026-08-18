@@ -132,6 +132,7 @@ async function main() {
         base: BASE,
         // Matches the client's closed-by-default state.
         navCollapsed: true,
+        navMode: "overture",
       })}
       <main id="main">
         ${renderPage(route, en, ctx)}

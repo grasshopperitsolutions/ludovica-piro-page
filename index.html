@@ -77,6 +77,10 @@
           var c = localStorage.getItem("lp-nav-collapsed");
           if (c === null || c === "1")
             document.documentElement.classList.add("nav-collapsed");
+          document.documentElement.setAttribute(
+            "data-nav-mode",
+            localStorage.getItem("lp-nav-mode") || "overture",
+          );
         } catch (e) {
           /* private mode / storage blocked — fall through to defaults */
         }
