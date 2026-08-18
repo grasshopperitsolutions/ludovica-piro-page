@@ -130,7 +130,8 @@ async function main() {
         theme: "auto",
         isDark: false,
         base: BASE,
-        navCollapsed: false,
+        // Matches the client's closed-by-default state.
+        navCollapsed: true,
       })}
       <main id="main">
         ${renderPage(route, en, ctx)}

@@ -65,6 +65,23 @@
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='none' stroke='%23000000' stroke-width='3'/%3E%3Ctext x='32' y='42' font-family='Georgia,serif' font-weight='700' font-size='28' text-anchor='middle' fill='%23000000'%3EL%3C/text%3E%3C/svg%3E"
     />
     <link rel="stylesheet" href="/src/style.css" />
+
+    <script>
+      // Applied before first paint so the stored theme and the closed-by-default
+      // sidebar don't flash the wrong state on load. Kept tiny and inline on
+      // purpose — anything deferred is already too late.
+      (function () {
+        try {
+          var t = localStorage.getItem("lp-theme") || "auto";
+          if (t !== "auto") document.documentElement.setAttribute("data-theme", t);
+          var c = localStorage.getItem("lp-nav-collapsed");
+          if (c === null || c === "1")
+            document.documentElement.classList.add("nav-collapsed");
+        } catch (e) {
+          /* private mode / storage blocked — fall through to defaults */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="app" class="app"></div>

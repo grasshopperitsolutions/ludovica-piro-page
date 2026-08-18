@@ -11,10 +11,8 @@
 // site may currently be served from a subpath (e.g. when staged at
 // grasshoppersolutions.online/ludovica-piro-page/ ahead of its own domain).
 
-// Grayscale "tone" values (HSL lightness %) used to tint the plate
-// thumbnails in place of real photography — kept monochrome on purpose.
-export const WORK_TONES = [92, 86, 96, 82, 90, 84, 94, 88];
-export const STORY_TONES = { ITA: 88, PT: 82, ES: 94, ENG: 90 };
+import { PLATE_LINES, storyGroupFor } from "./data.js";
+
 export const LANG_NAMES = {
   en: "English",
   it: "Italiano",
@@ -22,22 +20,32 @@ export const LANG_NAMES = {
   pt: "Português",
 };
 
-export function initials(title) {
-  return title
+export function plateFor(project) {
+  return PLATE_LINES[project.id] || project.summary;
+}
+
+export function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// Wraps each word in a masked span so headlines can rise word-by-word.
+// The spans are inert without JS/animation — the text still reads normally,
+// and `prefers-reduced-motion` flattens the effect in CSS.
+export function splitWords(text, { animate = true } = {}) {
+  return String(text)
     .split(/\s+/)
-    .filter((w) => /[a-zA-ZÀ-ÿ]/.test(w))
-    .slice(0, 2)
-    .map((w) => w[0].toUpperCase())
-    .join("");
-}
-
-export function toneForWork(projects, id) {
-  const idx = projects.findIndex((p) => p.id === id);
-  return WORK_TONES[idx % WORK_TONES.length];
-}
-
-export function toneForStory(story) {
-  return STORY_TONES[story.lang] || 90;
+    .filter(Boolean)
+    .map(
+      (word, i) =>
+        `<span class="w"><span class="w-in"${
+          animate ? ` style="--wi:${i}"` : ""
+        }>${escapeHtml(word)}</span></span>`,
+    )
+    .join(" ");
 }
 
 export function excerpt(html, len = 90) {
@@ -129,24 +137,32 @@ export function routeMeta(route, strings, projects, stories) {
   }
 }
 
-function navWorkList(strings, projects, activePage, activeId, base) {
+function pad2(n) {
+  return String(n + 1).padStart(2, "0");
+}
+
+function navWorkList(projects, activePage, activeId, base) {
   return projects
     .map((p) => {
       const active = activePage === "project" && activeId === p.id;
       return `<a href="${hrefFor(base, "project", p.id)}" data-link class="nav-sub-link ${active ? "active" : ""}"
-        data-preview="work" data-preview-title="${p.title}" data-preview-sub="${p.brand}"
-        data-preview-tone="${toneForWork(projects, p.id)}" data-preview-mark="${initials(p.title)}">${p.title}</a>`;
+        data-preview data-preview-title="${escapeHtml(p.title)}"
+        data-preview-quote="${escapeHtml(plateFor(p))}"
+        data-preview-sub="${escapeHtml(p.brand)}"
+      ><span class="nav-label">${escapeHtml(p.title)}</span></a>`;
     })
     .join("");
 }
 
-function navStoryList(strings, stories, activePage, activeId, base) {
+function navStoryList(stories, activePage, activeId, base) {
   return stories
     .map((s) => {
       const active = activePage === "story" && activeId === s.id;
-      return `<a href="${hrefFor(base, "story", s.id)}" data-link class="nav-sub-link ${active ? "active" : ""}"
-        data-preview="story" data-preview-title="${s.title}" data-preview-sub="${s.lang}"
-        data-preview-tone="${toneForStory(s)}" data-preview-mark="${s.lang.slice(0, 2)}">${s.title}</a>`;
+      return `<a href="${hrefFor(base, "story", s.id)}" data-link data-scramble class="nav-sub-link ${active ? "active" : ""}"
+        data-preview data-preview-title="${escapeHtml(s.title)}"
+        data-preview-quote="${escapeHtml(excerpt(s.content, 80))}"
+        data-preview-sub="${escapeHtml(s.lang)}"
+      ><span class="nav-num">${escapeHtml(s.lang)}</span><span class="nav-label">${escapeHtml(s.title)}</span></a>`;
     })
     .join("");
 }
@@ -160,12 +176,12 @@ export function renderNav(strings, projects, stories, route, base) {
 
     <div class="nav-group">
       <a href="${hrefFor(base, "work")}" data-link class="nav-top-link ${isActive("work") || isActive("project") ? "active" : ""}">${strings.nav.work}</a>
-      <div class="nav-sub-list">${navWorkList(strings, projects, p, id, base)}</div>
+      <div class="nav-sub-list">${navWorkList(projects, p, id, base)}</div>
     </div>
 
     <div class="nav-group">
       <a href="${hrefFor(base, "stories")}" data-link class="nav-top-link ${isActive("stories") || isActive("story") ? "active" : ""}">${strings.nav.stories}</a>
-      <div class="nav-sub-list">${navStoryList(strings, stories, p, id, base)}</div>
+      <div class="nav-sub-list">${navStoryList(stories, p, id, base)}</div>
     </div>
 
     <a href="${hrefFor(base, "contact")}" data-link class="nav-top-link ${isActive("contact") ? "active" : ""}">${strings.nav.contact}</a>
@@ -235,6 +251,7 @@ export function renderChrome({
   const navHtml = renderNav(strings, projects, stories, route, base);
   const collapseLabel = navCollapsed ? strings.nav.expand : strings.nav.collapse;
   return `
+    <div class="grain" aria-hidden="true"></div>
     <div class="topbar">
       <a href="${hrefFor(base, "home")}" data-link class="brand"><span class="brand-mark">L</span> Ludovica Piro</a>
       <button class="icon-btn menu-toggle" id="menu-toggle" aria-label="Open menu">☰</button>
@@ -266,13 +283,24 @@ export function renderChrome({
       </div>
     </div>
     <div class="hover-preview" id="hover-preview" aria-hidden="true">
-      <div class="hover-preview-plate"><span></span></div>
-      <div class="hover-preview-text">
-        <strong></strong>
-        <em></em>
-      </div>
+      <p class="hover-quote"></p>
+      <span class="hover-meta"></span>
     </div>
   `;
+}
+
+function projectCard(p, base, index) {
+  const line = plateFor(p);
+  return `
+    <a href="${hrefFor(base, "project", p.id)}" data-link class="project-card" data-reveal style="--i:${index % 6}">
+      <div class="project-plate">
+        <span class="plate-index">${pad2(index)}</span>
+        <p class="plate-line">${escapeHtml(line)}</p>
+        <span class="plate-rule"></span>
+      </div>
+      <h3>${escapeHtml(p.title)}</h3>
+      <div class="brand-line"><span>${escapeHtml(p.brand)} · ${escapeHtml(p.agency)}</span><span class="go">↗</span></div>
+    </a>`;
 }
 
 export function renderHomePage(
@@ -286,8 +314,11 @@ export function renderHomePage(
   return `
     <section class="hero" id="home">
       <span class="brand-mark">L</span>
-      <h1 class="hero-line"><span style="animation-delay:.05s">${strings.hero.greeting}</span></h1>
-      <p class="tagline hero-line"><span style="animation-delay:.2s">${strings.hero.role} ${strings.hero.tagline}</span></p>
+      <h1 class="hero-title">${splitWords(strings.hero.greeting)}</h1>
+      <p class="tagline">
+        <span class="tagline-static">${escapeHtml(strings.hero.role)}</span>
+        <span class="tagline-cycle" id="tagline-cycle" data-cycle>${escapeHtml(strings.hero.tagline)}</span>
+      </p>
       <div class="scroll-cue">${strings.nav.work}</div>
     </section>
 
@@ -295,7 +326,7 @@ export function renderHomePage(
       <div class="about-grid">
         <div class="about-photos" data-reveal>
           <figure><img src="${profilePicSrc}" alt="Ludovica Piro" loading="lazy" /></figure>
-          <figure><img src="${munariPicSrc}" alt="${strings.about.munariCaption}" loading="lazy" /></figure>
+          <figure><img src="${munariPicSrc}" alt="${escapeHtml(strings.about.munariCaption)}" loading="lazy" /></figure>
         </div>
         <div class="about-text" data-reveal style="--i:1">
           <p>${strings.about.p1}</p>
@@ -315,16 +346,7 @@ export function renderHomePage(
       <div class="project-grid">
         ${projects
           .slice(0, 3)
-          .map(
-            (p, i) => `
-          <a href="${hrefFor(base, "project", p.id)}" data-link class="project-card" data-reveal style="--i:${i}">
-            <div class="project-thumb" style="--tone:${toneForWork(projects, p.id)}">
-              <span class="plate-mark">${initials(p.title)}</span>
-            </div>
-            <h3>${p.title}</h3>
-            <div class="brand-line"><span>${p.brand} · ${p.agency}</span><span class="go">↗</span></div>
-          </a>`,
-          )
+          .map((p, i) => projectCard(p, base, i))
           .join("")}
       </div>
       <a class="text-link" href="${hrefFor(base, "work")}" data-link data-reveal>${strings.work.heading} <span class="go">↗</span></a>
@@ -338,8 +360,8 @@ export function renderHomePage(
             .map(
               (s, i) => `
             <a href="${hrefFor(base, "story", s.id)}" data-link class="story-card" data-reveal style="--i:${i}">
-              <span class="lang">${s.lang}</span>
-              <h4>${s.title}</h4>
+              <span class="lang">${escapeHtml(s.lang)}</span>
+              <h4>${escapeHtml(s.title)}</h4>
             </a>`,
             )
             .join("")}
@@ -359,18 +381,7 @@ export function renderWorkIndexPage(strings, projects, competitions, comingSoon,
     <section>
       <div class="section-heading" data-reveal><h1>${strings.work.heading}</h1><div class="rule"></div></div>
       <div class="project-grid">
-        ${projects
-          .map(
-            (p, i) => `
-          <a href="${hrefFor(base, "project", p.id)}" data-link class="project-card" data-reveal style="--i:${i % 6}">
-            <div class="project-thumb" style="--tone:${toneForWork(projects, p.id)}">
-              <span class="plate-mark">${initials(p.title)}</span>
-            </div>
-            <h3>${p.title}</h3>
-            <div class="brand-line"><span>${p.brand} · ${p.agency}</span><span class="go">↗</span></div>
-          </a>`,
-          )
-          .join("")}
+        ${projects.map((p, i) => projectCard(p, base, i)).join("")}
       </div>
 
       <div style="margin-top:4.5rem" data-reveal>
@@ -379,7 +390,7 @@ export function renderWorkIndexPage(strings, projects, competitions, comingSoon,
           ${competitions
             .map(
               (c) =>
-                `<li><span>${c.title} — ${c.brand}</span><span class="award">${c.award}</span></li>`,
+                `<li><span>${escapeHtml(c.title)} — ${escapeHtml(c.brand)}</span><span class="award">${escapeHtml(c.award)}</span></li>`,
             )
             .join("")}
         </ul>
@@ -387,7 +398,7 @@ export function renderWorkIndexPage(strings, projects, competitions, comingSoon,
 
       <div style="margin-top:3rem" data-reveal>
         <h3>${strings.work.comingSoonHeading}</h3>
-        <div class="chips">${comingSoon.map((c) => `<span>${c}</span>`).join("")}</div>
+        <div class="chips">${comingSoon.map((c) => `<span>${escapeHtml(c)}</span>`).join("")}</div>
       </div>
     </section>
   `;
@@ -396,17 +407,21 @@ export function renderWorkIndexPage(strings, projects, competitions, comingSoon,
 export function renderProjectPage(strings, projects, id, base) {
   const p = projects.find((x) => x.id === id);
   if (!p) return renderNotFoundPage(strings, base);
+  const index = projects.findIndex((x) => x.id === id);
   return `
     <section class="project-detail">
       <a class="back-link" href="${hrefFor(base, "work")}" data-link><span class="arrow">←</span> ${strings.work.back}</a>
-      <span class="kicker">${p.brand} · ${p.agency}</span>
-      <h1>${p.title}</h1>
-      ${p.tag ? `<p style="color:var(--text-muted)">${p.tag}</p>` : ""}
-      <p class="lede">${p.summary}</p>
-      <div class="hero-plate" style="--tone:${toneForWork(projects, p.id)}"><span>${initials(p.title)}</span></div>
-      ${p.body.map((b) => `<p style="color:var(--text-muted);font-size:1.05rem">${b}</p>`).join("")}
-      <p style="font-size:0.85rem;color:var(--text-muted);margin-top:2rem">${strings.work.agency} ${p.agency}</p>
-      ${p.recognition ? `<div class="recognition">${p.recognition}</div>` : ""}
+      <span class="kicker">${escapeHtml(p.brand)} · ${escapeHtml(p.agency)}</span>
+      <h1 class="split-title">${splitWords(p.title)}</h1>
+      ${p.tag ? `<p style="color:var(--text-muted)">${escapeHtml(p.tag)}</p>` : ""}
+      <div class="hero-plate">
+        <span class="plate-index">${pad2(index)}</span>
+        <p class="plate-line">${escapeHtml(plateFor(p))}</p>
+      </div>
+      <p class="lede">${escapeHtml(p.summary)}</p>
+      ${p.body.map((b) => `<p class="body-copy" data-reveal>${b}</p>`).join("")}
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-top:2rem">${strings.work.agency} ${escapeHtml(p.agency)}</p>
+      ${p.recognition ? `<div class="recognition" data-reveal>${escapeHtml(p.recognition)}</div>` : ""}
     </section>
   `;
 }
@@ -421,9 +436,9 @@ export function renderStoriesIndexPage(strings, stories, base) {
           .map(
             (s, i) => `
           <a href="${hrefFor(base, "story", s.id)}" data-link class="story-card" data-reveal style="--i:${i}">
-            <span class="lang">${s.lang}</span>
-            <h4>${s.title}</h4>
-            <p class="story-excerpt">${excerpt(s.content, 110)}</p>
+            <span class="lang">${escapeHtml(s.lang)}</span>
+            <h4>${escapeHtml(s.title)}</h4>
+            <p class="story-excerpt">${escapeHtml(excerpt(s.content, 110))}</p>
           </a>`,
           )
           .join("")}
@@ -435,12 +450,36 @@ export function renderStoriesIndexPage(strings, stories, base) {
 export function renderStoryPage(strings, stories, id, base) {
   const s = stories.find((x) => x.id === id);
   if (!s) return renderNotFoundPage(strings, base);
+
+  // Same piece, four languages — offer an in-place morph between them rather
+  // than making the reader navigate back out to the index.
+  const group = storyGroupFor(id);
+  const siblings = group
+    ? group.storyIds.map((sid) => stories.find((x) => x.id === sid)).filter(Boolean)
+    : [];
+
+  const switcher =
+    siblings.length > 1
+      ? `<div class="story-langs" role="tablist">
+          ${siblings
+            .map(
+              (
+                sib,
+              ) => `<button type="button" role="tab" class="story-lang ${sib.id === id ? "active" : ""}"
+                data-story-lang="${sib.id}" aria-selected="${sib.id === id}"
+                >${escapeHtml(sib.lang)}</button>`,
+            )
+            .join("")}
+        </div>`
+      : "";
+
   return `
-    <section class="project-detail">
+    <section class="project-detail story-page">
       <a class="back-link" href="${hrefFor(base, "stories")}" data-link><span class="arrow">←</span> ${strings.stories.heading}</a>
-      <span class="kicker">${s.lang}</span>
-      <h1>${s.title}</h1>
-      <div class="story-body">${s.content}</div>
+      <span class="kicker" id="story-kicker">${escapeHtml(s.lang)}</span>
+      <h1 class="split-title" id="story-title">${splitWords(s.title)}</h1>
+      ${switcher}
+      <div class="story-body" id="story-body">${s.content}</div>
     </section>
   `;
 }

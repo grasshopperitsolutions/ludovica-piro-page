@@ -1,6 +1,26 @@
 // Case-study copy is kept in the language it was originally written/awarded in (English).
 // UI chrome, navigation and the About section are translated — see src/i18n/*.js.
 
+// Short display lines used as the *artwork* on project tiles and nav hover
+// previews — for a copywriter the words are the visual, so tiles set these in
+// Coconat rather than showing a placeholder image. Every line is taken
+// verbatim (or trimmed) from the campaign copy in `projects` below; nothing
+// here is invented. Anything without an entry falls back to its `summary`.
+export const PLATE_LINES = {
+  sakerhet: "A closet becomes a shelter.",
+  "no-more-excuses": "The only barriers left are the ones we make up.",
+  "365-days": "The most special day will be the day with no more war.",
+  "everyday-emergencies": "The real emergency is to abolish war.",
+  "ci-sta": "It's appealing. It works. It fits.",
+  discrimination: "Orientation belongs to the professional sphere. Nothing else.",
+  "the-couples": "For the celebration of lovers, give singles a gift.",
+  safelist: "Four playlists that respect the speed limit.",
+  "more-than-mechanics": "Much more than just being a mechanic.",
+  "sicily-liguria": "Two new flavours, two Italian coastlines.",
+  "radio-vw": "A radio campaign for the ID. family.",
+  "copyad-pt": "Written directly in Portuguese.",
+};
+
 export const contact = {
   email: "ludovicapiro411@gmail.com",
   phone: "+39 346 305 7831",
@@ -199,3 +219,17 @@ export const stories = [
     content: `<p>To what extent should desires be kept to oneself?<br/>Or, on the contrary, shouted to the world?<br/><br/>On this topic, there are two different and irreconcilable schools of thought. That is to say, two categories of people: the hermetic and the chatterbox.<br/><br/>The hermetic is the one you have to pry words out of, the one who, if he has a desire, won't tell you because if he says it out loud, he'll jinx it. And then it won't come true.<br/><br/>Look, you could even be his mother or the premium version of ChatGPT. You won't get anything out of him. He can't even bring himself to pronounce the desire. He keeps it to himself, locked away with seven keys in his mind.<br/><br/>Then there's the other category — the chatterbox. The one who, if he has a goal, something he deeply desires, has to tell everyone. EVERY SINGLE ONE. Immediately. Even the lady at the supermarket checkout.<br/><br/>And yet, drums roll: people like this are winners. They're enthusiastic, they love life. Because by telling everyone about their desires, they made them real.</p>`,
   },
 ];
+
+// All four story entries are the *same* piece written in four languages —
+// grouping them lets a story page offer an in-place language morph instead of
+// treating each translation as an unrelated item.
+export const STORY_GROUPS = [
+  {
+    id: "desideri",
+    storyIds: ["story-ita", "story-pt", "story-es", "story-en"],
+  },
+];
+
+export function storyGroupFor(id) {
+  return STORY_GROUPS.find((g) => g.storyIds.includes(id));
+}
