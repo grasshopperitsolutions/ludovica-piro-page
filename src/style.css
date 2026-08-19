@@ -555,6 +555,10 @@ main {
   .lang-option {
     padding: 0.75rem 0.8rem;
   }
+  .text-link,
+  .back-link {
+    padding: 0.5rem 0;
+  }
 }
 
 @media (min-width: 900px) {

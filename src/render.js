@@ -253,14 +253,17 @@ export const NAV_MODES = [
 function protoSwitch(navMode) {
   return `
     <div class="proto-switch" id="proto-switch">
-      <span class="proto-title">Nav prototype</span>
-      ${NAV_MODES.map(
-        (m) => `
-        <label class="proto-opt">
-          <input type="radio" name="nav-mode" value="${m.id}" ${m.id === navMode ? "checked" : ""} />
-          <span>${m.label}</span>
-        </label>`,
-      ).join("")}
+      <button type="button" class="proto-toggle" id="proto-toggle" aria-label="Nav prototype switcher" aria-expanded="false">⚙</button>
+      <div class="proto-list">
+        <span class="proto-title">Nav prototype</span>
+        ${NAV_MODES.map(
+          (m) => `
+          <label class="proto-opt">
+            <input type="radio" name="nav-mode" value="${m.id}" ${m.id === navMode ? "checked" : ""} />
+            <span>${m.label}</span>
+          </label>`,
+        ).join("")}
+      </div>
     </div>
   `;
 }
@@ -392,22 +395,32 @@ export function renderChrome({
   };
   const chrome = (MODE_CHROME[navMode] || overtureChrome)(ctx);
 
-  return `
-    <div class="grain" aria-hidden="true"></div>
-    ${protoSwitch(navMode)}
+  // Only the rail falls back to a top bar + drawer on small screens. The other
+  // three carry their own concept down to mobile — a full-screen menu, an edge
+  // spine and a thumb-reach dock are all natively mobile ideas, and they have
+  // to stay distinguishable to be worth comparing on a phone.
+  const railMobile =
+    navMode === "rail"
+      ? `
     <div class="topbar">
       <a href="${hrefFor(base, "home")}" data-link class="brand"><span class="brand-mark">L</span> Ludovica Piro</a>
       <button class="icon-btn menu-toggle" id="menu-toggle" aria-label="Open menu">☰</button>
     </div>
-    ${chrome}
-    <div class="nav-scrim" id="nav-scrim"></div>
     <div class="nav-drawer" id="nav-drawer">
       <nav>${navHtml}</nav>
       <div class="topbar-controls">
         ${langDropdown("mobile", locales, activeLang)}
         ${themeDropdown("mobile", theme, isDark, strings)}
       </div>
-    </div>
+    </div>`
+      : "";
+
+  return `
+    <div class="grain" aria-hidden="true"></div>
+    ${protoSwitch(navMode)}
+    ${railMobile}
+    ${chrome}
+    <div class="nav-scrim" id="nav-scrim"></div>
     <div class="hover-preview" id="hover-preview" aria-hidden="true">
       <p class="hover-quote"></p>
       <span class="hover-meta"></span>

@@ -68,6 +68,11 @@ function withTransition(fn) {
   }
   const transition = document.startViewTransition(fn);
   activeTransition = transition;
+  // A ViewTransition exposes three independently-rejecting promises. Aborting
+  // (rapid navigation, or a backgrounded tab) rejects all of them, so every one
+  // needs a handler or the console fills with unhandled rejections.
+  transition.ready.catch(() => {});
+  transition.updateCallbackDone.catch(() => {});
   transition.finished
     .catch(() => {})
     .finally(() => {
@@ -297,6 +302,16 @@ function bindEvents() {
     .querySelectorAll("#nav-close-toggle")
     .forEach((btn) => btn.addEventListener("click", () => setNavOpen(false)));
 
+  const protoToggle = document.getElementById("proto-toggle");
+  if (protoToggle) {
+    protoToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const box = document.getElementById("proto-switch");
+      const open = box.classList.toggle("open");
+      protoToggle.setAttribute("aria-expanded", String(open));
+    });
+  }
+
   const menuToggle = document.getElementById("menu-toggle");
   const scrim = document.getElementById("nav-scrim");
   if (menuToggle) {
@@ -304,6 +319,8 @@ function bindEvents() {
       document.getElementById("nav-drawer").classList.add("open");
       scrim.classList.add("open");
     });
+  }
+  if (scrim) {
     scrim.addEventListener("click", () => {
       closeDrawer();
       setNavOpen(false);
