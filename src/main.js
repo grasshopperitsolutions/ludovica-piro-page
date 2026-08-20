@@ -447,3 +447,18 @@ applyTheme();
 setupCursor();
 bindGlobalEvents();
 render();
+
+// render() rebuilds #app, which discards the browser's own jump to a URL
+// fragment — so arrivals at e.g. /#contact (including the /contact redirect)
+// need to be scrolled into view once the markup exists.
+if (window.location.hash.length > 1) {
+  const target = document.getElementById(window.location.hash.slice(1));
+  if (target) {
+    requestAnimationFrame(() =>
+      target.scrollIntoView({
+        behavior: reduceMotion() ? "auto" : "smooth",
+        block: "start",
+      }),
+    );
+  }
+}

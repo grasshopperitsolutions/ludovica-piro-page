@@ -42,7 +42,6 @@ function buildRoutes() {
     { page: "work" },
     { page: "personal" },
     { page: "stories" },
-    { page: "contact" },
     ...projects.map((p) => ({ page: "project", id: p.id })),
     ...stories.map((s) => ({ page: "story", id: s.id })),
   ];
@@ -139,8 +138,50 @@ async function main() {
 
   await writeSitemap(routes);
   await writeLlmsTxt();
+  await writeRedirects();
 
   console.log(`Prerendered ${routes.length} routes.`);
+}
+
+// Pages that used to be routes of their own and now live as a section of
+// another page. GitHub Pages has no server-side rewrites, so each one gets a
+// small standalone HTML file that forwards on. Deliberately `noindex` and
+// canonicalised to the destination, so search engines consolidate rather than
+// treating it as a duplicate page.
+const REDIRECTS = [{ from: "/contact", to: "/#contact" }];
+
+async function writeRedirects() {
+  for (const { from, to } of REDIRECTS) {
+    const target = `${BASE}${to}`;
+    const canonical = SITE + to;
+    const html = `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Redirecting…</title>
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href="${canonical}" />
+    <meta http-equiv="refresh" content="0; url=${target}" />
+    <script>
+      window.location.replace("${target}" + window.location.search);
+    </script>
+    <style>
+      body {
+        font-family: -apple-system, sans-serif;
+        margin: 4rem;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <p>This page moved. <a href="${target}">Continue to contact details</a>.</p>
+  </body>
+</html>
+`;
+    const outDir = path.join(DIST, from);
+    await mkdir(outDir, { recursive: true });
+    await writeFile(path.join(outDir, "index.html"), html, "utf8");
+  }
 }
 
 async function writeSitemap(routes) {
@@ -191,6 +232,7 @@ async function writeLlmsTxt() {
   lines.push("");
   lines.push("## Contact");
   lines.push(`- Email: ${contact.email}`);
+  lines.push(`- LinkedIn: ${contact.linkedin}`);
   lines.push(`- Behance: ${contact.behance}`);
   lines.push(`- Instagram: ${contact.instagram}`);
   lines.push("");

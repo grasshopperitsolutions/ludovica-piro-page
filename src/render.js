@@ -61,7 +61,6 @@ export function parsePath(pathname, base = "/") {
   if (segs[0] === "stories") {
     return segs[1] ? { page: "story", id: segs[1] } : { page: "stories" };
   }
-  if (segs[0] === "contact" && segs.length === 1) return { page: "contact" };
   return { page: "notfound" };
 }
 
@@ -79,8 +78,6 @@ export function buildPath(page, id) {
       return "/stories";
     case "story":
       return `/stories/${id}`;
-    case "contact":
-      return "/contact";
     default:
       return "/";
   }
@@ -128,11 +125,6 @@ export function routeMeta(route, strings, projects, stories) {
         ? { title: `${s.title} — ${site}`, description: excerpt(s.content, 150) }
         : { title: site, description: strings.meta.description };
     }
-    case "contact":
-      return {
-        title: `${strings.nav.contact} — ${site}`,
-        description: strings.meta.description,
-      };
     default:
       return { title: `Page not found — ${site}`, description: "" };
   }
@@ -149,11 +141,12 @@ export function routeMeta(route, strings, projects, stories) {
 // Inline SVG so it inherits currentColor and needs no extra request.
 const HOME_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 10.4 12 3.2l9 7.2"/><path d="M5.6 9.4V20.4h12.8V9.4"/></svg>`;
 
+// Contact isn't a section: it lives at the foot of the home page, so it has no
+// nav entry and no route of its own.
 const SECTIONS = [
   { page: "work", key: "work" },
   { page: "personal", key: "personal" },
   { page: "stories", key: "stories" },
-  { page: "contact", key: "contact" },
 ];
 
 // Which top-level section a given route belongs to.
@@ -240,7 +233,8 @@ export function renderChrome({
   base,
 }) {
   const currentKey = sectionOf(route.page);
-  const currentLabel = strings.nav[currentKey] || strings.nav.home;
+  const currentLabel =
+    strings.navShort[currentKey] || strings.nav[currentKey] || strings.nav.home;
 
   const inlineLinks = SECTIONS.map(
     (s) =>
@@ -285,9 +279,6 @@ export function renderChrome({
             <a href="${hrefFor(base, "stories")}" data-link class="nav-top-link ${isSectionActive(route, "stories") ? "active" : ""}">${strings.nav.stories}</a>
             <div class="nav-sub-list">${navStoryList(stories, route, base)}</div>
           </div>
-          <div class="nav-group">
-            <a href="${hrefFor(base, "contact")}" data-link class="nav-top-link ${isSectionActive(route, "contact") ? "active" : ""}">${strings.nav.contact}</a>
-          </div>
         </div>
       </div>
     </header>
@@ -326,6 +317,7 @@ export function renderHomePage(
   profilePicSrc,
   munariPicSrc,
   base,
+  contact,
 ) {
   return `
     <section class="intro" id="home">
@@ -390,10 +382,7 @@ export function renderHomePage(
       </div>
     </section>
 
-    <section>
-      <div class="section-heading" data-reveal><span class="kicker-num">03</span><h2>${strings.contact.heading}</h2><div class="rule"></div></div>
-      <a class="cv-btn" href="${hrefFor(base, "contact")}" data-link data-reveal>${strings.contact.heading} <span class="go">↗</span></a>
-    </section>
+    ${renderContactBlock(strings, contact, "03")}
   `;
 }
 
@@ -515,9 +504,16 @@ export function renderStoryPage(strings, stories, id, base) {
   `;
 }
 
-export function renderContactPage(strings, contact) {
+// Rendered at the foot of the home page rather than on a route of its own.
+export function renderContactBlock(strings, contact, kickerNum = "") {
   const behanceHandle = contact.behance.replace(/^.*behance\.net\//, "");
   const instagramHandle = "@" + contact.instagram.replace(/^.*instagram\.com\//, "");
+  // LinkedIn vanity slugs carry a trailing id ("ludovica-piro-55327116a");
+  // drop it so the row reads like the other handles.
+  const linkedinHandle = contact.linkedin
+    .replace(/^.*linkedin\.com\/in\//, "")
+    .replace(/\/+$/, "")
+    .replace(/-[0-9a-z]{6,}$/, "");
 
   // Until a real CV URL exists the button is shown but inert, carrying a
   // tooltip instead of a dead link.
@@ -526,8 +522,12 @@ export function renderContactPage(strings, contact) {
     : `<span class="cv-btn cv-btn--pending" data-tooltip="${escapeHtml(strings.contact.cvPending)}" aria-disabled="true" data-reveal>${strings.contact.cv} <span class="go">↗</span></span>`;
 
   return `
-    <section>
-      <div class="section-heading" data-reveal><h1>${strings.contact.heading}</h1><div class="rule"></div></div>
+    <section id="contact">
+      <div class="section-heading" data-reveal>
+        ${kickerNum ? `<span class="kicker-num">${kickerNum}</span>` : ""}
+        <h2>${strings.contact.heading}</h2>
+        <div class="rule"></div>
+      </div>
       <div class="contact-list" data-reveal>
         <div class="contact-row">
           <span>${strings.contact.emailLabel}</span>
@@ -538,6 +538,10 @@ export function renderContactPage(strings, contact) {
           <a href="https://wa.me/${contact.whatsapp}" target="_blank" rel="noopener noreferrer">
             ${contact.phone} <span class="contact-hint">WhatsApp ↗</span>
           </a>
+        </div>
+        <div class="contact-row">
+          <span>LinkedIn</span>
+          <a href="${contact.linkedin}" target="_blank" rel="noopener noreferrer">${escapeHtml(linkedinHandle)} ↗</a>
         </div>
         <div class="contact-row">
           <span>Behance</span>
@@ -573,6 +577,7 @@ export function renderPage(route, strings, ctx) {
         ctx.profilePicSrc,
         ctx.munariPicSrc,
         ctx.base,
+        ctx.contact,
       );
     case "work":
       return renderWorkIndexPage(strings, ctx.projects, ctx.base);
@@ -584,8 +589,6 @@ export function renderPage(route, strings, ctx) {
       return renderStoriesIndexPage(strings, ctx.stories, ctx.base);
     case "story":
       return renderStoryPage(strings, ctx.stories, route.id, ctx.base);
-    case "contact":
-      return renderContactPage(strings, ctx.contact);
     default:
       return renderNotFoundPage(strings, ctx.base);
   }

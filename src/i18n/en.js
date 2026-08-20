@@ -12,9 +12,16 @@ export default {
     work: "Works",
     personal: "Personal Projects",
     stories: "Short Stories",
-    contact: "Contact",
     open: "Open menu",
     close: "Close menu",
+  },
+  // Shown as the current-section tag inside the nav pill, where the full names
+  // crowd the bar on narrow screens. The menu itself keeps the full names.
+  navShort: {
+    home: "Home",
+    work: "Works",
+    personal: "Projects",
+    stories: "Stories",
   },
   hero: {
     greeting: "Hi, I'm Ludovica!",

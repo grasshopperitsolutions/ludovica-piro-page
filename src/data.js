@@ -29,6 +29,7 @@ export const contact = {
   whatsapp: "393463057831",
   behance: "https://www.behance.net/ludovicapiro",
   instagram: "https://instagram.com/lodevicapire",
+  linkedin: "https://www.linkedin.com/in/ludovica-piro-55327116a/",
   // TODO: real CV URL needed. While this is empty the CV button is not
   // rendered at all, rather than shipping a dead link.
   cv: "",
