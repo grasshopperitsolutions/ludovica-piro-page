@@ -30,13 +30,6 @@ const SITE = "https://ludovicapiro.com";
 // asset URLs baked into prerendered HTML must carry the same prefix as the
 // script/link tags Vite itself emits, or they 404 once deployed.
 const BASE = (viteConfig.base || "/").replace(/\/+$/, "");
-const locales = [
-  { code: "en", label: "EN" },
-  { code: "it", label: "IT" },
-  { code: "es", label: "ES" },
-  { code: "pt", label: "PT" },
-];
-
 async function assetPath(manifest, srcPath) {
   const entry = manifest[srcPath];
   if (!entry) throw new Error(`Asset not found in build manifest: ${srcPath}`);
@@ -47,6 +40,7 @@ function buildRoutes() {
   const routes = [
     { page: "home" },
     { page: "work" },
+    { page: "personal" },
     { page: "stories" },
     { page: "contact" },
     ...projects.map((p) => ({ page: "project", id: p.id })),
@@ -80,14 +74,6 @@ function applyHead(template, { title, description, url }) {
     `$1${escapeAttr(description)}$2`,
   );
   html = html.replace(/(<link\s+rel="canonical"\s+href=")[^"]*(")/, `$1${url}$2`);
-  html = html.replace(
-    /(<link\s+rel="alternate"\s+hreflang="en"\s+href=")[^"]*(")/,
-    `$1${url}$2`,
-  );
-  html = html.replace(
-    /(<link\s+rel="alternate"\s+hreflang="x-default"\s+href=")[^"]*(")/,
-    `$1${url}$2`,
-  );
   return html;
 }
 
@@ -122,17 +108,13 @@ async function main() {
     const bodyHtml = `
       ${renderChrome({
         strings: en,
-        locales,
-        activeLang: "en",
         route,
         projects,
         stories,
+        competitions,
         theme: "auto",
         isDark: false,
         base: BASE,
-        // Matches the client's closed-by-default state.
-        navCollapsed: true,
-        navMode: "overture",
       })}
       <main id="main">
         ${renderPage(route, en, ctx)}
@@ -185,8 +167,8 @@ async function writeLlmsTxt() {
   lines.push("");
   lines.push("> Creative copywriter and author. " + en.hero.tagline);
   lines.push("");
-  lines.push(en.about.p1);
-  lines.push(en.about.p2);
+  // Paragraphs are stored as arrays of authored lines; flatten for plain text.
+  for (const para of en.about.paragraphs) lines.push(para.join(" "));
   lines.push("");
   lines.push("## Work");
   for (const p of projects) {

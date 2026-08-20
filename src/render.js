@@ -13,13 +13,6 @@
 
 import { PLATE_LINES, storyGroupFor } from "./data.js";
 
-export const LANG_NAMES = {
-  en: "English",
-  it: "Italiano",
-  es: "Español",
-  pt: "Português",
-};
-
 export function plateFor(project) {
   return PLATE_LINES[project.id] || project.summary;
 }
@@ -64,6 +57,7 @@ export function parsePath(pathname, base = "/") {
   if (segs[0] === "work") {
     return segs[1] ? { page: "project", id: segs[1] } : { page: "work" };
   }
+  if (segs[0] === "personal-projects" && segs.length === 1) return { page: "personal" };
   if (segs[0] === "stories") {
     return segs[1] ? { page: "story", id: segs[1] } : { page: "stories" };
   }
@@ -79,6 +73,8 @@ export function buildPath(page, id) {
       return "/work";
     case "project":
       return `/work/${id}`;
+    case "personal":
+      return "/personal-projects";
     case "stories":
       return "/stories";
     case "story":
@@ -116,6 +112,11 @@ export function routeMeta(route, strings, projects, stories) {
         ? { title: `${p.title} — ${p.brand} — ${site}`, description: p.summary }
         : { title: site, description: strings.meta.description };
     }
+    case "personal":
+      return {
+        title: `${strings.nav.personal} — ${site}`,
+        description: strings.personal.subheading,
+      };
     case "stories":
       return {
         title: `${strings.nav.stories} — ${site}`,
@@ -137,14 +138,39 @@ export function routeMeta(route, strings, projects, stories) {
   }
 }
 
-function pad2(n) {
-  return String(n + 1).padStart(2, "0");
+/* ---------------------------------------------------------------------------
+   Navigation — a dock pinned to the top, identical on desktop and mobile.
+   The pill always shows the brand mark, the current section and the theme
+   picker; tapping it drops a panel with the full index. On wider screens the
+   section links also sit inline in the pill so they're visible without opening
+   anything.
+   --------------------------------------------------------------------------- */
+
+// Inline SVG so it inherits currentColor and needs no extra request.
+const HOME_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 10.4 12 3.2l9 7.2"/><path d="M5.6 9.4V20.4h12.8V9.4"/></svg>`;
+
+const SECTIONS = [
+  { page: "work", key: "work" },
+  { page: "personal", key: "personal" },
+  { page: "stories", key: "stories" },
+  { page: "contact", key: "contact" },
+];
+
+// Which top-level section a given route belongs to.
+function sectionOf(page) {
+  if (page === "project") return "work";
+  if (page === "story") return "stories";
+  return page;
 }
 
-function navWorkList(projects, activePage, activeId, base) {
+function isSectionActive(route, key) {
+  return sectionOf(route.page) === key;
+}
+
+function navWorkList(projects, route, base) {
   return projects
     .map((p) => {
-      const active = activePage === "project" && activeId === p.id;
+      const active = route.page === "project" && route.id === p.id;
       return `<a href="${hrefFor(base, "project", p.id)}" data-link class="nav-sub-link ${active ? "active" : ""}"
         data-preview data-preview-title="${escapeHtml(p.title)}"
         data-preview-quote="${escapeHtml(plateFor(p))}"
@@ -154,10 +180,10 @@ function navWorkList(projects, activePage, activeId, base) {
     .join("");
 }
 
-function navStoryList(stories, activePage, activeId, base) {
+function navStoryList(stories, route, base) {
   return stories
     .map((s) => {
-      const active = activePage === "story" && activeId === s.id;
+      const active = route.page === "story" && route.id === s.id;
       return `<a href="${hrefFor(base, "story", s.id)}" data-link data-scramble class="nav-sub-link ${active ? "active" : ""}"
         data-preview data-preview-title="${escapeHtml(s.title)}"
         data-preview-quote="${escapeHtml(excerpt(s.content, 80))}"
@@ -167,42 +193,34 @@ function navStoryList(stories, activePage, activeId, base) {
     .join("");
 }
 
-export function renderNav(strings, projects, stories, route, base) {
-  const p = route.page;
-  const id = route.id;
-  const isActive = (key) => p === key;
-  return `
-    <a href="${hrefFor(base, "home")}" data-link class="nav-top-link ${isActive("home") ? "active" : ""}">${strings.nav.home}</a>
-
-    <div class="nav-group">
-      <a href="${hrefFor(base, "work")}" data-link class="nav-top-link ${isActive("work") || isActive("project") ? "active" : ""}">${strings.nav.work}</a>
-      <div class="nav-sub-list">${navWorkList(projects, p, id, base)}</div>
-    </div>
-
-    <div class="nav-group">
-      <a href="${hrefFor(base, "stories")}" data-link class="nav-top-link ${isActive("stories") || isActive("story") ? "active" : ""}">${strings.nav.stories}</a>
-      <div class="nav-sub-list">${navStoryList(stories, p, id, base)}</div>
-    </div>
-
-    <a href="${hrefFor(base, "contact")}" data-link class="nav-top-link ${isActive("contact") ? "active" : ""}">${strings.nav.contact}</a>
-  `;
+function navPersonalList(competitions, base) {
+  return competitions
+    .map(
+      (c) =>
+        `<a href="${hrefFor(base, "personal")}" data-link class="nav-sub-link"
+        data-preview data-preview-title="${escapeHtml(c.title)}"
+        data-preview-quote="${escapeHtml(c.title)} — ${escapeHtml(c.brand)}"
+        data-preview-sub="${escapeHtml(c.award)}"
+      ><span class="nav-label">${escapeHtml(c.title)}</span></a>`,
+    )
+    .join("");
 }
 
-function langDropdown(idSuffix, locales, activeLang) {
-  const suffix = idSuffix ? `-${idSuffix}` : "";
+function themePicker(theme, isDark, strings) {
+  const icons = { light: "☀", dark: "☾", auto: "◐" };
+  const order = ["light", "dark", "auto"];
   return `
-    <div class="lang-dropdown" data-lang-dropdown>
-      <button type="button" class="lang-trigger" id="lang-trigger${suffix}" aria-haspopup="listbox" aria-expanded="false">
-        <span class="lang-current">${activeLang.toUpperCase()}</span>
-        <span class="lang-caret">⌄</span>
+    <div class="menu-dropdown" data-theme-dropdown>
+      <button type="button" class="menu-trigger" id="theme-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="${strings.theme[theme] || strings.theme.auto}">
+        <span class="theme-glyph">${icons[theme] || (isDark ? "☾" : "☀")}</span>
       </button>
-      <ul class="lang-menu" role="listbox" id="lang-menu${suffix}">
-        ${locales
+      <ul class="menu-list" role="listbox" id="theme-menu">
+        ${order
           .map(
-            (l) => `
-          <li role="option" class="lang-option ${l.code === activeLang ? "active" : ""}" data-lang="${l.code}" aria-selected="${l.code === activeLang}">
-            <span class="lang-option-code">${l.label}</span>
-            <span class="lang-option-name">${LANG_NAMES[l.code] || l.code}</span>
+            (key) => `
+          <li role="option" class="menu-option ${key === theme ? "active" : ""}" data-theme-option="${key}" aria-selected="${key === theme}">
+            <span class="menu-option-code">${icons[key]}</span>
+            <span class="menu-option-name">${strings.theme[key]}</span>
           </li>`,
           )
           .join("")}
@@ -211,215 +229,68 @@ function langDropdown(idSuffix, locales, activeLang) {
   `;
 }
 
-const THEME_ICONS = { light: "☀", dark: "☾", auto: "◐" };
-const THEME_ORDER = ["light", "dark", "auto"];
-
-function themeDropdown(idSuffix, theme, isDark, strings) {
-  const suffix = idSuffix ? `-${idSuffix}` : "";
-  const triggerIcon = THEME_ICONS[theme] || (isDark ? "☾" : "☀");
-  return `
-    <div class="lang-dropdown" data-theme-dropdown>
-      <button type="button" class="lang-trigger" id="theme-trigger${suffix}" aria-haspopup="listbox" aria-expanded="false" aria-label="${strings.theme[theme] || strings.theme.auto}">
-        <span class="theme-glyph">${triggerIcon}</span>
-        <span class="lang-caret">⌄</span>
-      </button>
-      <ul class="lang-menu" role="listbox" id="theme-menu${suffix}">
-        ${THEME_ORDER.map(
-          (key) => `
-          <li role="option" class="lang-option ${key === theme ? "active" : ""}" data-theme-option="${key}" aria-selected="${key === theme}">
-            <span class="lang-option-code">${THEME_ICONS[key]}</span>
-            <span class="lang-option-name">${strings.theme[key]}</span>
-          </li>`,
-        ).join("")}
-      </ul>
-    </div>
-  `;
-}
-
-/* ---------------------------------------------------------------------------
-   Nav modes — three prototypes plus the existing rail, switchable at runtime
-   so they can be compared side by side. Each renders its own desktop chrome;
-   below 900px they all share the same top bar + drawer, since these are
-   desktop navigation concepts. Once one is chosen the others (and the
-   `.proto-switch` control) come out.
-   --------------------------------------------------------------------------- */
-export const NAV_MODES = [
-  { id: "overture", label: "1 · Overture" },
-  { id: "spine", label: "4 · Spine" },
-  { id: "dock", label: "5 · Dock" },
-  { id: "rail", label: "Rail (current)" },
-];
-
-function protoSwitch(navMode) {
-  return `
-    <div class="proto-switch" id="proto-switch">
-      <button type="button" class="proto-toggle" id="proto-toggle" aria-label="Nav prototype switcher" aria-expanded="false">⚙</button>
-      <div class="proto-list">
-        <span class="proto-title">Nav prototype</span>
-        ${NAV_MODES.map(
-          (m) => `
-          <label class="proto-opt">
-            <input type="radio" name="nav-mode" value="${m.id}" ${m.id === navMode ? "checked" : ""} />
-            <span>${m.label}</span>
-          </label>`,
-        ).join("")}
-      </div>
-    </div>
-  `;
-}
-
-function modeControls(locales, activeLang, theme, isDark, strings, extraClass = "") {
-  return `
-    <div class="topbar-controls ${extraClass}">
-      ${langDropdown("", locales, activeLang)}
-      ${themeDropdown("", theme, isDark, strings)}
-    </div>
-  `;
-}
-
-function railChrome(ctx) {
-  const { strings, navHtml, navCollapsed } = ctx;
-  const collapseLabel = navCollapsed ? strings.nav.expand : strings.nav.collapse;
-  return `
-    <aside class="side-nav">
-      <button
-        type="button"
-        class="brand brand-toggle"
-        id="nav-collapse-toggle"
-        aria-label="${collapseLabel}"
-        title="${collapseLabel}"
-        aria-expanded="${!navCollapsed}"
-      >
-        <span class="brand-mark">L</span>
-        <span class="brand-text">Ludovica Piro</span>
-      </button>
-      <nav class="nav-scroll">${navHtml}</nav>
-      ${modeControls(ctx.locales, ctx.activeLang, ctx.theme, ctx.isDark, strings)}
-    </aside>
-  `;
-}
-
-/* 1 — Overture: no rail; the menu takes the whole screen. */
-function overtureChrome(ctx) {
-  const { strings, navHtml, locales, activeLang, theme, isDark } = ctx;
-  return `
-    <div class="mode-cluster">
-      <button type="button" class="brand-mark mode-trigger" id="nav-open-toggle"
-        aria-label="${strings.nav.expand}" title="${strings.nav.expand}" aria-expanded="false">L</button>
-      ${modeControls(locales, activeLang, theme, isDark, strings, "controls-down")}
-    </div>
-    <div class="overture" id="overture-panel">
-      <button type="button" class="icon-btn overture-close" id="nav-close-toggle" aria-label="${strings.stories.close}">✕</button>
-      <nav class="overture-nav">${navHtml}</nav>
-    </div>
-  `;
-}
-
-/* 4 — Spine: the rotated name along the edge is the button. */
-function spineChrome(ctx) {
-  const { strings, navHtml, locales, activeLang, theme, isDark } = ctx;
-  return `
-    <div class="spine">
-      <button type="button" class="spine-btn" id="nav-open-toggle"
-        aria-label="${strings.nav.expand}" aria-expanded="false">
-        <span class="spine-text">Ludovica Piro</span>
-      </button>
-      ${modeControls(locales, activeLang, theme, isDark, strings, "controls-stack")}
-    </div>
-    <div class="spine-panel" id="spine-panel">
-      <button type="button" class="icon-btn spine-close" id="nav-close-toggle" aria-label="${strings.stories.close}">✕</button>
-      <nav class="nav-scroll">${navHtml}</nav>
-    </div>
-  `;
-}
-
-/* 5 — Dock: floating pill, expands upward. */
-function dockChrome(ctx) {
-  const { strings, navHtml, locales, activeLang, theme, isDark, route } = ctx;
-  const current =
-    {
-      home: strings.nav.home,
-      work: strings.nav.work,
-      project: strings.nav.work,
-      stories: strings.nav.stories,
-      story: strings.nav.stories,
-      contact: strings.nav.contact,
-    }[route.page] || strings.nav.home;
-  return `
-    <div class="dock">
-      <div class="dock-panel" id="dock-panel">
-        <nav class="dock-nav">${navHtml}</nav>
-      </div>
-      <div class="dock-pill">
-        <button type="button" class="dock-brand" id="nav-open-toggle" aria-label="${strings.nav.expand}" aria-expanded="false">
-          <span class="brand-mark">L</span>
-          <span class="dock-current">${current}</span>
-        </button>
-        ${modeControls(locales, activeLang, theme, isDark, strings, "controls-dock")}
-      </div>
-    </div>
-  `;
-}
-
-const MODE_CHROME = {
-  rail: railChrome,
-  overture: overtureChrome,
-  spine: spineChrome,
-  dock: dockChrome,
-};
-
 export function renderChrome({
   strings,
-  locales,
-  activeLang,
   route,
   projects,
   stories,
+  competitions,
   theme,
   isDark,
   base,
-  navCollapsed,
-  navMode = "overture",
 }) {
-  const navHtml = renderNav(strings, projects, stories, route, base);
-  const ctx = {
-    strings,
-    navHtml,
-    locales,
-    activeLang,
-    route,
-    theme,
-    isDark,
-    base,
-    navCollapsed,
-  };
-  const chrome = (MODE_CHROME[navMode] || overtureChrome)(ctx);
+  const currentKey = sectionOf(route.page);
+  const currentLabel = strings.nav[currentKey] || strings.nav.home;
 
-  // Only the rail falls back to a top bar + drawer on small screens. The other
-  // three carry their own concept down to mobile — a full-screen menu, an edge
-  // spine and a thumb-reach dock are all natively mobile ideas, and they have
-  // to stay distinguishable to be worth comparing on a phone.
-  const railMobile =
-    navMode === "rail"
-      ? `
-    <div class="topbar">
-      <a href="${hrefFor(base, "home")}" data-link class="brand"><span class="brand-mark">L</span> Ludovica Piro</a>
-      <button class="icon-btn menu-toggle" id="menu-toggle" aria-label="Open menu">☰</button>
-    </div>
-    <div class="nav-drawer" id="nav-drawer">
-      <nav>${navHtml}</nav>
-      <div class="topbar-controls">
-        ${langDropdown("mobile", locales, activeLang)}
-        ${themeDropdown("mobile", theme, isDark, strings)}
-      </div>
-    </div>`
-      : "";
+  const inlineLinks = SECTIONS.map(
+    (s) =>
+      `<a href="${hrefFor(base, s.page)}" data-link class="topnav-link ${isSectionActive(route, s.key) ? "active" : ""}">${strings.nav[s.key]}</a>`,
+  ).join("");
+
+  const homeLink = `
+    <a href="${hrefFor(base, "home")}" data-link
+       class="topnav-home ${isSectionActive(route, "home") ? "active" : ""}"
+       aria-label="${strings.nav.home}" title="${strings.nav.home}">
+      ${HOME_ICON}
+    </a>`;
 
   return `
     <div class="grain" aria-hidden="true"></div>
-    ${protoSwitch(navMode)}
-    ${railMobile}
-    ${chrome}
+    <header class="topnav">
+      <div class="topnav-pill">
+        <button type="button" class="topnav-brand" id="nav-toggle"
+          aria-label="${strings.nav.open}" aria-expanded="false" aria-controls="nav-panel">
+          <span class="brand-mark">L</span>
+        </button>
+        ${homeLink}
+        <nav class="topnav-links">${inlineLinks}</nav>
+        <span class="topnav-current">${escapeHtml(currentLabel)}</span>
+        ${themePicker(theme, isDark, strings)}
+      </div>
+
+      <div class="topnav-panel" id="nav-panel">
+        <div class="topnav-panel-inner">
+          <div class="nav-group">
+            <a href="${hrefFor(base, "home")}" data-link class="nav-top-link ${isSectionActive(route, "home") ? "active" : ""}">${strings.nav.home}</a>
+          </div>
+          <div class="nav-group">
+            <a href="${hrefFor(base, "work")}" data-link class="nav-top-link ${isSectionActive(route, "work") ? "active" : ""}">${strings.nav.work}</a>
+            <div class="nav-sub-list">${navWorkList(projects, route, base)}</div>
+          </div>
+          <div class="nav-group">
+            <a href="${hrefFor(base, "personal")}" data-link class="nav-top-link ${isSectionActive(route, "personal") ? "active" : ""}">${strings.nav.personal}</a>
+            <div class="nav-sub-list">${navPersonalList(competitions, base)}</div>
+          </div>
+          <div class="nav-group">
+            <a href="${hrefFor(base, "stories")}" data-link class="nav-top-link ${isSectionActive(route, "stories") ? "active" : ""}">${strings.nav.stories}</a>
+            <div class="nav-sub-list">${navStoryList(stories, route, base)}</div>
+          </div>
+          <div class="nav-group">
+            <a href="${hrefFor(base, "contact")}" data-link class="nav-top-link ${isSectionActive(route, "contact") ? "active" : ""}">${strings.nav.contact}</a>
+          </div>
+        </div>
+      </div>
+    </header>
     <div class="nav-scrim" id="nav-scrim"></div>
     <div class="hover-preview" id="hover-preview" aria-hidden="true">
       <p class="hover-quote"></p>
@@ -428,13 +299,16 @@ export function renderChrome({
   `;
 }
 
+/* ---------------------------------------------------------------------------
+   Pages
+   --------------------------------------------------------------------------- */
+
 function projectCard(p, base, index) {
-  const line = plateFor(p);
   return `
     <a href="${hrefFor(base, "project", p.id)}" data-link class="project-card" data-reveal style="--i:${index % 6}">
       <div class="project-plate">
-        <span class="plate-index">${pad2(index)}</span>
-        <p class="plate-line">${escapeHtml(line)}</p>
+        <span class="plate-index">${String(index + 1).padStart(2, "0")}</span>
+        <p class="plate-line">${escapeHtml(plateFor(p))}</p>
         <span class="plate-rule"></span>
       </div>
       <h3>${escapeHtml(p.title)}</h3>
@@ -442,6 +316,9 @@ function projectCard(p, base, index) {
     </a>`;
 }
 
+// The landing page leads with images and her own words rather than a wall of
+// text — the photos and the two quotes are above the fold, and the whole intro
+// is deliberately compact.
 export function renderHomePage(
   strings,
   projects,
@@ -451,33 +328,38 @@ export function renderHomePage(
   base,
 ) {
   return `
-    <section class="hero" id="home">
-      <span class="brand-mark">L</span>
-      <h1 class="hero-title">${splitWords(strings.hero.greeting)}</h1>
-      <p class="tagline">
-        <span class="tagline-static">${escapeHtml(strings.hero.role)}</span>
-        <span class="tagline-cycle" id="tagline-cycle" data-cycle>${escapeHtml(strings.hero.tagline)}</span>
-      </p>
-      <div class="scroll-cue">${strings.nav.work}</div>
-    </section>
-
-    <section>
-      <div class="about-grid">
-        <div class="about-photos" data-reveal>
-          <figure><img src="${profilePicSrc}" alt="Ludovica Piro" loading="lazy" /></figure>
-          <figure><img src="${munariPicSrc}" alt="${escapeHtml(strings.about.munariCaption)}" loading="lazy" /></figure>
-        </div>
-        <div class="about-text" data-reveal style="--i:1">
-          <p>${strings.about.p1}</p>
-          <p>${strings.about.p2}</p>
-          <p>${strings.about.p3}</p>
-          <p class="about-quote">${strings.about.munariQuote}<br /><span style="font-size:.8rem;opacity:.7">— ${strings.about.munariCaption}</span></p>
-          <div class="meta-row">
-            <div><span>${strings.about.languagesLabel}</span>${strings.about.languagesValue}</div>
-            <div><span>${strings.about.expertiseLabel}</span>${strings.about.expertiseValue}</div>
-          </div>
+    <section class="intro" id="home">
+      <div class="intro-text">
+        <h1 class="intro-title">${splitWords(strings.hero.greeting)}</h1>
+        <p class="intro-role">
+          ${escapeHtml(strings.hero.role)}<br />
+          ${escapeHtml(strings.hero.tagline)}
+        </p>
+        ${strings.about.paragraphs
+          .map(
+            (lines, i) =>
+              `<p class="intro-para${i === 0 ? " intro-para--lead" : ""}">${lines
+                .map((l) => escapeHtml(l))
+                .join("<br />")}</p>`,
+          )
+          .join("")}
+        <div class="meta-row">
+          <div><span>${strings.about.languagesLabel}</span>${strings.about.languagesValue}</div>
+          <div><span>${strings.about.expertiseLabel}</span>${strings.about.expertiseValue}</div>
         </div>
       </div>
+
+      <figure class="intro-figures">
+        <div class="intro-figure">
+          <img src="${profilePicSrc}" alt="${escapeHtml(strings.about.profileAlt)}" fetchpriority="high" />
+        </div>
+        <div class="intro-figure">
+          <img src="${munariPicSrc}" alt="${escapeHtml(strings.about.munariAlt)}" loading="lazy" />
+        </div>
+        <figcaption class="intro-caption">
+          ${strings.about.caption.join("<br />")}
+        </figcaption>
+      </figure>
     </section>
 
     <section>
@@ -488,7 +370,7 @@ export function renderHomePage(
           .map((p, i) => projectCard(p, base, i))
           .join("")}
       </div>
-      <a class="text-link" href="${hrefFor(base, "work")}" data-link data-reveal>${strings.work.heading} <span class="go">↗</span></a>
+      <a class="text-link" href="${hrefFor(base, "work")}" data-link data-reveal>${strings.work.seeAll} <span class="go">↗</span></a>
     </section>
 
     <section class="stories-section">
@@ -515,16 +397,25 @@ export function renderHomePage(
   `;
 }
 
-export function renderWorkIndexPage(strings, projects, competitions, comingSoon, base) {
+export function renderWorkIndexPage(strings, projects, base) {
   return `
     <section>
       <div class="section-heading" data-reveal><h1>${strings.work.heading}</h1><div class="rule"></div></div>
       <div class="project-grid">
         ${projects.map((p, i) => projectCard(p, base, i)).join("")}
       </div>
+    </section>
+  `;
+}
 
-      <div style="margin-top:4.5rem" data-reveal>
-        <h3>${strings.work.competitionsHeading}</h3>
+export function renderPersonalPage(strings, competitions, comingSoon) {
+  return `
+    <section>
+      <div class="section-heading" data-reveal><h1>${strings.personal.heading}</h1><div class="rule"></div></div>
+      <p class="lede" data-reveal>${strings.personal.subheading}</p>
+
+      <div style="margin-top:2.5rem" data-reveal>
+        <h3>${strings.personal.competitionsHeading}</h3>
         <ul class="list-simple">
           ${competitions
             .map(
@@ -536,7 +427,7 @@ export function renderWorkIndexPage(strings, projects, competitions, comingSoon,
       </div>
 
       <div style="margin-top:3rem" data-reveal>
-        <h3>${strings.work.comingSoonHeading}</h3>
+        <h3>${strings.personal.comingSoonHeading}</h3>
         <div class="chips">${comingSoon.map((c) => `<span>${escapeHtml(c)}</span>`).join("")}</div>
       </div>
     </section>
@@ -554,7 +445,7 @@ export function renderProjectPage(strings, projects, id, base) {
       <h1 class="split-title">${splitWords(p.title)}</h1>
       ${p.tag ? `<p style="color:var(--text-muted)">${escapeHtml(p.tag)}</p>` : ""}
       <div class="hero-plate">
-        <span class="plate-index">${pad2(index)}</span>
+        <span class="plate-index">${String(index + 1).padStart(2, "0")}</span>
         <p class="plate-line">${escapeHtml(plateFor(p))}</p>
       </div>
       <p class="lede">${escapeHtml(p.summary)}</p>
@@ -591,7 +482,8 @@ export function renderStoryPage(strings, stories, id, base) {
   if (!s) return renderNotFoundPage(strings, base);
 
   // Same piece, four languages — offer an in-place morph between them rather
-  // than making the reader navigate back out to the index.
+  // than making the reader navigate back out to the index. The *interface* is
+  // English-only; this is content.
   const group = storyGroupFor(id);
   const siblings = group
     ? group.storyIds.map((sid) => stories.find((x) => x.id === sid)).filter(Boolean)
@@ -626,6 +518,13 @@ export function renderStoryPage(strings, stories, id, base) {
 export function renderContactPage(strings, contact) {
   const behanceHandle = contact.behance.replace(/^.*behance\.net\//, "");
   const instagramHandle = "@" + contact.instagram.replace(/^.*instagram\.com\//, "");
+
+  // Until a real CV URL exists the button is shown but inert, carrying a
+  // tooltip instead of a dead link.
+  const cvBlock = contact.cv
+    ? `<a class="cv-btn" href="${contact.cv}" target="_blank" rel="noopener noreferrer" data-reveal>${strings.contact.cv} <span class="go">↗</span></a>`
+    : `<span class="cv-btn cv-btn--pending" data-tooltip="${escapeHtml(strings.contact.cvPending)}" aria-disabled="true" data-reveal>${strings.contact.cv} <span class="go">↗</span></span>`;
+
   return `
     <section>
       <div class="section-heading" data-reveal><h1>${strings.contact.heading}</h1><div class="rule"></div></div>
@@ -649,11 +548,7 @@ export function renderContactPage(strings, contact) {
           <a href="${contact.instagram}" target="_blank" rel="noopener noreferrer">${escapeHtml(instagramHandle)} ↗</a>
         </div>
       </div>
-      ${
-        contact.cv
-          ? `<a class="cv-btn" href="${contact.cv}" target="_blank" rel="noopener noreferrer" data-reveal>${strings.contact.cv} <span class="go">↗</span></a>`
-          : ""
-      }
+      ${cvBlock}
     </section>
   `;
 }
@@ -680,13 +575,9 @@ export function renderPage(route, strings, ctx) {
         ctx.base,
       );
     case "work":
-      return renderWorkIndexPage(
-        strings,
-        ctx.projects,
-        ctx.competitions,
-        ctx.comingSoon,
-        ctx.base,
-      );
+      return renderWorkIndexPage(strings, ctx.projects, ctx.base);
+    case "personal":
+      return renderPersonalPage(strings, ctx.competitions, ctx.comingSoon);
     case "project":
       return renderProjectPage(strings, ctx.projects, route.id, ctx.base);
     case "stories":
