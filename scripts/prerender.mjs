@@ -12,7 +12,14 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 import en from "../src/i18n/en.js";
-import { contact, projects, competitions, cv, stories } from "../src/data.js";
+import {
+  contact,
+  projects,
+  competitions,
+  cv,
+  stories,
+  ABOUT_GALLERY,
+} from "../src/data.js";
 import {
   routeMeta,
   renderChrome,
@@ -94,6 +101,7 @@ async function main() {
     cv,
     stories,
     contact,
+    gallery: ABOUT_GALLERY,
     profilePicSrc,
     munariPicSrc,
     base: BASE,
@@ -109,16 +117,12 @@ async function main() {
       ${renderChrome({
         strings: en,
         route,
-        projects,
-        stories,
-        competitions,
-        theme: "auto",
         isDark: false,
         base: BASE,
       })}
       <main id="main">
         ${renderPage(route, en, ctx)}
-        ${renderFooter(en)}
+        ${renderFooter(en, route)}
       </main>
     `;
 

@@ -3,7 +3,7 @@ import "./style.css";
 // accent overrides win. Remove together with the switcher in render.js.
 import "./palette-prototype.css";
 import strings from "./i18n/en.js";
-import { contact, projects, competitions, cv, stories } from "./data.js";
+import { contact, projects, competitions, cv, stories, ABOUT_GALLERY } from "./data.js";
 import profilePic from "./assets/profile-pic.jpeg";
 import munariPic from "./assets/munari.jpg";
 import {
@@ -28,7 +28,6 @@ const state = {
   theme: localStorage.getItem("lp-theme") || "auto",
   // Temporary, for the red/white comparison — see palette-prototype.css.
   accent: localStorage.getItem("lp-accent") || "mono",
-  navOpen: false,
   route: parsePath(window.location.pathname, BASE),
 };
 
@@ -74,27 +73,27 @@ function isDarkNow() {
 
 // Theme is purely CSS-driven (data-theme attribute + prefers-color-scheme), so
 // switching it doesn't need a full re-render — just update the attribute and
-// the small bits of UI that reflect it. That avoids a content flash and keeps
-// scroll reveals from re-triggering.
+// the toggle's own labelling. That avoids a content flash and keeps scroll
+// reveals from re-triggering.
 function setTheme(theme) {
   state.theme = theme;
   localStorage.setItem("lp-theme", theme);
   applyTheme();
   syncThemeUI();
-  closeDropdowns();
+}
+
+// One click flips to the opposite of what is *on screen* — so the first click
+// from "auto" lands on the theme the visitor isn't already looking at.
+function toggleTheme() {
+  setTheme(isDarkNow() ? "light" : "dark");
 }
 
 function syncThemeUI() {
   const dark = isDarkNow();
-  const icon = { light: "☀", dark: "☾", auto: "◐" }[state.theme] || (dark ? "☾" : "☀");
-  document.querySelectorAll("[data-theme-dropdown]").forEach((dropdown) => {
-    const glyph = dropdown.querySelector(".theme-glyph");
-    if (glyph) glyph.textContent = icon;
-    dropdown.querySelectorAll(".menu-option").forEach((opt) => {
-      const active = opt.dataset.themeOption === state.theme;
-      opt.classList.toggle("active", active);
-      opt.setAttribute("aria-selected", String(active));
-    });
+  document.querySelectorAll("[data-theme-toggle]").forEach((btn) => {
+    const label = dark ? strings.theme.toLight : strings.theme.toDark;
+    btn.setAttribute("aria-pressed", String(dark));
+    btn.setAttribute("aria-label", label);
   });
 }
 
@@ -112,16 +111,6 @@ function setAccent(accent) {
   state.accent = accent;
   localStorage.setItem("lp-accent", accent);
   applyAccent();
-}
-
-function setNavOpen(open) {
-  state.navOpen = open;
-  document.documentElement.classList.toggle("nav-open", open);
-  const toggle = document.getElementById("nav-toggle");
-  if (toggle) {
-    toggle.setAttribute("aria-expanded", String(open));
-    toggle.setAttribute("aria-label", open ? strings.nav.close : strings.nav.open);
-  }
 }
 
 function navigate(page, id) {
@@ -174,6 +163,7 @@ function render() {
     cv,
     stories,
     contact,
+    gallery: ABOUT_GALLERY,
     profilePicSrc: profilePic,
     munariPicSrc: munariPic,
     base: BASE,
@@ -183,77 +173,39 @@ function render() {
     ${renderChrome({
       strings,
       route: state.route,
-      projects,
-      stories,
-      competitions,
-      theme: state.theme,
       isDark: isDarkNow(),
       base: BASE,
     })}
     <main id="main">
       ${renderPage(state.route, strings, ctx)}
-      ${renderFooter(strings)}
+      ${renderFooter(strings, state.route)}
     </main>
   `;
 
-  setNavOpen(false);
   applyAccent();
   bindEvents();
   observeReveal();
 }
 
-function closeDropdowns() {
-  document.querySelectorAll("[data-theme-dropdown]").forEach((d) => {
-    d.classList.remove("open");
-    d.querySelector(".menu-trigger")?.setAttribute("aria-expanded", "false");
-  });
-}
-
 function bindEvents() {
-  document.querySelectorAll("[data-theme-dropdown]").forEach((dropdown) => {
-    const trigger = dropdown.querySelector(".menu-trigger");
-    trigger.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const isOpen = dropdown.classList.contains("open");
-      closeDropdowns();
-      dropdown.classList.toggle("open", !isOpen);
-      trigger.setAttribute("aria-expanded", String(!isOpen));
-    });
-    dropdown
-      .querySelectorAll(".menu-option")
-      .forEach((opt) =>
-        opt.addEventListener("click", () => setTheme(opt.dataset.themeOption)),
-      );
-  });
+  document
+    .querySelectorAll("[data-theme-toggle]")
+    .forEach((btn) => btn.addEventListener("click", toggleTheme));
 
   document
     .querySelectorAll("[data-accent-option]")
     .forEach((b) => b.addEventListener("click", () => setAccent(b.dataset.accentOption)));
 
-  const navToggle = document.getElementById("nav-toggle");
-  if (navToggle) {
-    navToggle.addEventListener("click", (e) => {
-      e.stopPropagation();
-      setNavOpen(!state.navOpen);
-    });
-  }
-  document
-    .getElementById("nav-scrim")
-    ?.addEventListener("click", () => setNavOpen(false));
-
   document.querySelectorAll("[data-link]").forEach((a) =>
     a.addEventListener("click", (e) => {
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
       e.preventDefault();
-      setNavOpen(false);
       const route = parsePath(new URL(a.href).pathname, BASE);
       navigate(route.page, route.id);
     }),
   );
 
   bindStoryLangSwitch();
-  setupHoverPreview();
-  setupScramble();
 }
 
 /* ---------- Story: morph between the four language versions in place ------ */
@@ -300,77 +252,10 @@ function bindStoryLangSwitch() {
   );
 }
 
-/* ---------- Nav hover: shows a line of her actual copy ----------
-   render() replaces #app wholesale, so the panel element is a *new* node after
-   every navigation. The pointer listener therefore reads the current panel from
-   a module-level ref rather than closing over one. */
-let previewPanel = null;
-const pointer = { x: 0, y: 0 };
-
-function positionPreview() {
-  if (!previewPanel) return;
-  previewPanel.style.left = pointer.x + "px";
-  previewPanel.style.top = pointer.y + "px";
-}
-
-function setupHoverPreview() {
-  previewPanel = document.getElementById("hover-preview");
-  if (!previewPanel) return;
-  if (!matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-
-  const quoteEl = previewPanel.querySelector(".hover-quote");
-  const metaEl = previewPanel.querySelector(".hover-meta");
-  positionPreview();
-
-  document.querySelectorAll("[data-preview]").forEach((link) => {
-    link.addEventListener("mouseenter", () => {
-      quoteEl.textContent = link.dataset.previewQuote || "";
-      metaEl.textContent = link.dataset.previewSub || "";
-      previewPanel.classList.add("visible");
-      document.body.classList.add("previewing");
-    });
-    link.addEventListener("mouseleave", () => {
-      previewPanel.classList.remove("visible");
-      document.body.classList.remove("previewing");
-    });
-  });
-}
-
-/* ---------- Letter scramble (story titles only — used sparingly) ---------- */
-const SCRAMBLE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-function setupScramble() {
-  if (!matchMedia("(hover: hover) and (pointer: fine)").matches || reduceMotion()) return;
-  document.querySelectorAll("[data-scramble] .nav-label").forEach((el) => {
-    const original = el.textContent;
-    let frame = 0;
-    let raf;
-    const host = el.closest("[data-scramble]");
-    host.addEventListener("mouseenter", () => {
-      cancelAnimationFrame(raf);
-      frame = 0;
-      const tick = () => {
-        const progress = frame / 12;
-        el.textContent = original
-          .split("")
-          .map((ch, i) => {
-            if (ch === " " || i < progress * original.length) return ch;
-            return SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
-          })
-          .join("");
-        frame += 1;
-        if (frame <= 12) raf = requestAnimationFrame(tick);
-        else el.textContent = original;
-      };
-      tick();
-    });
-    host.addEventListener("mouseleave", () => {
-      cancelAnimationFrame(raf);
-      el.textContent = original;
-    });
-  });
-}
-
 /* ---------- Custom cursor (desktop pointer only) ---------- */
+// Last known pointer position, written by the document mousemove handler and
+// read by the ring's easing loop.
+const pointer = { x: 0, y: 0 };
 let cursorRing = null;
 let cursorPoint = null;
 
@@ -415,29 +300,15 @@ function bindGlobalEvents() {
   window.addEventListener("scroll", syncShrink, { passive: true });
   syncShrink();
 
-  document.addEventListener("click", () => closeDropdowns());
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      closeDropdowns();
-      setNavOpen(false);
-    }
-    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-      e.preventDefault();
-      setNavOpen(!state.navOpen);
-    }
-  });
-
   document.addEventListener("mousemove", (e) => {
     pointer.x = e.clientX;
     pointer.y = e.clientY;
-    positionPreview();
     if (cursorPoint) {
       cursorPoint.style.transform = `translate(${pointer.x}px, ${pointer.y}px)`;
       // Guard the node type: an event whose target isn't an Element (document,
       // a text node) has no closest() and would throw here.
       const interactive =
-        e.target instanceof Element &&
-        e.target.closest("a, button, [role='tab'], .menu-option");
+        e.target instanceof Element && e.target.closest("a, button, [role='tab']");
       cursorRing.classList.toggle("active", !!interactive);
     }
   });

@@ -13,11 +13,9 @@ export default {
     work: "Works",
     competitions: "Competitions",
     stories: "Short Stories",
-    open: "Open menu",
-    close: "Close menu",
   },
-  // Shown as the current-section tag inside the nav pill, where the full names
-  // crowd the bar on narrow screens. The menu itself keeps the full names.
+  // Narrow screens swap in these shorter labels — the full names crowd the bar
+  // on a phone. Both are rendered; CSS decides which one is visible.
   navShort: {
     home: "Home",
     about: "About",
@@ -104,6 +102,8 @@ export default {
   contact: {
     heading: "Contact",
     cv: "Download CV",
+    // Bottom-left corner of the home page, where every link is a single word.
+    cvShort: "CV",
     cvPending: "CV download as soon as provided!",
     emailLabel: "Email",
     phoneLabel: "Phone",
@@ -111,6 +111,12 @@ export default {
   // Marker shown on entries that are still missing content. The site is private
   // while it's being built, so these are visible to Ludovica as a to-do list.
   needsInfoLabel: "Missing enough data",
-  theme: { light: "Light", dark: "Dark", auto: "System" },
+  // Labels for the flower toggle — it says what the next click will do.
+  theme: {
+    toDark: "Switch to dark",
+    toLight: "Switch to light",
+    // The bloom the toggle is drawn from — shown as its tooltip.
+    flowerName: "Paeonia 'Ludovica'",
+  },
   footer: { rights: "All rights reserved." },
 };

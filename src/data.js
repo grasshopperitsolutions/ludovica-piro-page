@@ -292,6 +292,46 @@ export const cv = {
   },
 };
 
+// Every board that exists in public/work, shown as a strip under the About
+// text. Titles come from the filenames the boards arrived with; the caption is
+// whatever Ludovica has confirmed, and "missing text" marks the ones she still
+// needs to write. Camparino and Conad are not works on the site or in the
+// brief — they are here so she can see them and tell us what they are.
+export const ABOUT_GALLERY = [
+  {
+    file: "emergency-board.webp",
+    title: "Emergency International — board",
+    caption: "missing text",
+  },
+  {
+    file: "emergency-eurobest.webp",
+    title: "Emergency International — Eurobest board",
+    caption: "missing text",
+  },
+  { file: "camparino-atm.webp", title: "Camparino — ATM", caption: "missing text" },
+  {
+    file: "camparino-museum.webp",
+    title: "Camparino — Museum board",
+    caption: "missing text",
+  },
+  {
+    file: "camparino-souvenir.webp",
+    title: "Camparino — The Souvenir",
+    caption: "missing text",
+  },
+  {
+    file: "conad-buoni-x-tutti.webp",
+    title: "Conad — Buoni x Tutti",
+    caption: "missing text",
+  },
+  { file: "conad-doggy-bag.webp", title: "Conad — Doggy Bag", caption: "missing text" },
+  {
+    file: "conad-taste-the-name.webp",
+    title: "Conad — Taste the Name",
+    caption: "missing text",
+  },
+];
+
 export const stories = [
   {
     id: "story-ita",
@@ -317,15 +357,58 @@ export const stories = [
     lang: "ENG",
     content: `<p>To what extent should desires be kept to oneself?<br/>Or, on the contrary, shouted to the world?<br/><br/>On this topic, there are two different and irreconcilable schools of thought. That is to say, two categories of people: the hermetic and the chatterbox.<br/><br/>The hermetic is the one you have to pry words out of, the one who, if he has a desire, won't tell you because if he says it out loud, he'll jinx it. And then it won't come true.<br/><br/>Look, you could even be his mother or the premium version of ChatGPT. You won't get anything out of him. He can't even bring himself to pronounce the desire. He keeps it to himself, locked away with seven keys in his mind.<br/><br/>Then there's the other category — the chatterbox. The one who, if he has a goal, something he deeply desires, has to tell everyone. EVERY SINGLE ONE. Immediately. Even the lady at the supermarket checkout.<br/><br/>And yet, drums roll: people like this are winners. They're enthusiastic, they love life. Because by telling everyone about their desires, they made them real.</p>`,
   },
+  {
+    id: "story-example-2-ita",
+    title: "Esempio — seconda storia",
+    lang: "ITA",
+    // Placeholder: lorem ipsum in all four languages, here purely to show how a
+    // second four-language story sits on the index and on a story page.
+    content: `<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.<br/><br/>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>`,
+  },
+  {
+    id: "story-example-2-pt",
+    title: "Exemplo — segunda história",
+    lang: "PT",
+    // Placeholder: lorem ipsum in all four languages, here purely to show how a
+    // second four-language story sits on the index and on a story page.
+    content: `<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.<br/><br/>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>`,
+  },
+  {
+    id: "story-example-2-es",
+    title: "Ejemplo — segunda historia",
+    lang: "ES",
+    // Placeholder: lorem ipsum in all four languages, here purely to show how a
+    // second four-language story sits on the index and on a story page.
+    content: `<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis aute irure dolor in reprehenderit in voluptate velit esse.<br/><br/>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>`,
+  },
+  {
+    id: "story-example-2-en",
+    title: "Example 2nd story",
+    lang: "ENG",
+    // Placeholder: lorem ipsum in all four languages, here purely to show how a
+    // second four-language story sits on the index and on a story page.
+    content: `<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Excepteur sint occaecat cupidatat non proident, sunt in culpa.<br/><br/>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>`,
+  },
 ];
 
-// All four story entries are the *same* piece written in four languages —
+// Each group is the *same* piece written in four languages —
 // grouping them lets a story page offer an in-place language morph instead of
 // treating each translation as an unrelated item.
 export const STORY_GROUPS = [
   {
     id: "desideri",
+    title: "Di desideri e sederi",
     storyIds: ["story-ita", "story-pt", "story-es", "story-en"],
+  },
+  {
+    id: "example-2",
+    title: "Example 2nd story",
+    storyIds: [
+      "story-example-2-ita",
+      "story-example-2-pt",
+      "story-example-2-es",
+      "story-example-2-en",
+    ],
   },
 ];
 
