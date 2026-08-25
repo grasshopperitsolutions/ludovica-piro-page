@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ludovica Piro — Creative Copywriter & Author</title>
+    <title>Ludovica Piro — Senior Creative Copywriter & Author</title>
     <meta
       name="description"
-      content="Ludovica Piro is a creative copywriter and author based in Italy. Cannes Lions-shortlisted work for IKEA, Volkswagen, Emergency ONG and more. I write a lot, sleep less and dream big."
+      content="Ludovica Piro is a Senior Creative Copywriter and author based in Madrid, at TBWA\España. Cannes Lions-shortlisted work for IKEA, Volkswagen, Emergency International and more."
     />
     <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#000000" />
@@ -15,10 +15,13 @@
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Ludovica Piro" />
-    <meta property="og:title" content="Ludovica Piro — Creative Copywriter & Author" />
+    <meta
+      property="og:title"
+      content="Ludovica Piro — Senior Creative Copywriter & Author"
+    />
     <meta
       property="og:description"
-      content="I write a lot, sleep less and dream big. Cannes Lions-shortlisted copywriting for IKEA, Volkswagen, Emergency ONG and more."
+      content="I write a lot, sleep less and dream big. Cannes Lions-shortlisted copywriting for IKEA, Volkswagen, Emergency International and more."
     />
     <meta property="og:url" content="https://ludovicapiro.com/" />
     <meta property="og:image" content="https://ludovicapiro.com/og-image.jpg" />
@@ -28,10 +31,13 @@
     <meta property="og:locale" content="en_US" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Ludovica Piro — Creative Copywriter & Author" />
+    <meta
+      name="twitter:title"
+      content="Ludovica Piro — Senior Creative Copywriter & Author"
+    />
     <meta
       name="twitter:description"
-      content="I write a lot, sleep less and dream big. Cannes Lions-shortlisted copywriting for IKEA, Volkswagen, Emergency ONG and more."
+      content="I write a lot, sleep less and dream big. Cannes Lions-shortlisted copywriting for IKEA, Volkswagen, Emergency International and more."
     />
     <meta name="twitter:image" content="https://ludovicapiro.com/og-image.jpg" />
 
@@ -41,13 +47,20 @@
         "@type": "Person",
         "name": "Ludovica Inés Piro",
         "alternateName": "Ludovica Piro",
-        "jobTitle": "Creative Copywriter",
-        "description": "Creative copywriter and author. Cannes Lions-shortlisted work for IKEA, Volkswagen, Emergency ONG, WPP and IVECO.",
+        "jobTitle": "Senior Creative Copywriter",
+        "worksFor": { "@type": "Organization", "name": "TBWA España" },
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Madrid",
+          "addressCountry": "ES"
+        },
+        "description": "Senior Creative Copywriter and author based in Madrid. Cannes Lions-shortlisted work for IKEA, Volkswagen, Emergency International, WPP and Iveco.",
         "url": "https://ludovicapiro.com/",
         "image": "https://ludovicapiro.com/og-image.jpg",
         "email": "mailto:ludovicapiro411@gmail.com",
         "sameAs": [
           "https://www.linkedin.com/in/ludovica-piro-55327116a/",
+          "https://open.spotify.com/user/ludovicainespiro",
           "https://www.behance.net/ludovicapiro",
           "https://instagram.com/lodevicapire"
         ],
@@ -70,6 +83,11 @@
         try {
           var t = localStorage.getItem("lp-theme") || "auto";
           if (t !== "auto") document.documentElement.setAttribute("data-theme", t);
+          // Temporary: palette prototype, applied pre-paint like the theme.
+          document.documentElement.setAttribute(
+            "data-accent",
+            localStorage.getItem("lp-accent") || "mono",
+          );
         } catch (e) {
           /* private mode / storage blocked — fall through to defaults */
         }

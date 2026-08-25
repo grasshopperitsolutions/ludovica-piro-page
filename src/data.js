@@ -14,11 +14,7 @@ export const PLATE_LINES = {
   "ci-sta": "It's appealing. It works. It fits.",
   discrimination: "Orientation belongs to the professional sphere. Nothing else.",
   "the-couples": "For the celebration of lovers, give singles a gift.",
-  safelist: "Four playlists that respect the speed limit.",
   "more-than-mechanics": "Much more than just being a mechanic.",
-  "sicily-liguria": "Two new flavours, two Italian coastlines.",
-  "radio-vw": "A radio campaign for the ID. family.",
-  "copyad-pt": "Written directly in Portuguese.",
 };
 
 export const contact = {
@@ -30,6 +26,7 @@ export const contact = {
   behance: "https://www.behance.net/ludovicapiro",
   instagram: "https://instagram.com/lodevicapire",
   linkedin: "https://www.linkedin.com/in/ludovica-piro-55327116a/",
+  spotify: "https://open.spotify.com/user/ludovicainespiro",
   // TODO: real CV URL needed. While this is empty the CV button is not
   // rendered at all, rather than shipping a dead link.
   cv: "",
@@ -39,7 +36,7 @@ export const projects = [
   {
     id: "sakerhet",
     title: "Säkerhet",
-    brand: "IKEA",
+    brand: "IKEA Italy",
     agency: "DDB Italy",
     tag: "[ˈsäkərhēt | safety, protection]",
     summary:
@@ -50,12 +47,12 @@ export const projects = [
       "Therefore, up to today, Italian women still have to find other ways to protect themselves.",
     ],
     recognition:
-      "Six Cannes Lions shortlists, Gold at Eurobest and Gerety Awards, Silver at Epica Awards and Golden Drum.",
+      "Cannes Lions: 6 shortlists + Glass Lions. Eurobest: 1 Gold & 1 Silver. Gerety Awards: 1 Gold & 2 Silver. Epica Awards: 1 Silver. ADCI Awards: Gold. Golden Drum: Silver.",
   },
   {
     id: "no-more-excuses",
     title: "No More Excuses",
-    brand: "Volkswagen",
+    brand: "Volkswagen Italy",
     agency: "DDB Italy",
     summary: "Francesco Totti debunks electric-car myths for the ID. family.",
     body: [
@@ -67,7 +64,7 @@ export const projects = [
   {
     id: "365-days",
     title: "365 Days",
-    brand: "Emergency ONG",
+    brand: "Emergency International",
     agency: "Ogilvy Italy",
     summary: "The most special day of all will be the day with no more war.",
     body: [
@@ -79,7 +76,7 @@ export const projects = [
   {
     id: "everyday-emergencies",
     title: "Everyday Emergencies",
-    brand: "Emergency ONG",
+    brand: "Emergency International",
     agency: "Ogilvy Italy",
     summary: "Everyday there are real emergencies.",
     body: [
@@ -88,11 +85,17 @@ export const projects = [
       "A reminder for everyone to consider how devastating the consequences of war can be on people's lives. Because for Emergency, the real emergency is to abolish war, once and for all.",
     ],
     recognition: "Special OOH during the Inter-Milan derby, OOH across Italy.",
+    // Award boards from the SwissTransfer batch. They arrived labelled only
+    // "EMERGENCY", so which of the two Emergency works they belong to is
+    // unconfirmed — parked here pending Ludovica's answer.
+    images: ["emergency-board.webp", "emergency-eurobest.webp"],
+    downloads: [{ file: "emergency-adci-board.pdf", label: "ADCI board (PDF)" }],
+    needsInfo: "Confirm these boards belong to this piece and not to 365 Days.",
   },
   {
     id: "ci-sta",
     title: "Ci Sta",
-    brand: "Sanbittèr",
+    brand: "Sanbittèr (Nestlé)",
     agency: "Ogilvy Italy",
     summary: "A new, younger positioning for a Nestlé Group classic.",
     body: [
@@ -104,7 +107,7 @@ export const projects = [
   {
     id: "discrimination",
     title: "Not Open to Discriminations",
-    brand: "WPP",
+    brand: "WPP Group",
     agency: "Ogilvy Italy",
     summary: "Fighting orientation bias in the workplace.",
     body: [
@@ -115,7 +118,7 @@ export const projects = [
   {
     id: "the-couples",
     title: "The Couples",
-    brand: "Volkswagen",
+    brand: "Volkswagen Italy",
     agency: "DDB Italy",
     summary: "A Valentine's Day gift for the singles left behind.",
     body: [
@@ -124,20 +127,9 @@ export const projects = [
     ],
   },
   {
-    id: "safelist",
-    title: "Safelist",
-    brand: "Volkswagen",
-    agency: "DDB Italy",
-    summary: "The first speed-limit-respecting playlist.",
-    body: [
-      "Music influences the way we drive, unconsciously pushing us to match our speed to a song's BPM. As a brand focused on safety, Volkswagen turned this insight into a solution.",
-      "By collaborating with scientists and musicians, it created an algorithm that matches BPM to safe driving speeds. The result is Safelist: four playlists designed to help drivers respect speed limits, simply by listening.",
-    ],
-  },
-  {
     id: "more-than-mechanics",
     title: "More Than Mechanics",
-    brand: "IVECO",
+    brand: "Iveco Group",
     agency: "Ogilvy Italy",
     summary: "Elevating a technical career beyond “Plan B”.",
     body: [
@@ -145,59 +137,160 @@ export const projects = [
       "IVECO elevates the role of its mechanics to the same level as so-called dream jobs, because being an IVECO mechanic means much more than just “being a mechanic.”",
     ],
   },
+  // The three below are listed in the brief but no copy was supplied. They are
+  // published deliberately incomplete: `needsInfo` renders a visible marker so
+  // Ludovica can see exactly what is outstanding while the site is still
+  // private. Fill in `summary`/`body` and delete the flag.
   {
-    id: "sicily-liguria",
-    title: "Inspired by Sicily and Liguria",
-    brand: "Sanbittèr",
-    agency: "Ogilvy Italy",
-    summary: "Two new flavours, two Italian coastlines.",
-    body: [
-      "A regional-flavour campaign for Sanbittèr, celebrating the tastes of Sicily and Liguria.",
-    ],
+    id: "segunda-mao",
+    title: "Segunda Mão",
+    brand: "IKEA Portugal",
+    agency: "UZINA Lisbon",
+    summary: "",
+    body: [],
+    needsInfo: "Missing enough data — summary, case-study copy and media needed.",
   },
   {
-    id: "radio-vw",
-    title: "Radio",
-    brand: "Volkswagen",
-    agency: "DDB Italy",
-    summary: "A radio campaign for the ID. family.",
-    body: [
-      "Radio spots built around the same insight-led tone as the ID. family's broader campaign.",
-    ],
+    id: "colecao-para-animais",
+    title: "Coleção para animais",
+    brand: "IKEA Portugal",
+    agency: "UZINA Lisbon",
+    summary: "",
+    body: [],
+    needsInfo: "Missing enough data — summary, case-study copy and media needed.",
   },
   {
-    id: "copyad-pt",
-    title: "Copyad em português",
-    brand: "IKEA",
-    agency: "DDB Italy",
-    summary: "A Portuguese-language ad, written directly in Portuguese.",
-    body: ["Copywriting produced directly in Portuguese for IKEA."],
+    id: "liga-te",
+    title: "Liga-te",
+    brand: "FOCA FC Lisboa",
+    agency: "UZINA Lisbon",
+    summary: "",
+    body: [],
+    needsInfo: "Missing enough data — summary, case-study copy and media needed.",
   },
 ];
 
+// Kept in the brief's order.
 export const competitions = [
   {
     id: "next-move",
     title: "The Next Move",
-    brand: "YouTube Competition",
+    format: "Unskippable short film",
+    brand: "YouTube Awards, 7Days Brief",
     award: "Gold",
   },
   {
-    id: "aspettare-una-vita",
-    title: "Aspettare una vita",
+    id: "waiting",
+    title: "Waiting",
+    format: "Film",
     brand: "Young Lions Competition",
     award: "Bronze",
   },
   {
     id: "spot-the-artist",
-    title: "Spot the Artist",
-    brand: "Spotify — Young Ones Competition",
+    title: "Spot The Artist",
+    format: "Activation",
+    brand: "One Show — Spotify",
     award: "Silver",
   },
-  { id: "lego-bnbee", title: "Lego B&Bee", brand: "ADCI Awards", award: "Bronze" },
+  {
+    id: "lego-bnbee",
+    title: "Lego B&Bee",
+    format: "Activation",
+    brand: "ADCI Awards — Lego",
+    award: "Bronze",
+  },
 ];
 
-export const comingSoon = ["Drawings", "Discs", "Fiat Punto", "Isola delle Femmine"];
+// CV records for the About page. Order is the brief's order, deliberately — it
+// is not sorted chronologically. `dates` is omitted where the brief gave none
+// rather than guessed at.
+export const cv = {
+  education: [
+    { school: "Brother Lisboa", detail: "Creative Intensive", dates: "June–August 2026" },
+    {
+      school: "Accademia di Comunicazione",
+      detail: "Master in Copywriting and Advertising",
+      dates: "Oct. 2020 – May 2021",
+    },
+    {
+      school: "Politecnico di Milano — Poli.design",
+      detail: "Master in Brand Communication",
+    },
+    {
+      school: "University of Palermo",
+      detail: "Faculty of Law — 110 cum laude",
+      dates: "Sept. 2012 – July 2018",
+    },
+    {
+      school: "Universidade da Coruña",
+      detail: "Faculty of Law and Sociology (Erasmus+)",
+      dates: "Sept. 2015 – Sept. 2016",
+    },
+    { school: "Classical Studies High School", detail: "", dates: "2007–2012" },
+  ],
+  experience: [
+    {
+      agency: "TBWA\\España / DDB Spain (Madrid)",
+      role: "Senior Creative Copywriter",
+      clients: "BBVA",
+    },
+    {
+      agency: "AUGE (Milan)",
+      role: "Creative Copywriter",
+      clients: "Gran Pavesi (Barilla)",
+    },
+    {
+      agency: "UZINA (Lisbon)",
+      role: "Creative Copywriter — ADCE Agency Exchange Program",
+      dates: "November – December 2025",
+      clients: "IKEA, ERA",
+    },
+    {
+      agency: "Ogilvy & Mather (Milan)",
+      role: "Creative Copywriter",
+      dates: "September 2023 – April 2026",
+      clients:
+        "IKEA, Electrolux Professional, Sanbittèr, Nutella, IVECO, Emergency (NGO)",
+      pitches: "IKEA, Electrolux Professional, Sanbittèr (Sanpellegrino Group)",
+    },
+    {
+      agency: "DDB (Milan)",
+      role: "Creative Copywriter",
+      dates: "Jan. 2022 – Sept. 2023",
+      clients: "IKEA, Volkswagen, Zurich, Tanqueray (DIAGEO)",
+      pitches: "Tanqueray (DIAGEO)",
+    },
+    {
+      agency: "TBWA (Milan)",
+      role: "Junior Creative Copywriter",
+      dates: "May 2021 – Jan. 2022",
+      clients: "Iliad, Cargill, Carrera Eyewear, Loro Piana, GNV, Frosta frozen foods",
+    },
+    {
+      agency: "HAVAS PR (Milan)",
+      role: "Media Relations Account",
+      dates: "May 2019 – Oct. 2020",
+      clients:
+        "Reckitt Benckiser (Durex, Finish), Peugeot, OPPO, Courmayeur Mont Blanc, Imperial Brands",
+    },
+  ],
+  recognitions: {
+    personal: [
+      "YouTube Awards, 7Days Brief — Gold, Unskippable short film: The Next Move",
+      "Young Lions Competition — Bronze, Film: Waiting",
+      "One Show — Silver, Activation: Spot The Artist (Spotify)",
+      "ADCI Awards — Bronze, Activation: Lego B&Bee (Lego)",
+    ],
+    agencies: [
+      "Cannes Lions — 6 Shortlists + Glass Lions: Säkerhet (IKEA)",
+      "Eurobest — 1 Gold & 1 Silver (IKEA)",
+      "Epica Awards — 1 Silver (IKEA)",
+      "Gerety Awards — 1 Gold & 2 Silver (IKEA)",
+      "ADCI Awards — Gold (IKEA)",
+    ],
+  },
+};
 
 export const stories = [
   {

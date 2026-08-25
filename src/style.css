@@ -1,29 +1,9 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap");
-
 @font-face {
   font-family: "Coconat";
   src:
     url("./fonts/Coconat-Regular.woff2") format("woff2"),
     url("./fonts/Coconat-Regular.woff") format("woff");
   font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Coconat";
-  src:
-    url("./fonts/Coconat-Demi.woff2") format("woff2"),
-    url("./fonts/Coconat-Demi.woff") format("woff");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Coconat";
-  src:
-    url("./fonts/Coconat-Bold.woff2") format("woff2"),
-    url("./fonts/Coconat-Bold.woff") format("woff");
-  font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
@@ -37,10 +17,17 @@
   --line: #e2e0dc;
   --accent: #000000;
   --accent-soft: rgba(0, 0, 0, 0.08);
+  /* Text that sits ON an accent background. In monochrome the accent is the
+     ink colour so the page background is the correct contrast; a coloured
+     accent overrides this (see palette-prototype.css). */
+  --on-accent: var(--bg);
   --nav-w: 300px;
   --nav-w-collapsed: 84px;
+  /* One family throughout — the brief specifies Coconat "always", and only
+     the Regular weight is loaded. --sans is kept as an alias so the rules that
+     referenced it keep reading sensibly. */
   --serif: "Coconat", Georgia, "Times New Roman", serif;
-  --sans: "Inter", -apple-system, sans-serif;
+  --sans: "Coconat", Georgia, "Times New Roman", serif;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   color-scheme: light;
 }
@@ -54,6 +41,7 @@
   --line: #2b2a26;
   --accent: #ffffff;
   --accent-soft: rgba(255, 255, 255, 0.1);
+  --on-accent: var(--bg);
   color-scheme: dark;
 }
 
@@ -67,6 +55,7 @@
     --line: #2b2a26;
     --accent: #ffffff;
     --accent-soft: rgba(255, 255, 255, 0.1);
+    --on-accent: var(--bg);
     color-scheme: dark;
   }
 }
@@ -103,7 +92,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--sans);
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
   transition:
@@ -117,7 +106,7 @@ h2,
 h3,
 h4 {
   font-family: var(--serif);
-  font-weight: 600;
+  font-weight: 400;
   margin: 0 0 0.5em;
   letter-spacing: -0.01em;
 }
@@ -185,11 +174,11 @@ button {
   border: 1.5px solid var(--accent);
   border-radius: 50%;
   font-family: var(--serif);
-  font-weight: 700;
+  font-weight: 400;
   font-size: 1.05rem;
   flex-shrink: 0;
   background: var(--accent);
-  color: var(--bg);
+  color: var(--on-accent);
   transition:
     background 0.4s var(--ease),
     color 0.4s var(--ease),
@@ -331,7 +320,7 @@ html.nav-open .topnav-brand .brand-mark {
 }
 .topnav-link {
   font-family: var(--serif);
-  font-weight: 600;
+  font-weight: 400;
   font-size: 0.9rem;
   color: var(--text-muted);
   white-space: nowrap;
@@ -429,7 +418,7 @@ html.nav-open .nav-scrim {
 .nav-top-link {
   display: block;
   font-family: var(--serif);
-  font-weight: 600;
+  font-weight: 400;
   font-size: 1.05rem;
   color: var(--text);
   margin-bottom: 0.65rem;
@@ -474,7 +463,7 @@ html.nav-open .nav-scrim {
 }
 .nav-num {
   font-family: var(--serif);
-  font-size: 0.6rem;
+  font-size: 0.68rem;
   letter-spacing: 0.14em;
   flex-shrink: 0;
   min-width: 1.6rem;
@@ -576,7 +565,7 @@ html.nav-open .nav-scrim {
 }
 .menu-option-code {
   font-family: var(--serif);
-  font-weight: 700;
+  font-weight: 400;
   font-size: 0.75rem;
   width: 1.2rem;
   flex-shrink: 0;
@@ -657,7 +646,7 @@ main {
   text-wrap: balance;
 }
 .hover-meta {
-  font-size: 0.62rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.22em;
   color: var(--text-muted);
@@ -694,16 +683,16 @@ section {
 }
 
 .intro-title {
-  font-size: clamp(1.75rem, 5.4vw, 3.6rem);
+  font-size: clamp(1.7rem, 5vw, 3.15rem);
   line-height: 1.04;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.35rem;
 }
 .intro-role {
   font-family: var(--serif);
-  font-size: clamp(1rem, 2.1vw, 1.5rem);
+  font-size: clamp(0.98rem, 2vw, 1.4rem);
   line-height: 1.3;
   color: var(--text);
-  margin-bottom: 1.35rem;
+  margin-bottom: 1.1rem;
 }
 .intro-para {
   font-size: clamp(0.88rem, 1.7vw, 1.1rem);
@@ -768,7 +757,7 @@ section {
 }
 .meta-row span {
   display: block;
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--text-muted);
@@ -796,34 +785,36 @@ section {
    is to stay within one screen. Type steps down and the photos square off. */
 @media (max-width: 899px) {
   section:first-of-type {
-    padding-top: 0.75rem;
+    padding-top: 0.5rem;
   }
   .intro {
-    gap: 1.1rem;
+    gap: 0.8rem;
     /* The next section brings its own top padding, so the intro doesn't need
        a full one underneath — those pixels are worth more inside the fold. */
-    padding-bottom: 1rem;
+    padding-bottom: 0.55rem;
   }
   .intro-title {
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.2rem;
   }
   .intro-role {
-    margin-bottom: 0.85rem;
+    margin-bottom: 0.7rem;
   }
   .intro-para {
-    line-height: 1.5;
-    margin-bottom: 0.6rem;
+    line-height: 1.45;
+    margin-bottom: 0.5rem;
   }
   .intro-para--lead {
-    line-height: 1.3;
-    padding-left: 0.85rem;
+    line-height: 1.28;
+    padding-left: 0.8rem;
   }
+  /* Slightly landscape rather than square: the pair is the single biggest
+     block on a phone, and this claws back ~30px without a harsh crop. */
   .intro-figure {
-    aspect-ratio: 1/1;
+    aspect-ratio: 6/5;
   }
   .intro-caption {
-    margin-top: 0.6rem;
-    line-height: 1.45;
+    margin-top: 0.5rem;
+    line-height: 1.4;
   }
   .meta-row {
     margin-top: 0.8rem;
@@ -930,7 +921,7 @@ section {
   transform: translateY(-6px);
   border-color: var(--accent);
   background: var(--accent);
-  color: var(--bg);
+  color: var(--on-accent);
 }
 
 .plate-index {
@@ -941,13 +932,13 @@ section {
   transition: color 0.5s var(--ease);
 }
 .project-card:hover .plate-index {
-  color: var(--bg);
+  color: var(--on-accent);
   opacity: 0.65;
 }
 
 .plate-line {
   font-family: var(--serif);
-  font-weight: 600;
+  font-weight: 400;
   font-size: clamp(1.05rem, 1.6vw, 1.45rem);
   line-height: 1.18;
   margin: 0.6rem 0 0;
@@ -1004,7 +995,7 @@ section {
   margin: 2.25rem 0 3rem;
   padding: clamp(2rem, 5vw, 3.5rem);
   background: var(--accent);
-  color: var(--bg);
+  color: var(--on-accent);
   position: relative;
   overflow: hidden;
   transition:
@@ -1012,7 +1003,7 @@ section {
     color 0.5s var(--ease);
 }
 .project-detail .hero-plate .plate-index {
-  color: var(--bg);
+  color: var(--on-accent);
   opacity: 0.6;
 }
 .project-detail .hero-plate .plate-line {
@@ -1151,7 +1142,7 @@ section {
   transform: translateY(-3px);
 }
 .story-card .lang {
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.15em;
   color: var(--text-muted);
@@ -1161,7 +1152,7 @@ section {
 .story-card h4 {
   font-size: 1.1rem;
   margin: 0;
-  font-weight: 600;
+  font-weight: 400;
 }
 .story-excerpt {
   margin: 0.6rem 0 0;
@@ -1193,7 +1184,7 @@ section {
   text-align: right;
 }
 .contact-hint {
-  font-size: 0.6rem;
+  font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.16em;
   color: var(--text-muted);
@@ -1223,7 +1214,7 @@ section {
 .cv-btn:hover {
   background: var(--accent);
   border-color: var(--accent);
-  color: var(--bg);
+  color: var(--on-accent);
   transform: translateY(-2px);
 }
 
@@ -1371,9 +1362,9 @@ body.previewing .cursor-ring {
   transform: translate(-50%, 4px);
   white-space: nowrap;
   background: var(--accent);
-  color: var(--bg);
+  color: var(--on-accent);
   font-family: var(--sans);
-  font-size: 0.68rem;
+  font-size: 0.74rem;
   letter-spacing: 0.06em;
   text-transform: none;
   padding: 0.5rem 0.8rem;
@@ -1411,7 +1402,7 @@ body.previewing .cursor-ring {
   border-radius: 999px;
   padding: 0.4rem 0.95rem;
   font-family: var(--sans);
-  font-size: 0.68rem;
+  font-size: 0.74rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   transition:
@@ -1426,7 +1417,7 @@ body.previewing .cursor-ring {
 .story-lang.active {
   background: var(--accent);
   border-color: var(--accent);
-  color: var(--bg);
+  color: var(--on-accent);
 }
 .story-body,
 .split-title {
@@ -1485,4 +1476,138 @@ body.previewing .cursor-ring {
   ::view-transition-new(root) {
     animation: none !important;
   }
+}
+
+/* ---------- About page: CV blocks ---------- */
+.about-lead {
+  max-width: 64ch;
+  margin-bottom: 2.5rem;
+}
+.about-hey {
+  font-size: clamp(1.3rem, 3vw, 1.9rem);
+  margin-bottom: 0.75rem;
+}
+.cv-block {
+  margin-top: 3rem;
+}
+.cv-block h3 {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+  margin-bottom: 1.25rem;
+}
+.cv-subhead {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--text-muted);
+  margin: 1.75rem 0 0.75rem;
+}
+.cv-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 1.5rem;
+}
+.cv-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  border-left: 2px solid var(--line);
+  padding-left: 1rem;
+  transition: border-color 0.3s var(--ease);
+}
+.cv-entry:hover {
+  border-left-color: var(--accent);
+}
+.cv-entry-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.cv-agency {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 1.05rem;
+}
+.cv-role {
+  font-size: 0.9rem;
+  color: var(--text);
+}
+.cv-meta {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.cv-meta em {
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.72rem;
+  opacity: 0.8;
+}
+
+/* ---------- Work media ---------- */
+.project-plate--image {
+  padding: 0;
+  border-color: var(--line);
+}
+.project-plate--image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.work-media {
+  display: grid;
+  gap: 1rem;
+  margin: 2.5rem 0;
+}
+.work-media figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg-raised);
+}
+.work-media img {
+  width: 100%;
+  height: auto;
+}
+.work-downloads {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.work-downloads a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------- "Missing enough data" marker ----------
+   Visible on purpose: the site is private while it's being built, so these
+   double as Ludovica's to-do list. Remove the flag in data.js to hide one. */
+.needs-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 1.25rem 0;
+  padding: 0.85rem 1rem;
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.needs-info-tag {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text);
+  white-space: nowrap;
+}
+.project-card.is-incomplete .project-plate {
+  border-style: dashed;
 }

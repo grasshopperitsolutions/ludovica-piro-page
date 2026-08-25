@@ -12,7 +12,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 import en from "../src/i18n/en.js";
-import { contact, projects, competitions, comingSoon, stories } from "../src/data.js";
+import { contact, projects, competitions, cv, stories } from "../src/data.js";
 import {
   routeMeta,
   renderChrome,
@@ -39,8 +39,9 @@ async function assetPath(manifest, srcPath) {
 function buildRoutes() {
   const routes = [
     { page: "home" },
+    { page: "about" },
     { page: "work" },
-    { page: "personal" },
+    { page: "competitions" },
     { page: "stories" },
     ...projects.map((p) => ({ page: "project", id: p.id })),
     ...stories.map((s) => ({ page: "story", id: s.id })),
@@ -90,7 +91,7 @@ async function main() {
   const ctx = {
     projects,
     competitions,
-    comingSoon,
+    cv,
     stories,
     contact,
     profilePicSrc,
@@ -148,7 +149,10 @@ async function main() {
 // small standalone HTML file that forwards on. Deliberately `noindex` and
 // canonicalised to the destination, so search engines consolidate rather than
 // treating it as a duplicate page.
-const REDIRECTS = [{ from: "/contact", to: "/#contact" }];
+const REDIRECTS = [
+  { from: "/contact", to: "/#contact" },
+  { from: "/personal-projects", to: "/competitions" },
+];
 
 async function writeRedirects() {
   for (const { from, to } of REDIRECTS) {
@@ -174,7 +178,7 @@ async function writeRedirects() {
     </style>
   </head>
   <body>
-    <p>This page moved. <a href="${target}">Continue to contact details</a>.</p>
+    <p>This page moved. <a href="${target}">Continue</a>.</p>
   </body>
 </html>
 `;
@@ -206,9 +210,10 @@ async function writeLlmsTxt() {
   const lines = [];
   lines.push("# Ludovica Piro");
   lines.push("");
-  lines.push("> Creative copywriter and author. " + en.hero.tagline);
+  lines.push("> Senior Creative Copywriter and author. " + en.hero.tagline);
   lines.push("");
   // Paragraphs are stored as arrays of authored lines; flatten for plain text.
+  for (const para of en.about.bio) lines.push(para.join(" "));
   for (const para of en.about.paragraphs) lines.push(para.join(" "));
   lines.push("");
   lines.push("## Work");
@@ -218,7 +223,7 @@ async function writeLlmsTxt() {
     );
   }
   lines.push("");
-  lines.push("## Personal projects & competitions");
+  lines.push("## Competitions");
   for (const c of competitions) {
     lines.push(`- ${c.title} — ${c.brand} (${c.award})`);
   }
@@ -233,6 +238,7 @@ async function writeLlmsTxt() {
   lines.push("## Contact");
   lines.push(`- Email: ${contact.email}`);
   lines.push(`- LinkedIn: ${contact.linkedin}`);
+  lines.push(`- Spotify: ${contact.spotify}`);
   lines.push(`- Behance: ${contact.behance}`);
   lines.push(`- Instagram: ${contact.instagram}`);
   lines.push("");

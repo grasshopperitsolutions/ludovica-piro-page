@@ -3,14 +3,15 @@
 // multilingual — that lives in src/data.js, not here.
 export default {
   meta: {
-    title: "Ludovica Piro — Creative Copywriter & Author",
+    title: "Ludovica Piro — Senior Creative Copywriter & Author",
     description:
-      "Ludovica Piro is a creative copywriter and author based in Italy. Cannes Lions-shortlisted work for IKEA, Volkswagen, Emergency ONG and more.",
+      "Ludovica Piro is a Senior Creative Copywriter and author based in Madrid, at TBWA\\España. Cannes Lions-shortlisted work for IKEA, Volkswagen, Emergency International and more.",
   },
   nav: {
     home: "Home",
+    about: "About",
     work: "Works",
-    personal: "Personal Projects",
+    competitions: "Competitions",
     stories: "Short Stories",
     open: "Open menu",
     close: "Close menu",
@@ -19,34 +20,38 @@ export default {
   // crowd the bar on narrow screens. The menu itself keeps the full names.
   navShort: {
     home: "Home",
+    about: "About",
     work: "Works",
-    personal: "Projects",
+    competitions: "Competitions",
     stories: "Stories",
   },
   hero: {
-    greeting: "Hi, I'm Ludovica!",
-    role: "Creative Copywriter and author.",
+    // The multilingual greeting is hers, not interface chrome — it survives the
+    // English-only decision because it's part of how she introduces herself.
+    greeting: "Hi, Hola, Olá, Ciao",
+    role: "I'm Ludovica, Senior Creative Copywriter and author.",
     tagline: "I write a lot, sleep less and dream big.",
   },
   about: {
     heading: "About",
-    // Verbatim from ludovicapiro.com. Each paragraph is an array of lines
-    // because the line breaks are hers — she's a copywriter, the breaks are
-    // part of the writing, so they're preserved rather than reflowed.
+    // Verbatim from the brief. Each paragraph is an array of lines because the
+    // line breaks are hers — she's a copywriter, the breaks are part of the
+    // writing, so they're preserved rather than reflowed.
     paragraphs: [
       [
         "The room I love the most is the movie theater.",
         "The room I love the least is the waiting room.",
       ],
       [
-        "I'm passionate about spinning stories, chasing insights and learning languages.",
-        "I currently speak four. So I could call myself a polyglot wannabe.",
+        "I'm passionate about stand-up comedy, screenwriting, photography and learning languages.",
+        "I currently speak four — Spanish, Portuguese, English and Italian, of course.",
+        "So I could call myself a polyglot wannabe.",
         "Or maybe I'm just hyperactive.",
         "Surely deeply curious.",
       ],
       [
         "Here you'll find the work I created at international advertising agencies, along with personal projects and short stories.",
-        "Because when I go nowhere, my mind goes everywhere.",
+        "Because even when I go nowhere, my mind goes everywhere.",
       ],
     ],
     // Sits under the pair of images. Contains inline markup on purpose (the
@@ -61,7 +66,22 @@ export default {
     languagesLabel: "Languages",
     languagesValue: "Italian, English, Spanish, Portuguese",
     expertiseLabel: "Expertise",
-    expertiseValue: "Creative Copywriter",
+    expertiseValue: "Senior Creative Copywriter",
+    // Longer bio, used on the About page only.
+    bioHeading: "Hey, I'm Ludovica.",
+    bio: [
+      [
+        "I was born and raised in Palermo (Sicily) and I've put down roots in different cities throughout this 30-year journey of experiencing life (to the fullest).",
+        "I'm currently based in Madrid, where I work as a Senior Creative Copywriter at TBWA\\España.",
+      ],
+    ],
+    educationHeading: "Education",
+    experienceHeading: "Experience",
+    recognitionsHeading: "Recognitions",
+    recognitionsPersonal: "Personal projects",
+    recognitionsAgencies: "Agencies",
+    clientsLabel: "Clients",
+    pitchesLabel: "Pitches won",
   },
   work: {
     heading: "Works",
@@ -70,12 +90,10 @@ export default {
     back: "Back to works",
     seeAll: "See all works",
   },
-  personal: {
-    heading: "Personal Projects",
+  competitions: {
+    heading: "Competitions",
     subheading: "Self-initiated work and competition entries.",
-    competitionsHeading: "For competitions",
-    comingSoonHeading: "Coming soon",
-    back: "Back to personal projects",
+    back: "Back to competitions",
   },
   stories: {
     heading: "Short Stories",
@@ -90,6 +108,9 @@ export default {
     emailLabel: "Email",
     phoneLabel: "Phone",
   },
+  // Marker shown on entries that are still missing content. The site is private
+  // while it's being built, so these are visible to Ludovica as a to-do list.
+  needsInfoLabel: "Missing enough data",
   theme: { light: "Light", dark: "Dark", auto: "System" },
   footer: { rights: "All rights reserved." },
 };

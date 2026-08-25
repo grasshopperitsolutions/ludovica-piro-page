@@ -1,6 +1,9 @@
 import "./style.css";
+// Temporary: red/white palette prototype. Imported after style.css so its
+// accent overrides win. Remove together with the switcher in render.js.
+import "./palette-prototype.css";
 import strings from "./i18n/en.js";
-import { contact, projects, competitions, comingSoon, stories } from "./data.js";
+import { contact, projects, competitions, cv, stories } from "./data.js";
 import profilePic from "./assets/profile-pic.jpeg";
 import munariPic from "./assets/munari.jpg";
 import {
@@ -23,6 +26,8 @@ const BASE = import.meta.env.BASE_URL;
 
 const state = {
   theme: localStorage.getItem("lp-theme") || "auto",
+  // Temporary, for the red/white comparison — see palette-prototype.css.
+  accent: localStorage.getItem("lp-accent") || "mono",
   navOpen: false,
   route: parsePath(window.location.pathname, BASE),
 };
@@ -93,6 +98,22 @@ function syncThemeUI() {
   });
 }
 
+// Temporary: palette prototype. Pure CSS custom-property swap, so no re-render.
+function applyAccent() {
+  document.documentElement.setAttribute("data-accent", state.accent);
+  document
+    .querySelectorAll("[data-accent-option]")
+    .forEach((b) =>
+      b.setAttribute("aria-pressed", String(b.dataset.accentOption === state.accent)),
+    );
+}
+
+function setAccent(accent) {
+  state.accent = accent;
+  localStorage.setItem("lp-accent", accent);
+  applyAccent();
+}
+
 function setNavOpen(open) {
   state.navOpen = open;
   document.documentElement.classList.toggle("nav-open", open);
@@ -150,7 +171,7 @@ function render() {
   const ctx = {
     projects,
     competitions,
-    comingSoon,
+    cv,
     stories,
     contact,
     profilePicSrc: profilePic,
@@ -176,6 +197,7 @@ function render() {
   `;
 
   setNavOpen(false);
+  applyAccent();
   bindEvents();
   observeReveal();
 }
@@ -203,6 +225,10 @@ function bindEvents() {
         opt.addEventListener("click", () => setTheme(opt.dataset.themeOption)),
       );
   });
+
+  document
+    .querySelectorAll("[data-accent-option]")
+    .forEach((b) => b.addEventListener("click", () => setAccent(b.dataset.accentOption)));
 
   const navToggle = document.getElementById("nav-toggle");
   if (navToggle) {

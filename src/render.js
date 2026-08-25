@@ -13,8 +13,16 @@
 
 import { PLATE_LINES, storyGroupFor } from "./data.js";
 
+// Never empty: works still awaiting copy fall back to their own title so the
+// tile and the hover preview stay legible instead of rendering a blank plate.
 export function plateFor(project) {
-  return PLATE_LINES[project.id] || project.summary;
+  return PLATE_LINES[project.id] || project.summary || project.title;
+}
+
+// True only when there's a real line to set large — the title alone would just
+// repeat the <h1> directly above the detail-page plate.
+function hasPlateLine(project) {
+  return Boolean(PLATE_LINES[project.id] || project.summary);
 }
 
 export function escapeHtml(str) {
@@ -57,7 +65,8 @@ export function parsePath(pathname, base = "/") {
   if (segs[0] === "work") {
     return segs[1] ? { page: "project", id: segs[1] } : { page: "work" };
   }
-  if (segs[0] === "personal-projects" && segs.length === 1) return { page: "personal" };
+  if (segs[0] === "about" && segs.length === 1) return { page: "about" };
+  if (segs[0] === "competitions" && segs.length === 1) return { page: "competitions" };
   if (segs[0] === "stories") {
     return segs[1] ? { page: "story", id: segs[1] } : { page: "stories" };
   }
@@ -68,12 +77,14 @@ export function buildPath(page, id) {
   switch (page) {
     case "home":
       return "/";
+    case "about":
+      return "/about";
     case "work":
       return "/work";
     case "project":
       return `/work/${id}`;
-    case "personal":
-      return "/personal-projects";
+    case "competitions":
+      return "/competitions";
     case "stories":
       return "/stories";
     case "story":
@@ -98,6 +109,11 @@ export function routeMeta(route, strings, projects, stories) {
   switch (route.page) {
     case "home":
       return { title: strings.meta.title, description: strings.meta.description };
+    case "about":
+      return {
+        title: `${strings.nav.about} — ${site}`,
+        description: strings.about.bio[0].join(" "),
+      };
     case "work":
       return {
         title: `${strings.nav.work} — ${site}`,
@@ -109,10 +125,10 @@ export function routeMeta(route, strings, projects, stories) {
         ? { title: `${p.title} — ${p.brand} — ${site}`, description: p.summary }
         : { title: site, description: strings.meta.description };
     }
-    case "personal":
+    case "competitions":
       return {
-        title: `${strings.nav.personal} — ${site}`,
-        description: strings.personal.subheading,
+        title: `${strings.nav.competitions} — ${site}`,
+        description: strings.competitions.subheading,
       };
     case "stories":
       return {
@@ -144,8 +160,9 @@ const HOME_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 // Contact isn't a section: it lives at the foot of the home page, so it has no
 // nav entry and no route of its own.
 const SECTIONS = [
+  { page: "about", key: "about" },
   { page: "work", key: "work" },
-  { page: "personal", key: "personal" },
+  { page: "competitions", key: "competitions" },
   { page: "stories", key: "stories" },
 ];
 
@@ -190,7 +207,7 @@ function navPersonalList(competitions, base) {
   return competitions
     .map(
       (c) =>
-        `<a href="${hrefFor(base, "personal")}" data-link class="nav-sub-link"
+        `<a href="${hrefFor(base, "competitions")}" data-link class="nav-sub-link"
         data-preview data-preview-title="${escapeHtml(c.title)}"
         data-preview-quote="${escapeHtml(c.title)} — ${escapeHtml(c.brand)}"
         data-preview-sub="${escapeHtml(c.award)}"
@@ -250,6 +267,12 @@ export function renderChrome({
 
   return `
     <div class="grain" aria-hidden="true"></div>
+    <!-- Temporary: palette comparison for the brief's red/white question.
+         Remove with src/palette-prototype.css once a palette is chosen. -->
+    <div class="palette-switch" id="palette-switch" role="group" aria-label="Palette">
+      <button type="button" class="palette-swatch palette-swatch--mono" data-accent-option="mono" aria-label="Black and white" title="Black and white"></button>
+      <button type="button" class="palette-swatch palette-swatch--red" data-accent-option="red" aria-label="Red and white" title="Red and white"></button>
+    </div>
     <header class="topnav">
       <div class="topnav-pill">
         <button type="button" class="topnav-brand" id="nav-toggle"
@@ -266,13 +289,16 @@ export function renderChrome({
         <div class="topnav-panel-inner">
           <div class="nav-group">
             <a href="${hrefFor(base, "home")}" data-link class="nav-top-link ${isSectionActive(route, "home") ? "active" : ""}">${strings.nav.home}</a>
+            <div class="nav-sub-list">
+              <a href="${hrefFor(base, "about")}" data-link class="nav-sub-link ${isSectionActive(route, "about") ? "active" : ""}"><span class="nav-label">${strings.nav.about}</span></a>
+            </div>
           </div>
           <div class="nav-group">
             <a href="${hrefFor(base, "work")}" data-link class="nav-top-link ${isSectionActive(route, "work") ? "active" : ""}">${strings.nav.work}</a>
             <div class="nav-sub-list">${navWorkList(projects, route, base)}</div>
           </div>
           <div class="nav-group">
-            <a href="${hrefFor(base, "personal")}" data-link class="nav-top-link ${isSectionActive(route, "personal") ? "active" : ""}">${strings.nav.personal}</a>
+            <a href="${hrefFor(base, "competitions")}" data-link class="nav-top-link ${isSectionActive(route, "competitions") ? "active" : ""}">${strings.nav.competitions}</a>
             <div class="nav-sub-list">${navPersonalList(competitions, base)}</div>
           </div>
           <div class="nav-group">
@@ -294,14 +320,35 @@ export function renderChrome({
    Pages
    --------------------------------------------------------------------------- */
 
+// Work media lives in public/ so the same URL resolves in the browser and in
+// the Node prerenderer — see scripts/optimize-assets.mjs.
+export function mediaUrl(base, file) {
+  const b = (base || "/").replace(/\/+$/, "");
+  return `${b}/work/${file}`;
+}
+
+// Marks entries that are still waiting on content from Ludovica. Visible on
+// purpose while the site is private.
+function needsInfoBadge(strings, note) {
+  if (!note) return "";
+  return `<p class="needs-info" role="note"><span class="needs-info-tag">⚠ ${escapeHtml(strings.needsInfoLabel)}</span> ${escapeHtml(note)}</p>`;
+}
+
 function projectCard(p, base, index) {
+  // A photo when there is one, otherwise the typographic plate — which already
+  // reads as deliberate, so nothing looks like a missing asset.
+  const visual = p.images?.length
+    ? `<div class="project-plate project-plate--image">
+         <img src="${mediaUrl(base, p.images[0])}" alt="${escapeHtml(p.title)}" loading="lazy" />
+       </div>`
+    : `<div class="project-plate">
+         <span class="plate-index">${String(index + 1).padStart(2, "0")}</span>
+         <p class="plate-line">${escapeHtml(plateFor(p))}</p>
+         <span class="plate-rule"></span>
+       </div>`;
   return `
-    <a href="${hrefFor(base, "project", p.id)}" data-link class="project-card" data-reveal style="--i:${index % 6}">
-      <div class="project-plate">
-        <span class="plate-index">${String(index + 1).padStart(2, "0")}</span>
-        <p class="plate-line">${escapeHtml(plateFor(p))}</p>
-        <span class="plate-rule"></span>
-      </div>
+    <a href="${hrefFor(base, "project", p.id)}" data-link class="project-card ${p.needsInfo ? "is-incomplete" : ""}" data-reveal style="--i:${index % 6}">
+      ${visual}
       <h3>${escapeHtml(p.title)}</h3>
       <div class="brand-line"><span>${escapeHtml(p.brand)} · ${escapeHtml(p.agency)}</span><span class="go">↗</span></div>
     </a>`;
@@ -397,28 +444,23 @@ export function renderWorkIndexPage(strings, projects, base) {
   `;
 }
 
-export function renderPersonalPage(strings, competitions, comingSoon) {
+export function renderCompetitionsPage(strings, competitions) {
   return `
     <section>
-      <div class="section-heading" data-reveal><h1>${strings.personal.heading}</h1><div class="rule"></div></div>
-      <p class="lede" data-reveal>${strings.personal.subheading}</p>
+      <div class="section-heading" data-reveal><h1>${strings.competitions.heading}</h1><div class="rule"></div></div>
+      <p class="lede" data-reveal>${strings.competitions.subheading}</p>
 
-      <div style="margin-top:2.5rem" data-reveal>
-        <h3>${strings.personal.competitionsHeading}</h3>
-        <ul class="list-simple">
-          ${competitions
-            .map(
-              (c) =>
-                `<li><span>${escapeHtml(c.title)} — ${escapeHtml(c.brand)}</span><span class="award">${escapeHtml(c.award)}</span></li>`,
-            )
-            .join("")}
-        </ul>
-      </div>
-
-      <div style="margin-top:3rem" data-reveal>
-        <h3>${strings.personal.comingSoonHeading}</h3>
-        <div class="chips">${comingSoon.map((c) => `<span>${escapeHtml(c)}</span>`).join("")}</div>
-      </div>
+      <ul class="list-simple" data-reveal>
+        ${competitions
+          .map(
+            (c) =>
+              `<li>
+                <span>${escapeHtml(c.title)}${c.format ? ` <em class="cv-meta">${escapeHtml(c.format)}</em>` : ""} — ${escapeHtml(c.brand)}</span>
+                <span class="award">${escapeHtml(c.award)}</span>
+              </li>`,
+          )
+          .join("")}
+      </ul>
     </section>
   `;
 }
@@ -433,14 +475,107 @@ export function renderProjectPage(strings, projects, id, base) {
       <span class="kicker">${escapeHtml(p.brand)} · ${escapeHtml(p.agency)}</span>
       <h1 class="split-title">${splitWords(p.title)}</h1>
       ${p.tag ? `<p style="color:var(--text-muted)">${escapeHtml(p.tag)}</p>` : ""}
-      <div class="hero-plate">
+      ${needsInfoBadge(strings, p.needsInfo)}
+      ${
+        hasPlateLine(p)
+          ? `<div class="hero-plate">
         <span class="plate-index">${String(index + 1).padStart(2, "0")}</span>
         <p class="plate-line">${escapeHtml(plateFor(p))}</p>
-      </div>
-      <p class="lede">${escapeHtml(p.summary)}</p>
+      </div>`
+          : ""
+      }
+      ${p.summary ? `<p class="lede">${escapeHtml(p.summary)}</p>` : ""}
       ${p.body.map((b) => `<p class="body-copy" data-reveal>${b}</p>`).join("")}
+      ${
+        p.images?.length
+          ? `<div class="work-media" data-reveal>${p.images
+              .map(
+                (img) =>
+                  `<figure><img src="${mediaUrl(base, img)}" alt="${escapeHtml(p.title)}" loading="lazy" /></figure>`,
+              )
+              .join("")}</div>`
+          : ""
+      }
+      ${
+        p.downloads?.length
+          ? `<p class="work-downloads">${p.downloads
+              .map(
+                (d) =>
+                  `<a href="${mediaUrl(base, d.file)}" target="_blank" rel="noopener noreferrer">${escapeHtml(d.label)} ↗</a>`,
+              )
+              .join(" · ")}</p>`
+          : ""
+      }
       <p style="font-size:0.85rem;color:var(--text-muted);margin-top:2rem">${strings.work.agency} ${escapeHtml(p.agency)}</p>
       ${p.recognition ? `<div class="recognition" data-reveal>${escapeHtml(p.recognition)}</div>` : ""}
+    </section>
+  `;
+}
+
+export function renderAboutPage(strings, cv, profilePicSrc, munariPicSrc) {
+  const a = strings.about;
+  const line = (arr) => arr.map((l) => escapeHtml(l)).join("<br />");
+
+  return `
+    <section>
+      <div class="section-heading" data-reveal><h1>${a.heading}</h1><div class="rule"></div></div>
+
+      <div class="about-lead" data-reveal>
+        <h2 class="about-hey">${escapeHtml(a.bioHeading)}</h2>
+        ${a.bio.map((p) => `<p class="intro-para">${line(p)}</p>`).join("")}
+        ${a.paragraphs.map((p, i) => `<p class="intro-para${i === 0 ? " intro-para--lead" : ""}">${line(p)}</p>`).join("")}
+      </div>
+
+      <figure class="intro-figures" data-reveal>
+        <div class="intro-figure"><img src="${profilePicSrc}" alt="${escapeHtml(a.profileAlt)}" loading="lazy" /></div>
+        <div class="intro-figure"><img src="${munariPicSrc}" alt="${escapeHtml(a.munariAlt)}" loading="lazy" /></div>
+        <figcaption class="intro-caption">${a.caption.join("<br />")}</figcaption>
+      </figure>
+
+      <div class="cv-block" data-reveal>
+        <h3>${a.educationHeading}</h3>
+        <ul class="list-simple">
+          ${cv.education
+            .map(
+              (e) => `<li>
+                <span>${escapeHtml(e.school)}${e.detail ? ` — ${escapeHtml(e.detail)}` : ""}</span>
+                ${e.dates ? `<span class="award">${escapeHtml(e.dates)}</span>` : ""}
+              </li>`,
+            )
+            .join("")}
+        </ul>
+      </div>
+
+      <div class="cv-block" data-reveal>
+        <h3>${a.experienceHeading}</h3>
+        <ul class="cv-list">
+          ${cv.experience
+            .map(
+              (e) => `<li class="cv-entry">
+                <div class="cv-entry-head">
+                  <span class="cv-agency">${escapeHtml(e.agency)}</span>
+                  ${e.dates ? `<span class="award">${escapeHtml(e.dates)}</span>` : ""}
+                </div>
+                <span class="cv-role">${escapeHtml(e.role)}</span>
+                ${e.clients ? `<span class="cv-meta"><em>${escapeHtml(a.clientsLabel)}:</em> ${escapeHtml(e.clients)}</span>` : ""}
+                ${e.pitches ? `<span class="cv-meta"><em>${escapeHtml(a.pitchesLabel)}:</em> ${escapeHtml(e.pitches)}</span>` : ""}
+              </li>`,
+            )
+            .join("")}
+        </ul>
+      </div>
+
+      <div class="cv-block" data-reveal>
+        <h3>${a.recognitionsHeading}</h3>
+        <h4 class="cv-subhead">${a.recognitionsPersonal}</h4>
+        <ul class="list-simple">
+          ${cv.recognitions.personal.map((r) => `<li><span>${escapeHtml(r)}</span></li>`).join("")}
+        </ul>
+        <h4 class="cv-subhead">${a.recognitionsAgencies}</h4>
+        <ul class="list-simple">
+          ${cv.recognitions.agencies.map((r) => `<li><span>${escapeHtml(r)}</span></li>`).join("")}
+        </ul>
+      </div>
     </section>
   `;
 }
@@ -514,6 +649,9 @@ export function renderContactBlock(strings, contact, kickerNum = "") {
     .replace(/^.*linkedin\.com\/in\//, "")
     .replace(/\/+$/, "")
     .replace(/-[0-9a-z]{6,}$/, "");
+  const spotifyHandle = contact.spotify
+    .replace(/^.*spotify\.com\/user\//, "")
+    .replace(/[?/].*$/, "");
 
   // Until a real CV URL exists the button is shown but inert, carrying a
   // tooltip instead of a dead link.
@@ -551,6 +689,10 @@ export function renderContactBlock(strings, contact, kickerNum = "") {
           <span>Instagram</span>
           <a href="${contact.instagram}" target="_blank" rel="noopener noreferrer">${escapeHtml(instagramHandle)} ↗</a>
         </div>
+        <div class="contact-row">
+          <span>Spotify</span>
+          <a href="${contact.spotify}" target="_blank" rel="noopener noreferrer">${escapeHtml(spotifyHandle)} ↗</a>
+        </div>
       </div>
       ${cvBlock}
     </section>
@@ -579,10 +721,12 @@ export function renderPage(route, strings, ctx) {
         ctx.base,
         ctx.contact,
       );
+    case "about":
+      return renderAboutPage(strings, ctx.cv, ctx.profilePicSrc, ctx.munariPicSrc);
     case "work":
       return renderWorkIndexPage(strings, ctx.projects, ctx.base);
-    case "personal":
-      return renderPersonalPage(strings, ctx.competitions, ctx.comingSoon);
+    case "competitions":
+      return renderCompetitionsPage(strings, ctx.competitions);
     case "project":
       return renderProjectPage(strings, ctx.projects, route.id, ctx.base);
     case "stories":
