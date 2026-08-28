@@ -332,6 +332,18 @@ export const ABOUT_GALLERY = [
   },
 ];
 
+// TEMPORARY: stand-in preview media until Ludovica sends the real files. Every
+// work that has no `preview` of its own borrows the Emergency board, so the
+// hover preview and the detail pages can be built and reviewed now. Give a work
+// a `preview: { type: "image" | "video", file: "…" }` and it takes over.
+export const PLACEHOLDER_PREVIEW = { type: "image", file: "emergency-board.webp" };
+
+export function previewFor(project) {
+  if (project.preview) return project.preview;
+  if (project.images?.length) return { type: "image", file: project.images[0] };
+  return PLACEHOLDER_PREVIEW;
+}
+
 export const stories = [
   {
     id: "story-ita",

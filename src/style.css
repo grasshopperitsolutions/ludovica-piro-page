@@ -331,29 +331,7 @@ html.nav-shrink .topnav-bar {
   flex-shrink: 0;
 }
 
-/* Both blooms are always in the DOM; the theme decides which one is painted,
-   so flipping the theme is an attribute change with no re-render. */
-/* Doubled class so this outranks the `.flower { display: block }` base rule
-   that follows it. */
-.flower.flower--dark {
-  display: none;
-}
-:root[data-theme="dark"] .flower--light {
-  display: none;
-}
-:root[data-theme="dark"] .flower.flower--dark {
-  display: block;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .flower--light {
-    display: none;
-  }
-  :root:not([data-theme="light"]) .flower.flower--dark {
-    display: block;
-  }
-}
-
-/* The bloom lives in the top-right corner, on its own — it isn't part of the
+/* The poppy lives in the top-right corner, on its own — it isn't part of the
    name/menu block, so it keeps full size and opacity when the bar shrinks. */
 .flower-trigger {
   position: relative;
@@ -372,10 +350,6 @@ html.nav-shrink .topnav-bar {
   display: block;
   width: 100%;
   height: 100%;
-  /* The petals use mix-blend-mode: multiply against each other. Isolating the
-     flower keeps that blending inside its own group — otherwise it multiplies
-     against the page and all but disappears on the dark theme. */
-  isolation: isolate;
   rotate: 0deg;
   scale: 1;
   animation: flower-spin 26s linear infinite;
@@ -393,37 +367,6 @@ html.nav-shrink .topnav-bar {
   animation-duration: 13s;
   scale: 1.2;
 }
-/* Names the bloom on hover, after a long pause — it's a quiet aside, not a
-   label, so it shouldn't fire at every passing cursor. Anchored to the right
-   edge because the button sits in the corner. */
-.flower-trigger::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  right: 0;
-  top: calc(100% + 0.4rem);
-  transform: translateY(-4px);
-  white-space: nowrap;
-  background: var(--accent);
-  color: var(--on-accent);
-  font-family: var(--sans);
-  font-size: 0.72rem;
-  letter-spacing: 0.05em;
-  padding: 0.4rem 0.65rem;
-  border-radius: 6px;
-  opacity: 0;
-  pointer-events: none;
-  transition:
-    opacity 0.25s var(--ease),
-    transform 0.25s var(--ease);
-}
-.flower-trigger:hover::after,
-.flower-trigger:focus-visible::after {
-  opacity: 1;
-  transform: translateY(0);
-  /* The wait belongs to the appearance only — leaving hides it at once. */
-  transition-delay: 5s;
-}
-
 @keyframes flower-spin {
   to {
     rotate: 360deg;
@@ -694,110 +637,99 @@ section {
   transform: translateX(3px);
 }
 
-/* project grid */
-.project-grid {
+/* ---------- Works: list + hover preview ----------
+   No tiles. The list is the page; the panel beside it fills in with whatever
+   row you rest on, and holds that image until another row takes over. */
+.work-layout {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 3rem 2rem;
+  gap: 2.5rem;
+  align-items: start;
 }
-@media (min-width: 640px) {
-  .project-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-@media (min-width: 1200px) {
-  .project-grid {
-    grid-template-columns: 1fr 1fr 1fr;
+@media (min-width: 900px) {
+  .work-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
+    gap: 3.5rem;
   }
 }
 
-.project-card {
-  display: block;
-  cursor: pointer;
+.work-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
-
-/* The tile IS the copy — her words set large are the artwork, so no
-   placeholder imagery is needed and the page stays pure black & white. */
-.project-plate {
-  aspect-ratio: 4/3;
-  border: 1px solid var(--line);
-  border-radius: 6px;
+.work-row {
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  overflow: hidden;
-  margin-bottom: 1.1rem;
-  padding: 1.4rem 1.5rem;
-  position: relative;
-  background: var(--bg-card);
-  transition:
-    transform 0.5s var(--ease),
-    border-color 0.5s var(--ease),
-    background 0.5s var(--ease),
-    color 0.5s var(--ease);
-}
-.project-card:hover .project-plate {
-  transform: translateY(-6px);
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--on-accent);
-}
-
-.plate-index {
-  font-family: var(--serif);
-  font-size: 0.7rem;
-  letter-spacing: 0.18em;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.75rem;
+  padding: 0.55rem 0;
   color: var(--text-muted);
-  transition: color 0.5s var(--ease);
+  transition: color 0.25s var(--ease);
 }
-.project-card:hover .plate-index {
-  color: var(--on-accent);
-  opacity: 0.65;
-}
-
-.plate-line {
+.work-row-title {
   font-family: var(--serif);
-  font-weight: 400;
-  font-size: clamp(1.05rem, 1.6vw, 1.45rem);
-  line-height: 1.18;
-  margin: 0.6rem 0 0;
-  text-wrap: balance;
-  letter-spacing: -0.015em;
+  font-size: clamp(1.25rem, 2.6vw, 1.85rem);
+  line-height: 1.15;
+  color: var(--text);
+  transition: opacity 0.25s var(--ease);
 }
-
-.plate-rule {
-  display: block;
-  height: 1px;
-  width: 2.5rem;
-  background: currentColor;
-  opacity: 0.35;
-  margin-top: 1rem;
-  transition: width 0.5s var(--ease);
-}
-.project-card:hover .plate-rule {
-  width: 100%;
-}
-
-.project-card h3 {
-  font-size: 1.25rem;
-  margin-bottom: 0.2rem;
-}
-.project-card .brand-line {
-  font-size: 0.7rem;
+.work-row-brand {
+  font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
-.project-card .brand-line .go {
-  margin-left: auto;
-  transform: rotate(-45deg);
-  transition: transform 0.35s var(--ease);
+.work-row:hover .work-row-title,
+.work-row:focus-visible .work-row-title,
+.work-row.is-previewing .work-row-title {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
 }
-.project-card:hover .brand-line .go {
-  transform: rotate(0deg);
+.work-row:hover,
+.work-row.is-previewing {
+  color: var(--text);
+}
+/* Still waiting on copy — dotted, not shouted. */
+.work-row.is-incomplete .work-row-brand {
+  border-bottom: 1px dashed currentColor;
+}
+
+/* The panel only exists where there's a pointer and room for it; on a phone
+   the list stands alone and a tap goes straight to the work. */
+.work-preview {
+  display: none;
+}
+@media (min-width: 900px) {
+  .work-preview {
+    display: block;
+    position: sticky;
+    top: 7rem;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--bg-raised);
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+      opacity 0.45s var(--ease),
+      transform 0.45s var(--ease);
+  }
+  .work-preview.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .work-preview img,
+  .work-preview video {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .work-preview {
+    transition: none;
+    transform: none;
+  }
 }
 
 /* project / story detail */
@@ -1371,15 +1303,6 @@ body.previewing .cursor-ring {
 }
 
 /* ---------- Work media ---------- */
-.project-plate--image {
-  padding: 0;
-  border-color: var(--line);
-}
-.project-plate--image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
 .work-media {
   display: grid;
   gap: 1rem;
@@ -1392,9 +1315,21 @@ body.previewing .cursor-ring {
   overflow: hidden;
   background: var(--bg-raised);
 }
-.work-media img {
+.work-media img,
+.work-media video {
   width: 100%;
   height: auto;
+  display: block;
+}
+/* Stand-in media: dashed frame and a line saying so, so it never passes for
+   the finished thing. */
+.work-media figure.is-placeholder {
+  border-style: dashed;
+}
+.work-media figure.is-placeholder figcaption {
+  padding: 0.6rem 0.9rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
 }
 .work-downloads {
   font-size: 0.85rem;
@@ -1426,9 +1361,6 @@ body.previewing .cursor-ring {
   letter-spacing: 0.14em;
   color: var(--text);
   white-space: nowrap;
-}
-.project-card.is-incomplete .project-plate {
-  border-style: dashed;
 }
 
 /* ---------- Home ----------
@@ -1491,6 +1423,15 @@ body.previewing .cursor-ring {
     gap: 0.7rem 0.85rem;
     font-size: 0.84rem;
   }
+}
+
+/* The line she closes the bio on — set apart from the paragraphs above it. */
+.about-closing {
+  font-family: var(--serif);
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  line-height: 1.35;
+  color: var(--text);
+  margin-top: 1.75rem;
 }
 
 /* ---------- About: boards ----------

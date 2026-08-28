@@ -32,9 +32,22 @@ export default {
   },
   about: {
     heading: "About",
-    // Verbatim from the brief. Each paragraph is an array of lines because the
-    // line breaks are hers — she's a copywriter, the breaks are part of the
-    // writing, so they're preserved rather than reflowed.
+    // Verbatim from her own Information page on Cargo (691401.cargo.site/information),
+    // which supersedes the copy scraped from the old ludovicapiro.com. Each
+    // paragraph is an array of lines because the line breaks are hers — she's a
+    // copywriter, the breaks are part of the writing, so they are preserved
+    // rather than reflowed.
+    bioHeading: ["Nice to meet you!", "I'm Ludovica."],
+    bio: [
+      [
+        "I was born and raised in Palermo (Sicily) and I've put down roots in different cities throughout this 30-year journey of experiencing life (to the fullest).",
+      ],
+      [
+        "I'm currently based in Madrid,",
+        "where I work as a Senior Creative Copywriter",
+        "at TBWA\\España (ex DDB Spain).",
+      ],
+    ],
     paragraphs: [
       [
         "The room I love the most is the movie theater.",
@@ -42,37 +55,27 @@ export default {
       ],
       [
         "I'm passionate about stand-up comedy, screenwriting, photography and learning languages.",
-        "I currently speak four — Spanish, Portuguese, English and Italian, of course.",
-        "So I could call myself a polyglot wannabe.",
-        "Or maybe I'm just hyperactive.",
-        "Surely deeply curious.",
       ],
       [
-        "Here you'll find the work I created at international advertising agencies, along with personal projects and short stories.",
-        "Because even when I go nowhere, my mind goes everywhere.",
+        "I currently speak 4: spanish, portuguese, english and italian (of course).",
+        "So I could call myself a polyglot wannabe.",
+        "Or maybe I'm just hyperactive?",
+        "Surely deeply curious.",
       ],
     ],
-    // Sits under the pair of images. Contains inline markup on purpose (the
-    // work title is italicised), so it is injected unescaped.
+    // The line she closes on, set apart from the paragraphs above it.
+    closing: ["Yes, because", "even when I go nowhere,", "my mind goes everywhere."],
+    // Sits under the pair of images on the home page. Contains inline markup on
+    // purpose (the work title and "mental gymnastics" are italicised), so it is
+    // injected unescaped. Her Cargo page stacks the two photos and says "on top"
+    // / "below"; ours sit side by side, so the positions read left/right.
     caption: [
       "On the left, that's me.",
       "On the right, <em>Forchette parlanti</em>, a work by Bruno Munari.",
-      "I've always found his teachings on mental gymnastics inspiring. He is one of my favourite artists, together with Erik Kessels and many others.",
+      "I've always found his teachings on <em>mental gymnastics</em> inspiring. He is one of my favourite artists, together with Erik Kessels, Saul Steinberg and many others.",
     ],
     profileAlt: "Ludovica Piro",
     munariAlt: "Forchette parlanti, a work by Bruno Munari",
-    languagesLabel: "Languages",
-    languagesValue: "Italian, English, Spanish, Portuguese",
-    expertiseLabel: "Expertise",
-    expertiseValue: "Senior Creative Copywriter",
-    // Longer bio, used on the About page only.
-    bioHeading: "Hey, I'm Ludovica.",
-    bio: [
-      [
-        "I was born and raised in Palermo (Sicily) and I've put down roots in different cities throughout this 30-year journey of experiencing life (to the fullest).",
-        "I'm currently based in Madrid, where I work as a Senior Creative Copywriter at TBWA\\España.",
-      ],
-    ],
     educationHeading: "Education",
     experienceHeading: "Experience",
     recognitionsHeading: "Recognitions",
@@ -87,6 +90,8 @@ export default {
     recognition: "Recognition",
     back: "Back to works",
     seeAll: "See all works",
+    // Shown under stand-in media, so it's never mistaken for the real thing.
+    placeholderMedia: "Placeholder image — waiting on the real media.",
   },
   competitions: {
     heading: "Competitions",
@@ -115,8 +120,6 @@ export default {
   theme: {
     toDark: "Switch to dark",
     toLight: "Switch to light",
-    // The bloom the toggle is drawn from — shown as its tooltip.
-    flowerName: "Paeonia 'Ludovica'",
   },
   footer: { rights: "All rights reserved." },
 };

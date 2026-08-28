@@ -119,6 +119,7 @@ function navigate(page, id) {
     history.pushState(null, "", path);
   }
   state.route = { page, id };
+  clearTimeout(previewTimer);
   withTransition(() => {
     render();
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -206,6 +207,51 @@ function bindEvents() {
   );
 
   bindStoryLangSwitch();
+  setupWorkPreview();
+}
+
+/* ---------- Works: hover-intent preview ----------
+   A row has to be rested on for two seconds before it takes over the panel —
+   long enough that sweeping the cursor down the list changes nothing. Once a
+   preview is up it stays up: leaving a row only cancels a pending swap, so the
+   panel never blinks out between rows. */
+const PREVIEW_DELAY = 1000;
+let previewTimer = null;
+
+function setupWorkPreview() {
+  const panel = document.querySelector("[data-work-preview]");
+  const rows = document.querySelectorAll(".work-row[data-preview-src]");
+  if (!panel || !rows.length) return;
+  // Pointer-driven, so it is meaningless on touch — those visitors just tap
+  // through to the work itself.
+  if (!matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+
+  const show = (row) => {
+    const { previewSrc, previewType, previewAlt } = row.dataset;
+    // Which row owns the panel always updates. Only the media itself is left
+    // alone when the file is unchanged — rewriting it would restart a video,
+    // and right now every work shares the same stand-in image.
+    rows.forEach((r) => r.classList.toggle("is-previewing", r === row));
+    panel.classList.add("is-visible");
+    if (panel.dataset.current === previewSrc) return;
+    panel.dataset.current = previewSrc;
+    panel.innerHTML =
+      previewType === "video"
+        ? `<video src="${previewSrc}" autoplay muted loop playsinline preload="metadata" aria-label="${previewAlt}"></video>`
+        : `<img src="${previewSrc}" alt="${previewAlt}" />`;
+  };
+
+  rows.forEach((row) => {
+    const arm = () => {
+      clearTimeout(previewTimer);
+      previewTimer = setTimeout(() => show(row), PREVIEW_DELAY);
+    };
+    const disarm = () => clearTimeout(previewTimer);
+    row.addEventListener("mouseenter", arm);
+    row.addEventListener("focus", arm);
+    row.addEventListener("mouseleave", disarm);
+    row.addEventListener("blur", disarm);
+  });
 }
 
 /* ---------- Story: morph between the four language versions in place ------ */
