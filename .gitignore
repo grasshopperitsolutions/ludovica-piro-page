@@ -4,3 +4,8 @@
 node_modules
 dist
 .vite
+
+# Source originals — full-resolution exports and the raw video/audio.
+# Only the optimised derivatives in public/work ship, so these stay local:
+# they are here for re-cropping and re-exporting, not for the build.
+src/assets/
