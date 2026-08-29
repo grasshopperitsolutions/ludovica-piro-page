@@ -83,11 +83,6 @@
         try {
           var t = localStorage.getItem("lp-theme") || "auto";
           if (t !== "auto") document.documentElement.setAttribute("data-theme", t);
-          // Temporary: palette prototype, applied pre-paint like the theme.
-          document.documentElement.setAttribute(
-            "data-accent",
-            localStorage.getItem("lp-accent") || "mono",
-          );
         } catch (e) {
           /* private mode / storage blocked — fall through to defaults */
         }

@@ -1,11 +1,15 @@
 import "./style.css";
-// Temporary: red/white palette prototype. Imported after style.css so its
-// accent overrides win. Remove together with the switcher in render.js.
-import "./palette-prototype.css";
 import strings from "./i18n/en.js";
-import { contact, projects, competitions, cv, stories, ABOUT_GALLERY } from "./data.js";
-import profilePic from "./assets/profile-pic.jpeg";
-import munariPic from "./assets/munari.jpg";
+import {
+  contact,
+  projects,
+  competitions,
+  cv,
+  stories,
+  STORY_GROUPS,
+  POETRY_CAMERA,
+  DRAWINGS,
+} from "./data.js";
 import {
   parsePath,
   buildPath,
@@ -26,8 +30,6 @@ const BASE = import.meta.env.BASE_URL;
 
 const state = {
   theme: localStorage.getItem("lp-theme") || "auto",
-  // Temporary, for the red/white comparison — see palette-prototype.css.
-  accent: localStorage.getItem("lp-accent") || "mono",
   route: parsePath(window.location.pathname, BASE),
 };
 
@@ -97,22 +99,6 @@ function syncThemeUI() {
   });
 }
 
-// Temporary: palette prototype. Pure CSS custom-property swap, so no re-render.
-function applyAccent() {
-  document.documentElement.setAttribute("data-accent", state.accent);
-  document
-    .querySelectorAll("[data-accent-option]")
-    .forEach((b) =>
-      b.setAttribute("aria-pressed", String(b.dataset.accentOption === state.accent)),
-    );
-}
-
-function setAccent(accent) {
-  state.accent = accent;
-  localStorage.setItem("lp-accent", accent);
-  applyAccent();
-}
-
 function navigate(page, id) {
   const path = hrefFor(BASE, page, id);
   if (path !== window.location.pathname) {
@@ -135,7 +121,7 @@ window.addEventListener("popstate", () => {
 });
 
 function updateHead() {
-  const meta = routeMeta(state.route, strings, projects, stories);
+  const meta = routeMeta(state.route, strings, projects, stories, competitions);
   document.title = meta.title;
 
   const url = SITE_ORIGIN + buildPath(state.route.page, state.route.id);
@@ -163,10 +149,10 @@ function render() {
     competitions,
     cv,
     stories,
+    storyGroups: STORY_GROUPS,
+    poetry: POETRY_CAMERA,
+    drawings: DRAWINGS,
     contact,
-    gallery: ABOUT_GALLERY,
-    profilePicSrc: profilePic,
-    munariPicSrc: munariPic,
     base: BASE,
   };
 
@@ -183,7 +169,6 @@ function render() {
     </main>
   `;
 
-  applyAccent();
   bindEvents();
   observeReveal();
 }
@@ -192,10 +177,6 @@ function bindEvents() {
   document
     .querySelectorAll("[data-theme-toggle]")
     .forEach((btn) => btn.addEventListener("click", toggleTheme));
-
-  document
-    .querySelectorAll("[data-accent-option]")
-    .forEach((b) => b.addEventListener("click", () => setAccent(b.dataset.accentOption)));
 
   document.querySelectorAll("[data-link]").forEach((a) =>
     a.addEventListener("click", (e) => {
@@ -208,14 +189,80 @@ function bindEvents() {
 
   bindStoryLangSwitch();
   setupWorkPreview();
+  setupAudioPlayers();
+}
+
+/* ---------- Audio: a transport that matches the page ----------
+   The markup ships a working `<audio controls>` so the spot plays with no JS at
+   all. Here we take the browser's chrome away and reveal our own — which means
+   the swap only ever happens when there is something to swap to. */
+function setupAudioPlayers() {
+  document.querySelectorAll("[data-audio-player]").forEach((root) => {
+    const audio = root.querySelector("audio");
+    const ui = root.querySelector("[data-audio-ui]");
+    const toggle = root.querySelector("[data-audio-toggle]");
+    const track = root.querySelector("[data-audio-track]");
+    const fill = root.querySelector("[data-audio-fill]");
+    const time = root.querySelector("[data-audio-time]");
+    if (!audio || !ui || ui.dataset.ready) return;
+
+    ui.dataset.ready = "1";
+    audio.removeAttribute("controls");
+    ui.hidden = false;
+
+    const clock = (secs) => {
+      if (!Number.isFinite(secs)) return "0:00";
+      const m = Math.floor(secs / 60);
+      const s = Math.floor(secs % 60);
+      return `${m}:${String(s).padStart(2, "0")}`;
+    };
+
+    toggle.addEventListener("click", () => {
+      if (audio.paused) audio.play();
+      else audio.pause();
+    });
+
+    const syncButton = () => {
+      root.classList.toggle("is-playing", !audio.paused);
+      toggle.setAttribute(
+        "aria-label",
+        audio.paused ? strings.audio.play : strings.audio.pause,
+      );
+    };
+    audio.addEventListener("play", syncButton);
+    audio.addEventListener("pause", syncButton);
+
+    // Counts down what is left rather than up from zero — for a 30-second spot
+    // "how much longer" is the useful number.
+    audio.addEventListener("timeupdate", () => {
+      const total = audio.duration;
+      if (!Number.isFinite(total) || total === 0) return;
+      fill.style.transform = `scaleX(${audio.currentTime / total})`;
+      time.textContent = clock(total - audio.currentTime);
+    });
+    audio.addEventListener("loadedmetadata", () => {
+      time.textContent = clock(audio.duration);
+    });
+    audio.addEventListener("ended", () => {
+      fill.style.transform = "scaleX(0)";
+      time.textContent = clock(audio.duration);
+    });
+
+    // Click anywhere on the line to scrub there.
+    track.addEventListener("click", (e) => {
+      const rect = track.getBoundingClientRect();
+      const ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+      if (Number.isFinite(audio.duration)) audio.currentTime = ratio * audio.duration;
+    });
+  });
 }
 
 /* ---------- Works: hover-intent preview ----------
-   A row has to be rested on for two seconds before it takes over the panel —
+   A row has to be rested on for half a second before it takes over the panel —
    long enough that sweeping the cursor down the list changes nothing. Once a
    preview is up it stays up: leaving a row only cancels a pending swap, so the
    panel never blinks out between rows. */
-const PREVIEW_DELAY = 1000;
+const PREVIEW_DELAY = 500;
 let previewTimer = null;
 
 function setupWorkPreview() {
@@ -229,16 +276,24 @@ function setupWorkPreview() {
   const show = (row) => {
     const { previewSrc, previewType, previewAlt } = row.dataset;
     // Which row owns the panel always updates. Only the media itself is left
-    // alone when the file is unchanged — rewriting it would restart a video,
-    // and right now every work shares the same stand-in image.
+    // alone when the source is unchanged — rewriting it would restart a film
+    // that is already playing.
     rows.forEach((r) => r.classList.toggle("is-previewing", r === row));
     panel.classList.add("is-visible");
     if (panel.dataset.current === previewSrc) return;
     panel.dataset.current = previewSrc;
-    panel.innerHTML =
-      previewType === "video"
-        ? `<video src="${previewSrc}" autoplay muted loop playsinline preload="metadata" aria-label="${previewAlt}"></video>`
-        : `<img src="${previewSrc}" alt="${previewAlt}" />`;
+
+    // Replacing the contents restarts the CSS entrance animation, so each new
+    // preview fades and settles in rather than snapping into place.
+    if (previewType === "embed") {
+      // A work with no stills of its own: its film, muted and looping, with the
+      // player's own chrome suppressed by the query string.
+      panel.innerHTML = `<iframe src="${previewSrc}" title="${previewAlt}" loading="lazy" frameborder="0" allow="autoplay; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+    } else if (previewType === "video") {
+      panel.innerHTML = `<video src="${previewSrc}" autoplay muted loop playsinline preload="metadata" aria-label="${previewAlt}"></video>`;
+    } else {
+      panel.innerHTML = `<img src="${previewSrc}" alt="${previewAlt}" />`;
+    }
   };
 
   rows.forEach((row) => {

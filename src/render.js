@@ -11,19 +11,7 @@
 // site may currently be served from a subpath (e.g. when staged at
 // grasshoppersolutions.online/ludovica-piro-page/ ahead of its own domain).
 
-import { PLATE_LINES, STORY_GROUPS, storyGroupFor, previewFor } from "./data.js";
-
-// Never empty: works still awaiting copy fall back to their own title so the
-// tile and the hover preview stay legible instead of rendering a blank plate.
-export function plateFor(project) {
-  return PLATE_LINES[project.id] || project.summary || project.title;
-}
-
-// True only when there's a real line to set large — the title alone would just
-// repeat the <h1> directly above the detail-page plate.
-function hasPlateLine(project) {
-  return Boolean(PLATE_LINES[project.id] || project.summary);
-}
+import { storyGroupFor, previewFor } from "./data.js";
 
 export function escapeHtml(str) {
   return String(str)
@@ -36,6 +24,13 @@ export function escapeHtml(str) {
 // Wraps each word in a masked span so headlines can rise word-by-word.
 // The spans are inert without JS/animation — the text still reads normally,
 // and `prefers-reduced-motion` flattens the effect in CSS.
+// Copy can pick a phrase out in red with [[double brackets]] — the deck does
+// this on the About page and nowhere else. Escaping runs FIRST, so the marker
+// can never be used to smuggle markup in through a content string.
+export function inkRed(escaped) {
+  return escaped.replace(/\[\[(.+?)\]\]/g, '<span class="ink-red">$1</span>');
+}
+
 export function splitWords(text, { animate = true } = {}) {
   return String(text)
     .split(/\s+/)
@@ -62,13 +57,22 @@ export function parsePath(pathname, base = "/") {
   const rel = b && pathname.startsWith(b) ? pathname.slice(b.length) || "/" : pathname;
   const segs = rel.split("/").filter(Boolean);
   if (segs.length === 0) return { page: "home" };
-  if (segs[0] === "work") {
+  // "work" is the old spelling; the deck says "works". Both parse so existing
+  // links keep resolving — buildPath only ever emits the new one.
+  if (segs[0] === "works" || segs[0] === "work") {
     return segs[1] ? { page: "project", id: segs[1] } : { page: "work" };
   }
   if (segs[0] === "about" && segs.length === 1) return { page: "about" };
-  if (segs[0] === "competitions" && segs.length === 1) return { page: "competitions" };
+  if (segs[0] === "competitions") {
+    return segs[1] ? { page: "competition", id: segs[1] } : { page: "competitions" };
+  }
+  if (segs[0] === "personal-projects") {
+    return segs[1] ? { page: "story", id: segs[1] } : { page: "personal" };
+  }
+  // Former home of the short stories, before the deck folded them into
+  // Personal projects.
   if (segs[0] === "stories") {
-    return segs[1] ? { page: "story", id: segs[1] } : { page: "stories" };
+    return segs[1] ? { page: "story", id: segs[1] } : { page: "personal" };
   }
   return { page: "notfound" };
 }
@@ -80,15 +84,17 @@ export function buildPath(page, id) {
     case "about":
       return "/about";
     case "work":
-      return "/work";
+      return "/works";
     case "project":
-      return `/work/${id}`;
+      return `/works/${id}`;
     case "competitions":
       return "/competitions";
-    case "stories":
-      return "/stories";
+    case "competition":
+      return `/competitions/${id}`;
+    case "personal":
+      return "/personal-projects";
     case "story":
-      return `/stories/${id}`;
+      return `/personal-projects/${id}`;
     default:
       return "/";
   }
@@ -104,7 +110,7 @@ export function hrefFor(base, page, id) {
   return rel === "/" ? b + "/" : b + rel;
 }
 
-export function routeMeta(route, strings, projects, stories) {
+export function routeMeta(route, strings, projects, stories, competitions = []) {
   const site = strings.meta.title.split(" — ")[0];
   switch (route.page) {
     case "home":
@@ -116,7 +122,7 @@ export function routeMeta(route, strings, projects, stories) {
       };
     case "work":
       return {
-        title: `${strings.nav.work} — ${site}`,
+        title: `${strings.work.heading} — ${site}`,
         description: strings.meta.description,
       };
     case "project": {
@@ -127,12 +133,21 @@ export function routeMeta(route, strings, projects, stories) {
     }
     case "competitions":
       return {
-        title: `${strings.nav.competitions} — ${site}`,
+        title: `${strings.competitions.heading} — ${site}`,
         description: strings.competitions.subheading,
       };
-    case "stories":
+    case "competition": {
+      const c = competitions.find((x) => x.id === route.id);
+      return c
+        ? {
+            title: `${c.title} — ${c.brand} — ${site}`,
+            description: c.body?.[0] ?? strings.competitions.subheading,
+          }
+        : { title: site, description: strings.meta.description };
+    }
+    case "personal":
       return {
-        title: `${strings.nav.stories} — ${site}`,
+        title: `${strings.personal.heading} — ${site}`,
         description: strings.stories.subheading,
       };
     case "story": {
@@ -175,17 +190,19 @@ export const POPPY_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2
 
 // Contact isn't a section: it lives at the foot of the home page, so it has no
 // nav entry and no route of its own.
+// The deck's menu, in its order: About, works, competitions, personal projects.
 const SECTIONS = [
   { page: "about", key: "about" },
   { page: "work", key: "work" },
   { page: "competitions", key: "competitions" },
-  { page: "stories", key: "stories" },
+  { page: "personal", key: "personal" },
 ];
 
 // Which top-level section a given route belongs to.
 function sectionOf(page) {
   if (page === "project") return "work";
-  if (page === "story") return "stories";
+  if (page === "competition") return "competitions";
+  if (page === "story") return "personal";
   return page;
 }
 
@@ -215,12 +232,6 @@ export function renderChrome({ strings, route, isDark, base }) {
 
   return `
     <div class="grain" aria-hidden="true"></div>
-    <!-- Temporary: palette comparison for the brief's red/white question.
-         Remove with src/palette-prototype.css once a palette is chosen. -->
-    <div class="palette-switch" id="palette-switch" role="group" aria-label="Palette">
-      <button type="button" class="palette-swatch palette-swatch--mono" data-accent-option="mono" aria-label="Black and white" title="Black and white"></button>
-      <button type="button" class="palette-swatch palette-swatch--red" data-accent-option="red" aria-label="Red and white" title="Red and white"></button>
-    </div>
     <header class="topnav">
       <div class="topnav-bar">
         <div class="topnav-stack">
@@ -244,6 +255,117 @@ export function mediaUrl(base, file) {
   return `${b}/work/${file}`;
 }
 
+/* ---------- Video ----------
+   The deck lists a link under most works. Three of them are embeddable and one
+   is a plain mp4; the rest point at pages on her old site, which hold no media
+   at all — those render as an outbound link plus a note, never as a dead frame.
+   Everything is lazy: an iframe per page would cost more than the page itself. */
+/* ---------- Work media ----------
+   `media` is an ordered list so a work reads in the same sequence as its slides:
+   board, then film, then supporting photography. Each entry is either a film or
+   a group of images with a layout — "full" one per row, "grid-2" a 2x2,
+   "grid-3" three columns.
+
+   A work with no media at all renders nothing here rather than borrowing
+   another campaign's artwork. */
+export function renderMedia(media, strings, title = "", base = "/") {
+  if (!media?.length) return "";
+
+  return media
+    .map((group) => {
+      if (group.video) return renderVideo(group.video, strings, title, base);
+      if (!group.images?.length) return "";
+
+      const figures = group.images
+        .map(
+          (img) =>
+            `<figure><img src="${mediaUrl(base, img)}" alt="${escapeHtml(title)}" loading="lazy" /></figure>`,
+        )
+        .join("");
+
+      return `<div class="work-media work-media--${group.layout ?? "full"}" data-reveal>
+        ${group.label ? `<p class="work-media-label">${escapeHtml(group.label)}</p>` : ""}
+        ${figures}
+      </div>`;
+    })
+    .join("");
+}
+
+export function renderVideo(video, strings, title = "", base = "/") {
+  if (!video) return "";
+  const label = escapeHtml(title);
+
+  if (video.kind === "youtube") {
+    return `<div class="video-frame" data-reveal>
+      <iframe src="https://www.youtube-nocookie.com/embed/${escapeHtml(video.id)}"
+        title="${label}" loading="lazy" allowfullscreen
+        allow="accelerometer; clipboard-write; encrypted-media; picture-in-picture"
+        referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    </div>`;
+  }
+
+  if (video.kind === "vimeo") {
+    // Unlisted Vimeo videos carry an `h` privacy hash; without it the embed 404s.
+    const src =
+      `https://player.vimeo.com/video/${escapeHtml(video.id)}` +
+      (video.h ? `?h=${escapeHtml(video.h)}` : "");
+    return `<div class="video-frame" data-reveal>
+      <iframe src="${src}"
+        title="${label}" loading="lazy" allowfullscreen
+        allow="autoplay; fullscreen; picture-in-picture"
+        referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    </div>`;
+  }
+
+  if (video.kind === "file") {
+    // Relative filenames live in public/work alongside the boards; absolute URLs
+    // are used as given.
+    const src = /^https?:/.test(video.url)
+      ? escapeHtml(video.url)
+      : mediaUrl(base, video.url);
+    const poster = video.poster ? ` poster="${mediaUrl(base, video.poster)}"` : "";
+    return `<div class="video-frame" data-reveal>
+      <video src="${src}"${poster} controls preload="metadata" playsinline></video>
+    </div>`;
+  }
+
+  // kind === "page": her old site, which carries no media.
+  return `<p class="video-pending" data-reveal>
+    <span class="needs-info-tag">⚠ ${escapeHtml(strings.pending.media)}</span>
+    <a href="${escapeHtml(video.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(strings.pending.watchOn)} ↗</a>
+  </p>`;
+}
+
+/* ---------- Audio ----------
+   A radio spot is the work itself, so it gets a player rather than a link out.
+
+   Built as progressive enhancement: the markup ships a plain `<audio controls>`
+   that plays on its own, and main.js swaps in the custom transport below it.
+   Without JS the visitor still gets a working player, just the browser's own.
+
+   An `url` (rather than a `file`) is something we cannot host — it stays a
+   link, since an embed we don't control is worse than an honest outbound one. */
+function renderAudio(audio, strings, base) {
+  if (!audio) return "";
+  if (!audio.file) {
+    return `<p class="audio-link" data-reveal><a href="${escapeHtml(audio.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(audio.label)} ↗</a></p>`;
+  }
+
+  return `<figure class="audio-player" data-audio-player data-reveal>
+    <figcaption>${escapeHtml(audio.label)}</figcaption>
+    <audio controls preload="metadata" src="${mediaUrl(base, audio.file)}"></audio>
+    <div class="audio-ui" data-audio-ui hidden>
+      <button type="button" class="audio-toggle" data-audio-toggle aria-label="${escapeHtml(strings.audio.play)}">
+        ${ICONS.play}${ICONS.pause}
+      </button>
+      <div class="audio-track" data-audio-track role="presentation">
+        <div class="audio-fill" data-audio-fill></div>
+      </div>
+      <span class="audio-time" data-audio-time>0:00</span>
+    </div>
+  </figure>`;
+}
+
 // Marks entries that are still waiting on content from Ludovica. Visible on
 // purpose while the site is private.
 function needsInfoBadge(strings, note) {
@@ -251,50 +373,22 @@ function needsInfoBadge(strings, note) {
   return `<p class="needs-info" role="note"><span class="needs-info-tag">⚠ ${escapeHtml(strings.needsInfoLabel)}</span> ${escapeHtml(note)}</p>`;
 }
 
-// One preview: an image, or a muted looping video where a work has one. Used
-// by the hover preview on the index and as the fallback media on a detail page.
-export function previewMedia(p, base, { className = "" } = {}) {
-  const media = previewFor(p);
-  const src = mediaUrl(base, media.file);
-  const alt = escapeHtml(p.title);
-  return media.type === "video"
-    ? `<video class="${className}" src="${src}" autoplay muted loop playsinline preload="metadata" aria-label="${alt}"></video>`
-    : `<img class="${className}" src="${src}" alt="${alt}" loading="lazy" />`;
-}
-
 // The landing page is deliberately bare: her name and the menu top-left, one
 // centred column with the greeting and the two pictures, and the contacts in
 // the bottom-left corner. Everything else — the bio, the work index, the
 // stories — lives on its own page.
-export function renderHomePage(
-  strings,
-  projects,
-  stories,
-  profilePicSrc,
-  munariPicSrc,
-  base,
-  contact,
-) {
+export function renderHomePage(strings, base, contact) {
+  // The deck's home is bare: the greeting centred, and nothing else. The two
+  // photographs it used to carry now live on About, where the caption's
+  // "on top / below" wording actually describes their arrangement.
   return `
     <section class="home-simple" id="home">
       <div class="home-center">
         <h1 class="intro-title">${splitWords(strings.hero.greeting)}</h1>
         <p class="intro-role">
           ${escapeHtml(strings.hero.role)}<br />
-          ${escapeHtml(strings.hero.tagline)}
+          <strong>${escapeHtml(strings.hero.tagline)}</strong>
         </p>
-
-        <figure class="intro-figures">
-          <div class="intro-figure">
-            <img src="${profilePicSrc}" alt="${escapeHtml(strings.about.profileAlt)}" fetchpriority="high" />
-          </div>
-          <div class="intro-figure">
-            <img src="${munariPicSrc}" alt="${escapeHtml(strings.about.munariAlt)}" loading="lazy" />
-          </div>
-          <figcaption class="intro-caption">
-            ${strings.about.caption.join("<br />")}
-          </figcaption>
-        </figure>
       </div>
 
       ${renderHomeContacts(strings, contact)}
@@ -302,20 +396,53 @@ export function renderHomePage(
   `;
 }
 
-// One quiet line of links in the bottom-left corner — no headings, no rows.
-function renderHomeContacts(strings, contact) {
-  const cv = contact.cv
-    ? `<a href="${contact.cv}" target="_blank" rel="noopener noreferrer">${strings.contact.cvShort}</a>`
-    : `<span class="cv-btn--pending" data-tooltip="${escapeHtml(strings.contact.cvPending)}" aria-disabled="true">${strings.contact.cvShort}</span>`;
+/* ---------- Contact icons ----------
+   The deck writes "(icons)" beside the contact row. These are drawn to sit with
+   Coconat: a single hairline weight, round caps, no fills, no brand colours —
+   they inherit currentColor so they follow the theme like the words did.
+   Each is 24×24 on a common optical size so they line up on the baseline. */
+const ICONS = {
+  // Not a document — a bordered "CV", built like the LinkedIn mark: the same
+  // rounded frame with the letters drawn inside it in the same hairline.
+  cv: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="2.75" y="2.75" width="18.5" height="18.5" rx="2"/><path d="M11.1 9.7A3.4 3.4 0 1 0 11.1 14.3"/><path d="M13.9 9.4 16.25 14.8 18.6 9.4"/></svg>`,
+  email: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="2.75" y="5.25" width="18.5" height="13.5" rx="1.5"/><path d="M3.5 6.5l8.5 6.75L20.5 6.5"/></svg>`,
+  linkedin: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="2.75" y="2.75" width="18.5" height="18.5" rx="2"/><path d="M7 10.5v6.25M7 7.4v.1"/><path d="M11 16.75V10.5"/><path d="M11 13.2c0-1.5 1.1-2.7 2.6-2.7s2.4 1.1 2.4 2.7v3.55"/></svg>`,
+  instagram: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="2.75" y="2.75" width="18.5" height="18.5" rx="5"/><circle cx="12" cy="12" r="4.25"/><path d="M17.4 6.6v.1"/></svg>`,
+  spotify: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M7.4 9.4c3-.8 6.2-.5 8.9 1"/><path d="M8 12.6c2.4-.6 5-.35 7.2.85"/><path d="M8.7 15.6c1.9-.45 3.9-.25 5.6.7"/></svg>`,
+  // Bubble with a handset inside — the tail at the lower left is what makes it
+  // read as WhatsApp rather than a generic chat icon.
+  whatsapp: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3.1a8.9 8.9 0 0 0-7.6 13.5L3.2 20.8l4.35-1.15A8.9 8.9 0 1 0 12 3.1Z"/><path d="M9.15 8.75c.5-.3 1.05 0 1.25.5l.45 1c.12.3.03.62-.22.82l-.4.32c.45.95 1.23 1.73 2.18 2.18l.32-.4c.2-.25.52-.34.82-.22l1 .45c.5.2.8.75.5 1.25-.4.68-1.15.98-1.93.83-2.2-.45-3.98-2.23-4.43-4.43-.15-.78.15-1.53.83-1.93Z"/></svg>`,
+  // The Bē lockup: a two-bowl B beside an e with its bar above.
+  behance: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3.2 7.05h4.2c1.2 0 2.1.78 2.1 1.85s-.9 1.85-2.1 1.85H3.2Z"/><path d="M3.2 10.75h4.85c1.35 0 2.35.9 2.35 2.05s-1 2.05-2.35 2.05H3.2Z"/><path d="M14.7 7.3h4.5"/><path d="M13.5 13.1h6.4c.05-1.6-1.2-2.9-2.95-2.9-1.78 0-3.2 1.35-3.2 3.05s1.38 3.05 3.2 3.05c1.2 0 2.2-.55 2.75-1.45"/></svg>`,
+  // Transport controls for the radio spot. Same hairline as the contact row;
+  // CSS shows exactly one of the pair depending on whether the clip is playing.
+  play: `<svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 7.4 17 12l-8 4.6z"/></svg>`,
+  pause: `<svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9.5 7.5v9M14.5 7.5v9"/></svg>`,
+};
 
+function renderHomeContacts(strings, contact) {
+  // Icons carry no text, so each one needs its own accessible name and a
+  // tooltip — otherwise the row is five unlabelled shapes.
+  const link = (key, href, label, external = true) =>
+    `<a class="contact-icon" href="${href}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}"${
+      external ? ' target="_blank" rel="noopener noreferrer"' : ""
+    }>${ICONS[key]}</a>`;
+
+  const cv = contact.cv
+    ? link("cv", contact.cv, strings.contact.cv)
+    : `<span class="contact-icon is-pending" data-tooltip="${escapeHtml(strings.contact.cvPending)}" aria-disabled="true" role="img" aria-label="${escapeHtml(strings.contact.cv)}">${ICONS.cv}</span>`;
+
+  // The deck's five, plus WhatsApp and Behance. Grouped by what they are:
+  // ways to reach her first, then places to see the work.
+  // WhatsApp carries the number in its label — an icon alone would hide it.
   const links = [
     cv,
-    `<a href="mailto:${contact.email}">${strings.contact.emailLabel}</a>`,
-    `<a href="https://wa.me/${contact.whatsapp}" target="_blank" rel="noopener noreferrer">WhatsApp</a>`,
-    `<a href="${contact.linkedin}" target="_blank" rel="noopener noreferrer">LinkedIn</a>`,
-    `<a href="${contact.behance}" target="_blank" rel="noopener noreferrer">Behance</a>`,
-    `<a href="${contact.instagram}" target="_blank" rel="noopener noreferrer">Instagram</a>`,
-    `<a href="${contact.spotify}" target="_blank" rel="noopener noreferrer">Spotify</a>`,
+    link("email", `mailto:${contact.email}`, contact.email, false),
+    link("whatsapp", `https://wa.me/${contact.whatsapp}`, `WhatsApp — ${contact.phone}`),
+    link("linkedin", contact.linkedin, "LinkedIn"),
+    link("behance", contact.behance, "Behance"),
+    link("instagram", contact.instagram, "Instagram"),
+    link("spotify", contact.spotify, "Spotify"),
   ];
 
   return `<nav class="home-contacts" aria-label="${strings.contact.heading}">${links.join("")}</nav>`;
@@ -328,12 +455,16 @@ function renderHomeContacts(strings, contact) {
 export function renderWorkIndexPage(strings, projects, base) {
   const rows = projects
     .map((p) => {
+      // A still where the work has one, otherwise its film. `url` is already
+      // absolute (a Vimeo/YouTube player); `file` lives in public/work.
       const media = previewFor(p);
+      const src = media ? (media.url ?? mediaUrl(base, media.file)) : "";
+      const preview = media
+        ? ` data-preview-type="${media.type}" data-preview-src="${escapeHtml(src)}" data-preview-alt="${escapeHtml(p.title)}"`
+        : "";
       return `
       <li>
-        <a href="${hrefFor(base, "project", p.id)}" data-link class="work-row ${p.needsInfo ? "is-incomplete" : ""}"
-           data-preview-type="${media.type}" data-preview-src="${mediaUrl(base, media.file)}"
-           data-preview-alt="${escapeHtml(p.title)}">
+        <a href="${hrefFor(base, "project", p.id)}" data-link class="work-row ${p.needsInfo ? "is-incomplete" : ""}"${preview}>
           <span class="work-row-title">${escapeHtml(p.title)}</span>
           <span class="work-row-brand">${escapeHtml(p.brand)}</span>
         </a>
@@ -352,20 +483,23 @@ export function renderWorkIndexPage(strings, projects, base) {
   `;
 }
 
-export function renderCompetitionsPage(strings, competitions) {
+export function renderCompetitionsPage(strings, competitions, base) {
   return `
     <section>
       <div class="section-heading" data-reveal><h1>${strings.competitions.heading}</h1><div class="rule"></div></div>
       <p class="lede" data-reveal>${strings.competitions.subheading}</p>
 
-      <ul class="list-simple" data-reveal>
+      <ul class="comp-list">
         ${competitions
           .map(
-            (c) =>
-              `<li>
-                <span>${escapeHtml(c.title)}${c.format ? ` <em class="cv-meta">${escapeHtml(c.format)}</em>` : ""} — ${escapeHtml(c.brand)}</span>
-                <span class="award">${escapeHtml(c.award)}</span>
-              </li>`,
+            (c) => `
+          <li data-reveal>
+            <a href="${hrefFor(base, "competition", c.id)}" data-link class="comp-row">
+              <span class="comp-title">${escapeHtml(c.title)}</span>
+              <span class="comp-meta">${escapeHtml(c.format)} · ${escapeHtml(c.brand)}</span>
+              <span class="comp-award">${escapeHtml(c.award)}</span>
+            </a>
+          </li>`,
           )
           .join("")}
       </ul>
@@ -373,10 +507,25 @@ export function renderCompetitionsPage(strings, competitions) {
   `;
 }
 
+// One competition, with its film. Same shape as a work page, minus the client.
+export function renderCompetitionPage(strings, competitions, id, base) {
+  const c = competitions.find((x) => x.id === id);
+  if (!c) return renderNotFoundPage(strings, base);
+  return `
+    <section class="project-detail">
+      <a class="back-link" href="${hrefFor(base, "competitions")}" data-link><span class="arrow">←</span> ${strings.competitions.back}</a>
+      <span class="kicker">${escapeHtml(c.brand)} · ${escapeHtml(c.format)}</span>
+      <h1 class="split-title">${splitWords(c.title)}</h1>
+      <p class="comp-award comp-award--detail">${escapeHtml(c.award)}</p>
+      ${c.body.map((b) => `<p class="body-copy" data-reveal>${escapeHtml(b)}</p>`).join("")}
+      ${renderVideo(c.video, strings, c.title, base)}
+    </section>
+  `;
+}
+
 export function renderProjectPage(strings, projects, id, base) {
   const p = projects.find((x) => x.id === id);
   if (!p) return renderNotFoundPage(strings, base);
-  const index = projects.findIndex((x) => x.id === id);
   return `
     <section class="project-detail">
       <a class="back-link" href="${hrefFor(base, "work")}" data-link><span class="arrow">←</span> ${strings.work.back}</a>
@@ -384,30 +533,23 @@ export function renderProjectPage(strings, projects, id, base) {
       <h1 class="split-title">${splitWords(p.title)}</h1>
       ${p.tag ? `<p style="color:var(--text-muted)">${escapeHtml(p.tag)}</p>` : ""}
       ${needsInfoBadge(strings, p.needsInfo)}
-      ${
-        hasPlateLine(p)
-          ? `<div class="hero-plate">
-        <span class="plate-index">${String(index + 1).padStart(2, "0")}</span>
-        <p class="plate-line">${escapeHtml(plateFor(p))}</p>
-      </div>`
-          : ""
-      }
       ${p.summary ? `<p class="lede">${escapeHtml(p.summary)}</p>` : ""}
       ${p.body.map((b) => `<p class="body-copy" data-reveal>${b}</p>`).join("")}
+      ${p.languages ? `<p class="work-langs" data-reveal><span class="needs-info-tag">${escapeHtml(strings.pending.languages)}</span> ${escapeHtml(p.languages)}</p>` : ""}
+      ${renderMedia(p.media, strings, p.title, base)}
+      ${renderAudio(p.audio, strings, base)}
       ${
-        p.images?.length
-          ? `<div class="work-media" data-reveal>${p.images
-              .map(
-                (img) =>
-                  `<figure><img src="${mediaUrl(base, img)}" alt="${escapeHtml(p.title)}" loading="lazy" /></figure>`,
-              )
-              .join("")}</div>`
-          : `<div class="work-media" data-reveal>
-               <figure class="is-placeholder">
-                 ${previewMedia(p, base)}
-                 <figcaption>${escapeHtml(strings.work.placeholderMedia)}</figcaption>
-               </figure>
-             </div>`
+        p.script
+          ? `<figure class="script" data-reveal lang="${p.script.lang}">
+               <figcaption>${escapeHtml(p.script.label)}</figcaption>
+               ${p.script.stanzas
+                 .map(
+                   (stanza) =>
+                     `<p>${stanza.map((l) => escapeHtml(l)).join("<br />")}</p>`,
+                 )
+                 .join("")}
+             </figure>`
+          : ""
       }
       ${
         p.downloads?.length
@@ -419,59 +561,56 @@ export function renderProjectPage(strings, projects, id, base) {
               .join(" · ")}</p>`
           : ""
       }
-      <p style="font-size:0.85rem;color:var(--text-muted);margin-top:2rem">${strings.work.agency} ${escapeHtml(p.agency)}</p>
+      ${p.credits ? `<p class="work-credits" data-reveal>${escapeHtml(p.credits)}</p>` : ""}
+      ${p.agency ? `<p class="work-agency">${strings.work.agency} ${escapeHtml(p.agency)}</p>` : ""}
       ${p.recognition ? `<div class="recognition" data-reveal>${escapeHtml(p.recognition)}</div>` : ""}
     </section>
   `;
 }
 
-export function renderAboutPage(strings, cv, gallery, base) {
+export function renderAboutPage(strings, cv, base) {
   const a = strings.about;
-  const line = (arr) => arr.map((l) => escapeHtml(l)).join("<br />");
+  const line = (arr) => arr.map((l) => inkRed(escapeHtml(l))).join("<br />");
 
   return `
     <section class="about-page">
       <div class="section-heading" data-reveal><h1>${a.heading}</h1><div class="rule"></div></div>
 
-      <div class="about-lead" data-reveal>
-        <h2 class="about-hey">${line(a.bioHeading)}</h2>
-        ${a.bio.map((p) => `<p class="intro-para">${line(p)}</p>`).join("")}
-        ${a.paragraphs.map((p, i) => `<p class="intro-para${i === 0 ? " intro-para--lead" : ""}">${line(p)}</p>`).join("")}
-        <p class="about-closing">${line(a.closing)}</p>
+      <!-- The deck's layout: a portrait-orientation image on the left, the bio in
+           the middle, and her photo stacked above the Munari plate on the right —
+           which is why the caption reads "the one on top / the one below". -->
+      <div class="about-columns">
+        <figure class="about-side" data-reveal>
+          <img src="${mediaUrl(base, "italian-hand.webp")}" alt="${escapeHtml(a.handAlt)}" loading="lazy" />
+        </figure>
+
+        <div class="about-lead" data-reveal>
+          <h2 class="about-hey">${line(a.bioHeading)}</h2>
+          ${a.bio.map((para) => `<p class="intro-para">${line(para)}</p>`).join("")}
+          ${a.paragraphs.map((para, i) => `<p class="intro-para${i === 0 ? " intro-para--lead" : ""}">${line(para)}</p>`).join("")}
+          <p class="about-closing">${line(a.closing)}</p>
+        </div>
+
+        <figure class="about-stack" data-reveal>
+          <div class="intro-figure">
+            <img src="${mediaUrl(base, "ludovica2.webp")}" alt="${escapeHtml(a.profileAlt)}" loading="lazy" />
+          </div>
+          <figcaption class="intro-caption">${a.caption.join("<br />")}</figcaption>
+          <div class="intro-figure">
+            <img src="${mediaUrl(base, "munari1.webp")}" alt="${escapeHtml(a.munariAlt)}" loading="lazy" />
+          </div>
+        </figure>
       </div>
 
-      ${renderAboutGallery(strings, gallery, base)}
+      ${renderCvColumns(strings, cv, base)}
 
-      ${renderCvColumns(strings, cv)}
     </section>
-  `;
-}
-
-// The award boards, full width, one under another — scrolling past the text
-// lands you in the pictures. Anything without confirmed copy says so out loud.
-function renderAboutGallery(strings, gallery, base) {
-  if (!gallery?.length) return "";
-  return `
-    <div class="about-gallery">
-      ${gallery
-        .map(
-          (g, i) => `
-        <figure class="about-shot" data-reveal style="--i:${i % 4}">
-          <img src="${mediaUrl(base, g.file)}" alt="${escapeHtml(g.title)}" loading="lazy" />
-          <figcaption>
-            <span class="about-shot-title">${escapeHtml(g.title)}</span>
-            <span class="about-shot-note${g.caption === "missing text" ? " is-missing" : ""}">${escapeHtml(g.caption)}</span>
-          </figcaption>
-        </figure>`,
-        )
-        .join("")}
-    </div>
   `;
 }
 
 // Education / Experience / Recognitions side by side, in the brief's own order
 // and layout. Collapses to one column on a phone.
-function renderCvColumns(strings, cv) {
+function renderCvColumns(strings, cv, base) {
   const a = strings.about;
 
   const education = cv.education
@@ -496,8 +635,18 @@ function renderCvColumns(strings, cv) {
     )
     .join("");
 
+  // An award links to the piece that won it wherever we can name one, so the
+  // list doubles as a way into the work. Entries with no `page` stay plain text.
   const recognitionList = (items) =>
-    items.map((r) => `<li class="cv-item"><span>${escapeHtml(r)}</span></li>`).join("");
+    items
+      .map((r) => {
+        const label = escapeHtml(r.text);
+        const body = r.page
+          ? `<a href="${hrefFor(base, r.page, r.id)}" data-link class="cv-award-link">${label}</a>`
+          : `<span>${label}</span>`;
+        return `<li class="cv-item">${body}</li>`;
+      })
+      .join("");
 
   return `
     <div class="cv-columns" data-reveal>
@@ -524,26 +673,77 @@ function renderCvColumns(strings, cv) {
 // languages, and listing all four separately would quadruple the index as more
 // stories arrive. The card links into the language it was written in and the
 // story page morphs between the rest.
-export function renderStoriesIndexPage(strings, stories, base) {
-  const cards = STORY_GROUPS.map((group, i) => {
-    const versions = group.storyIds
-      .map((id) => stories.find((x) => x.id === id))
-      .filter(Boolean);
-    if (!versions.length) return "";
-    const lead = versions[0];
-    return `
-      <a href="${hrefFor(base, "story", lead.id)}" data-link class="story-card" data-reveal style="--i:${i}">
-        <span class="story-langs-line">${versions.map((v) => `<span class="lang">${escapeHtml(v.lang)}</span>`).join("")}</span>
-        <h4>${escapeHtml(group.title || lead.title)}</h4>
-        <p class="story-excerpt">${escapeHtml(excerpt(lead.content, 110))}</p>
-      </a>`;
-  }).join("");
+// The deck's fourth section: short stories above, Poetry Camera below. Each
+// story is listed once as a piece, with the languages it exists in — listing
+// every translation separately would multiply the page for no reader.
+export function renderPersonalPage(strings, stories, groups, poetry, drawings, base) {
+  const storyRows = groups
+    .map((g, i) => {
+      const versions = g.storyIds
+        .map((id) => stories.find((x) => x.id === id))
+        .filter(Boolean);
+
+      // A group with no text yet still appears — it says what is coming rather
+      // than pretending the section is complete.
+      if (!versions.length) {
+        return `
+        <li data-reveal style="--i:${i}">
+          <div class="story-row is-pending">
+            <span class="story-langs-line">${(g.plannedLangs || []).map((l) => `<span class="lang">${escapeHtml(l)}</span>`).join("")}</span>
+            <span class="story-title">${escapeHtml(g.title)}</span>
+            ${g.plannedTitles ? `<span class="story-alt">${g.plannedTitles.map((t) => escapeHtml(t)).join(" · ")}</span>` : ""}
+            ${needsInfoBadge(strings, g.needsInfo)}
+          </div>
+        </li>`;
+      }
+
+      const lead = versions[0];
+      return `
+        <li data-reveal style="--i:${i}">
+          <a href="${hrefFor(base, "story", lead.id)}" data-link class="story-row">
+            <span class="story-langs-line">${versions.map((v) => `<span class="lang">${escapeHtml(v.lang)}</span>`).join("")}</span>
+            <span class="story-title">${escapeHtml(g.title || lead.title)}</span>
+            <span class="story-excerpt">${escapeHtml(excerpt(lead.content, 110))}</span>
+          </a>
+        </li>`;
+    })
+    .join("");
 
   return `
     <section>
-      <div class="section-heading" data-reveal><h1>${strings.stories.heading}</h1><div class="rule"></div></div>
-      <p style="color:var(--text-muted);margin-bottom:2.5rem" data-reveal>${strings.stories.subheading}</p>
-      <div class="story-grid">${cards}</div>
+      <div class="section-heading" data-reveal><h1>${strings.personal.heading}</h1><div class="rule"></div></div>
+
+      <h2 class="sub-heading" data-reveal>${strings.personal.storiesHeading}</h2>
+      <p class="lede" data-reveal>${strings.stories.subheading}</p>
+      <ul class="story-list">${storyRows}</ul>
+
+      <h2 class="sub-heading" data-reveal>${strings.personal.poetryHeading}</h2>
+      <ul class="poetry-list">
+        ${poetry
+          .map(
+            (item, i) => `
+          <li data-reveal style="--i:${i}">
+            <span class="poetry-title">${escapeHtml(item.title)}</span>
+            <span class="needs-info-tag">⚠ ${escapeHtml(strings.pending.text)}</span>
+          </li>`,
+          )
+          .join("")}
+      </ul>
+
+      <h2 class="sub-heading" data-reveal>${strings.personal.drawingsHeading}</h2>
+      <ul class="drawing-list" data-reveal>
+        ${drawings
+          .map(
+            (d) => `
+          <li>
+            <figure>
+              <img src="${mediaUrl(base, d.file)}" alt="${escapeHtml(d.title)}" loading="lazy" />
+              <figcaption>${escapeHtml(d.title)}</figcaption>
+            </figure>
+          </li>`,
+          )
+          .join("")}
+      </ul>
     </section>
   `;
 }
@@ -577,7 +777,7 @@ export function renderStoryPage(strings, stories, id, base) {
 
   return `
     <section class="project-detail story-page">
-      <a class="back-link" href="${hrefFor(base, "stories")}" data-link><span class="arrow">←</span> ${strings.stories.heading}</a>
+      <a class="back-link" href="${hrefFor(base, "personal")}" data-link><span class="arrow">←</span> ${strings.personal.back}</a>
       <span class="kicker" id="story-kicker">${escapeHtml(s.lang)}</span>
       <h1 class="split-title" id="story-title">${splitWords(s.title)}</h1>
       ${switcher}
@@ -659,25 +859,26 @@ export function renderNotFoundPage(strings, base) {
 export function renderPage(route, strings, ctx) {
   switch (route.page) {
     case "home":
-      return renderHomePage(
-        strings,
-        ctx.projects,
-        ctx.stories,
-        ctx.profilePicSrc,
-        ctx.munariPicSrc,
-        ctx.base,
-        ctx.contact,
-      );
+      return renderHomePage(strings, ctx.base, ctx.contact);
     case "about":
-      return renderAboutPage(strings, ctx.cv, ctx.gallery, ctx.base);
+      return renderAboutPage(strings, ctx.cv, ctx.base);
     case "work":
       return renderWorkIndexPage(strings, ctx.projects, ctx.base);
     case "competitions":
-      return renderCompetitionsPage(strings, ctx.competitions);
+      return renderCompetitionsPage(strings, ctx.competitions, ctx.base);
+    case "competition":
+      return renderCompetitionPage(strings, ctx.competitions, route.id, ctx.base);
     case "project":
       return renderProjectPage(strings, ctx.projects, route.id, ctx.base);
-    case "stories":
-      return renderStoriesIndexPage(strings, ctx.stories, ctx.base);
+    case "personal":
+      return renderPersonalPage(
+        strings,
+        ctx.stories,
+        ctx.storyGroups,
+        ctx.poetry,
+        ctx.drawings,
+        ctx.base,
+      );
     case "story":
       return renderStoryPage(strings, ctx.stories, route.id, ctx.base);
     default:

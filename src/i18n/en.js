@@ -7,21 +7,22 @@ export default {
     description:
       "Ludovica Piro is a Senior Creative Copywriter and author based in Madrid, at TBWA\\España. Cannes Lions-shortlisted work for IKEA, Volkswagen, Emergency International and more.",
   },
+  // The deck writes the menu as one line: "About, works, competitions, personal
+  // projects". Her capitalisation is kept exactly — only the first item is
+  // capitalised, because it reads as a sentence.
   nav: {
     home: "Home",
     about: "About",
-    work: "Works",
-    competitions: "Competitions",
-    stories: "Short Stories",
+    work: "works",
+    competitions: "competitions",
+    personal: "personal projects",
   },
-  // Narrow screens swap in these shorter labels — the full names crowd the bar
-  // on a phone. Both are rendered; CSS decides which one is visible.
   navShort: {
     home: "Home",
     about: "About",
-    work: "Works",
-    competitions: "Competitions",
-    stories: "Stories",
+    work: "works",
+    competitions: "competitions",
+    personal: "projects",
   },
   hero: {
     // The multilingual greeting is hers, not interface chrome — it survives the
@@ -32,8 +33,9 @@ export default {
   },
   about: {
     heading: "About",
-    // Verbatim from her own Information page on Cargo (691401.cargo.site/information),
-    // which supersedes the copy scraped from the old ludovicapiro.com. Each
+    // Verbatim from her PORTFOLIO deck, which supersedes both the old
+    // ludovicapiro.com and anything scraped from it. [[Double brackets]] mark
+    // the phrases the deck picks out in red — the only red on the site. Each
     // paragraph is an array of lines because the line breaks are hers — she's a
     // copywriter, the breaks are part of the writing, so they are preserved
     // rather than reflowed.
@@ -43,8 +45,8 @@ export default {
         "I was born and raised in Palermo (Sicily) and I've put down roots in different cities throughout this 30-year journey of experiencing life (to the fullest).",
       ],
       [
-        "I'm currently based in Madrid,",
-        "where I work as a Senior Creative Copywriter",
+        "I'm currently based in [[Madrid]],",
+        "where I work as a [[Senior Creative Copywriter]]",
         "at TBWA\\España (ex DDB Spain).",
       ],
     ],
@@ -54,7 +56,7 @@ export default {
         "The room I love the least is the waiting room.",
       ],
       [
-        "I'm passionate about stand-up comedy, screenwriting, photography and learning languages.",
+        "I'm passionate about [[stand-up comedy, screenwriting, photography and learning languages]].",
       ],
       [
         "I currently speak 4: spanish, portuguese, english and italian (of course).",
@@ -67,15 +69,20 @@ export default {
     closing: ["Yes, because", "even when I go nowhere,", "my mind goes everywhere."],
     // Sits under the pair of images on the home page. Contains inline markup on
     // purpose (the work title and "mental gymnastics" are italicised), so it is
-    // injected unescaped. Her Cargo page stacks the two photos and says "on top"
-    // / "below"; ours sit side by side, so the positions read left/right.
+    // injected unescaped. The deck stacks the two photos vertically and the copy
+    // says "on top" / "below", so the layout follows the words rather than the
+    // other way round.
     caption: [
-      "On the left, that's me.",
-      "On the right, <em>Forchette parlanti</em>, a work by Bruno Munari.",
+      "The one on top is me, while the one below <em>Forchette parlanti</em>, a work by Bruno Munari.",
       "I've always found his teachings on <em>mental gymnastics</em> inspiring. He is one of my favourite artists, together with Erik Kessels, Saul Steinberg and many others.",
     ],
     profileAlt: "Ludovica Piro",
     munariAlt: "Forchette parlanti, a work by Bruno Munari",
+    // The deck's About page opens with a black-and-white photograph of a hand in
+    // the left column. That file has not been supplied, so the slot renders a
+    // visible note instead of an empty box.
+    handAlt: "A hand, photographed in black and white",
+    handPending: "The left-hand image from the deck has not been supplied yet.",
     educationHeading: "Education",
     experienceHeading: "Experience",
     recognitionsHeading: "Recognitions",
@@ -90,19 +97,39 @@ export default {
     recognition: "Recognition",
     back: "Back to works",
     seeAll: "See all works",
-    // Shown under stand-in media, so it's never mistaken for the real thing.
-    placeholderMedia: "Placeholder image — waiting on the real media.",
   },
   competitions: {
     heading: "Competitions",
     subheading: "Self-initiated work and competition entries.",
     back: "Back to competitions",
   },
+  // The deck's fourth section. It holds the short stories and Poetry Camera.
+  personal: {
+    heading: "Personal projects",
+    storiesHeading: "Short stories",
+    poetryHeading: "Poetry Camera",
+    drawingsHeading: "Drawings",
+    back: "Back to personal projects",
+  },
+  // The player on the radio spot: the button says what the next click will do.
+  audio: {
+    play: "Play",
+    pause: "Pause",
+  },
   stories: {
-    heading: "Short Stories",
+    heading: "Short stories",
     subheading: "Full of copywriting. Fully covered by copyright.",
     read: "Read",
     close: "Close",
+  },
+  // Shown wherever the deck names something she has not sent yet.
+  pending: {
+    text: "Text still to come.",
+    media: "Video still to come.",
+    watch: "Watch",
+    watchOn: "Watch on ludovicapiro.com",
+    languages: "Available in",
+    credits: "Credits",
   },
   contact: {
     heading: "Contact",

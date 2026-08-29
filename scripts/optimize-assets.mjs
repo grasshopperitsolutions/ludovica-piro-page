@@ -25,14 +25,21 @@ const FORCE = process.argv.includes("--force");
 // converted, under a slugified version of its filename, and reported so it
 // can be wired up (or chased with Ludovica) rather than silently dropped.
 const NAME_MAP = {
-  "BOARD-Emergency_A_01": "emergency-board",
-  EMERGENCY_Eurobest_Board_A_01: "emergency-eurobest",
-  "CAMPARINO-ATM_A_03": "camparino-atm",
-  "CAMPARINO-BoardMuseum_A_01": "camparino-museum",
-  "CAMPARINO-TheSouvenir_A_03": "camparino-souvenir",
-  "CONAD-BoardBuoniXTutti": "conad-buoni-x-tutti",
-  "CONAD-BoardDoggyBag": "conad-doggy-bag",
-  "CONAD-BoardTasteTheName": "conad-taste-the-name",
+  // The boards and stills Ludovica supplied, mapped to the slug each work uses
+  // in src/data.js. Anything unlisted is still converted, under a slugified
+  // filename, and reported so it can be wired up rather than silently dropped.
+  //
+  // The Everyday Emergencies and IVECO entries were removed once the artwork
+  // was extracted from the PORTFOLIO deck instead: the deck has the images in
+  // the order and grouping she laid them out in, so those are what the site
+  // ships. Re-adding a mapping here would write files nothing references.
+  Säkerhet: "sakerhet-board",
+  "365-days": "365-days-board",
+  "italian-hand": "italian-hand",
+  ludovica2: "ludovica2",
+  munari1: "munari1",
+  "Isola-delle-femmine": "isola-delle-femmine",
+  "Senza-fiato": "senza-fiato",
 };
 
 const slugify = (s) =>

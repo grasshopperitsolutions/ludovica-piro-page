@@ -18,7 +18,9 @@ import {
   competitions,
   cv,
   stories,
-  ABOUT_GALLERY,
+  STORY_GROUPS,
+  POETRY_CAMERA,
+  DRAWINGS,
 } from "../src/data.js";
 import {
   routeMeta,
@@ -37,11 +39,6 @@ const SITE = "https://ludovicapiro.com";
 // asset URLs baked into prerendered HTML must carry the same prefix as the
 // script/link tags Vite itself emits, or they 404 once deployed.
 const BASE = (viteConfig.base || "/").replace(/\/+$/, "");
-async function assetPath(manifest, srcPath) {
-  const entry = manifest[srcPath];
-  if (!entry) throw new Error(`Asset not found in build manifest: ${srcPath}`);
-  return `${BASE}/${entry.file}`;
-}
 
 function buildRoutes() {
   const routes = [
@@ -49,8 +46,9 @@ function buildRoutes() {
     { page: "about" },
     { page: "work" },
     { page: "competitions" },
-    { page: "stories" },
+    { page: "personal" },
     ...projects.map((p) => ({ page: "project", id: p.id })),
+    ...competitions.map((c) => ({ page: "competition", id: c.id })),
     ...stories.map((s) => ({ page: "story", id: s.id })),
   ];
   return routes;
@@ -89,27 +87,22 @@ function escapeAttr(str) {
 }
 
 async function main() {
-  const manifestRaw = await readFile(path.join(DIST, ".vite", "manifest.json"), "utf8");
-  const manifest = JSON.parse(manifestRaw);
-  const profilePicSrc = await assetPath(manifest, "src/assets/profile-pic.jpeg");
-  const munariPicSrc = await assetPath(manifest, "src/assets/munari.jpg");
-
   const template = await readFile(path.join(DIST, "index.html"), "utf8");
   const ctx = {
     projects,
     competitions,
     cv,
     stories,
+    storyGroups: STORY_GROUPS,
+    poetry: POETRY_CAMERA,
+    drawings: DRAWINGS,
     contact,
-    gallery: ABOUT_GALLERY,
-    profilePicSrc,
-    munariPicSrc,
     base: BASE,
   };
   const routes = buildRoutes();
 
   for (const route of routes) {
-    const meta = routeMeta(route, en, projects, stories);
+    const meta = routeMeta(route, en, projects, stories, competitions);
     const urlPath = buildPath(route.page, route.id);
     const url = SITE + urlPath;
 
@@ -153,9 +146,11 @@ async function main() {
 // small standalone HTML file that forwards on. Deliberately `noindex` and
 // canonicalised to the destination, so search engines consolidate rather than
 // treating it as a duplicate page.
+// Old URLs that should keep resolving. /personal-projects is a real page now,
+// so the only survivor is the short-stories index, which the deck folded into it.
 const REDIRECTS = [
-  { from: "/contact", to: "/#contact" },
-  { from: "/personal-projects", to: "/competitions" },
+  { from: "/stories", to: "/personal-projects" },
+  { from: "/work", to: "/works" },
 ];
 
 async function writeRedirects() {
@@ -224,19 +219,21 @@ async function writeLlmsTxt() {
   lines.push("## Work");
   for (const p of projects) {
     lines.push(
-      `- [${p.title}](${SITE}/work/${p.id}) — ${p.brand} (${p.agency}): ${p.summary}`,
+      `- [${p.title}](${SITE}${buildPath("project", p.id)}) — ${p.brand}${p.agency ? ` (${p.agency})` : ""}: ${p.summary}`,
     );
   }
   lines.push("");
   lines.push("## Competitions");
   for (const c of competitions) {
-    lines.push(`- ${c.title} — ${c.brand} (${c.award})`);
+    lines.push(
+      `- [${c.title}](${SITE}${buildPath("competition", c.id)}) — ${c.brand} (${c.award}): ${c.body[0]}`,
+    );
   }
   lines.push("");
-  lines.push("## Short stories");
+  lines.push("## Personal projects — short stories");
   for (const s of stories) {
     lines.push(
-      `- [${s.title}](${SITE}/stories/${s.id}) (${s.lang}) — ${excerpt(s.content, 140)}`,
+      `- [${s.title}](${SITE}${buildPath("story", s.id)}) (${s.lang}) — ${excerpt(s.content, 140)}`,
     );
   }
   lines.push("");
@@ -244,7 +241,6 @@ async function writeLlmsTxt() {
   lines.push(`- Email: ${contact.email}`);
   lines.push(`- LinkedIn: ${contact.linkedin}`);
   lines.push(`- Spotify: ${contact.spotify}`);
-  lines.push(`- Behance: ${contact.behance}`);
   lines.push(`- Instagram: ${contact.instagram}`);
   lines.push("");
   lines.push("Languages spoken: Italian, English, Spanish, Portuguese.");
