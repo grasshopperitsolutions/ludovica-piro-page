@@ -17,12 +17,15 @@ export default {
     competitions: "competitions",
     personal: "personal projects",
   },
+  // The short forms the nav falls back to when the bar is tight. They are the
+  // same words now — "projects" alone read as a different section from
+  // "personal projects", which is the one place the abbreviation cost meaning.
   navShort: {
     home: "Home",
     about: "About",
     work: "works",
     competitions: "competitions",
-    personal: "projects",
+    personal: "personal projects",
   },
   hero: {
     // The multilingual greeting is hers, not interface chrome — it survives the
@@ -70,7 +73,7 @@ export default {
       ],
     ],
     // The line she closes on, set apart from the paragraphs above it.
-    closing: ["Yes, because", "even when I go nowhere,", "my mind goes everywhere."],
+    closing: ["Yes, because", "even when I go nowhere, my mind goes everywhere."],
     // Sits under the pair of images on the home page. Contains inline markup on
     // purpose (the work title and "mental gymnastics" are italicised), so it is
     // injected unescaped. The deck stacks the two photos vertically and the copy
@@ -97,7 +100,7 @@ export default {
   },
   work: {
     heading: "Works",
-    agency: "Agency where I worked on it:",
+    agency: "Agency:",
     recognition: "Recognition",
     back: "Back to works",
     seeAll: "See all works",

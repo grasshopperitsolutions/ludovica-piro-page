@@ -80,7 +80,6 @@ export const projects = [
     title: "More Than Mechanics",
     brand: "Iveco Group",
     agency: "Ogilvy Italy",
-    summary: "Being an IVECO mechanic means being much more than a mechanic.",
     body: [
       "Many technical careers are still affected by the misconception that they are merely 'Plan B' options. IVECO challenges this perception by putting its technical careers on the same level as traditional dream jobs. Because being an IVECO mechanic means being much more than a mechanic.",
     ],
@@ -169,24 +168,11 @@ export const projects = [
     title: "Ci Sta",
     brand: "Sanbittèr (Nestlé)",
     agency: "Ogilvy Italy",
-    summary: "It's appealing. It works. It fits.",
     body: [
       "Among Gen Zers and millennials, the expression 'ci sta' is widely used with a meaning similar to 'cool.' That's why we felt it could work perfectly as the brand's tagline.",
       "Why? Because, just like 'cool,' 'ci sta' has a double meaning. It describes something appealing and relevant, but also something that works, fits or feels right. This richness of meaning helped us connect with our audience, highlight the product's strengths, and define a new brand positioning.",
     ],
     media: [{ video: { kind: "youtube", id: "QI_ci6w-STc" } }],
-  },
-  {
-    id: "the-couples",
-    title: "The Couples",
-    brand: "Volkswagen Italy",
-    agency: "DDB Italy",
-    summary:
-      "On Valentine's Day, celebrate love without forgetting to give everyone else a gift too.",
-    body: [
-      "On Valentine's Day, the streets fill with couples in love. Volkswagen invites them to celebrate their love without forgetting to give everyone else a gift too.",
-    ],
-    media: [{ video: { kind: "vimeo", id: "788324836", h: "000fdf0f6f" } }],
   },
   {
     id: "segunda-mao",
@@ -209,11 +195,9 @@ export const projects = [
     id: "colecao-para-animais",
     title: "Coleção para animais",
     brand: "IKEA Portugal",
-    // The deck names no agency for this one; UZINA is likely but not stated, so
-    // it is left blank rather than guessed.
+    // No agency line: the deck never named one, and the page credits the
+    // people who made it instead.
     agency: "",
-    summary:
-      "A collection for pets — and an invitation for humans to reclaim their spaces.",
     body: [
       "IKEA has launched a collection dedicated to pets. But cats and dogs love their owners' belongings. The campaign builds on this insight to introduce the new collection, inviting humans to reclaim their spaces.",
     ],
@@ -229,7 +213,11 @@ export const projects = [
         ],
       },
     ],
-    needsInfo: "Agency not named in the deck — confirm before publishing.",
+    // Her own credits, in her own capitalisation.
+    credits: [
+      "Creative Director: Teresa Verde Pinho",
+      "Art Director: Margarita Pignatelli",
+    ],
   },
   {
     id: "liga-te",
@@ -299,8 +287,10 @@ export const projects = [
     // Her own file, in public/work — played inline by the page's own player
     // rather than sending the listener off to Google Drive.
     audio: { label: "Radio spot", file: "liga-te-radio.mp3" },
-    credits:
-      "A project developed with Margarita Pignatelli (art director) under the creative direction of Teresa Verde Pinho & Inês Nogueira de Sousa.",
+    credits: [
+      "Creative Directors: Teresa Verde Pinho & Inês Nogueira de Sousa",
+      "Art Director: Margarita Pignatelli",
+    ],
   },
 ];
 
@@ -372,6 +362,7 @@ export const cv = {
     {
       school: "Politecnico di Milano — Poli.design",
       detail: "Master in Brand Communication",
+      dates: "Sept. 2018 – May 2020",
     },
     {
       school: "University of Palermo",
@@ -387,7 +378,7 @@ export const cv = {
   ],
   experience: [
     {
-      agency: "TBWA\\España / DDB Spain (Madrid)",
+      agency: "TBWA\\España (ex DDB Spain)",
       role: "Senior Creative Copywriter",
       clients: "BBVA",
     },
@@ -481,7 +472,7 @@ export const cv = {
 /* What the works index shows when a row is rested on.
 
    First choice is the work's own first still. Works that are only a film
-   (No More Excuses, Ci Sta, The Couples) fall back to that film, played muted
+   (No More Excuses, Ci Sta) fall back to that film, played muted
    and looping with the player's chrome hidden — a moving preview is truer to
    those works than any frame we could pick, and far better than borrowing
    another campaign's board.

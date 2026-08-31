@@ -30,11 +30,13 @@ export function escapeHtml(str) {
 // Wraps each word in a masked span so headlines can rise word-by-word.
 // The spans are inert without JS/animation — the text still reads normally,
 // and `prefers-reduced-motion` flattens the effect in CSS.
-// Copy can pick a phrase out in red with [[double brackets]] — the deck does
-// this on the About page and nowhere else. Escaping runs FIRST, so the marker
-// can never be used to smuggle markup in through a content string.
-export function inkRed(escaped) {
-  return escaped.replace(/\[\[(.+?)\]\]/g, '<span class="ink-red">$1</span>');
+// Copy can pick a phrase out with [[double brackets]] — the deck does this on
+// the About page and nowhere else. It used to set those phrases in red; the
+// site is monochrome now, so they lift to the full ink colour against the
+// muted body text instead. Escaping runs FIRST, so the marker can never be
+// used to smuggle markup in through a content string.
+export function emphasise(escaped) {
+  return escaped.replace(/\[\[(.+?)\]\]/g, '<span class="ink-strong">$1</span>');
 }
 
 export function splitWords(text, { animate = true } = {}) {
@@ -415,11 +417,6 @@ const ICONS = {
   linkedin: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="2.75" y="2.75" width="18.5" height="18.5" rx="2"/><path d="M7 10.5v6.25M7 7.4v.1"/><path d="M11 16.75V10.5"/><path d="M11 13.2c0-1.5 1.1-2.7 2.6-2.7s2.4 1.1 2.4 2.7v3.55"/></svg>`,
   instagram: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="2.75" y="2.75" width="18.5" height="18.5" rx="5"/><circle cx="12" cy="12" r="4.25"/><path d="M17.4 6.6v.1"/></svg>`,
   spotify: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.25"/><path d="M7.4 9.4c3-.8 6.2-.5 8.9 1"/><path d="M8 12.6c2.4-.6 5-.35 7.2.85"/><path d="M8.7 15.6c1.9-.45 3.9-.25 5.6.7"/></svg>`,
-  // Bubble with a handset inside — the tail at the lower left is what makes it
-  // read as WhatsApp rather than a generic chat icon.
-  whatsapp: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3.1a8.9 8.9 0 0 0-7.6 13.5L3.2 20.8l4.35-1.15A8.9 8.9 0 1 0 12 3.1Z"/><path d="M9.15 8.75c.5-.3 1.05 0 1.25.5l.45 1c.12.3.03.62-.22.82l-.4.32c.45.95 1.23 1.73 2.18 2.18l.32-.4c.2-.25.52-.34.82-.22l1 .45c.5.2.8.75.5 1.25-.4.68-1.15.98-1.93.83-2.2-.45-3.98-2.23-4.43-4.43-.15-.78.15-1.53.83-1.93Z"/></svg>`,
-  // The Bē lockup: a two-bowl B beside an e with its bar above.
-  behance: `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3.2 7.05h4.2c1.2 0 2.1.78 2.1 1.85s-.9 1.85-2.1 1.85H3.2Z"/><path d="M3.2 10.75h4.85c1.35 0 2.35.9 2.35 2.05s-1 2.05-2.35 2.05H3.2Z"/><path d="M14.7 7.3h4.5"/><path d="M13.5 13.1h6.4c.05-1.6-1.2-2.9-2.95-2.9-1.78 0-3.2 1.35-3.2 3.05s1.38 3.05 3.2 3.05c1.2 0 2.2-.55 2.75-1.45"/></svg>`,
   // Transport controls for the radio spot. Same hairline as the contact row;
   // CSS shows exactly one of the pair depending on whether the clip is playing.
   play: `<svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 7.4 17 12l-8 4.6z"/></svg>`,
@@ -438,15 +435,12 @@ function renderHomeContacts(strings, contact) {
     ? link("cv", contact.cv, strings.contact.cv)
     : `<span class="contact-icon is-pending" data-tooltip="${escapeHtml(strings.contact.cvPending)}" aria-disabled="true" role="img" aria-label="${escapeHtml(strings.contact.cv)}">${ICONS.cv}</span>`;
 
-  // The deck's five, plus WhatsApp and Behance. Grouped by what they are:
-  // ways to reach her first, then places to see the work.
-  // WhatsApp carries the number in its label — an icon alone would hide it.
+  // The deck's five, in its order: the CV, a way to write to her, then the
+  // three places the work lives.
   const links = [
     cv,
     link("email", `mailto:${contact.email}`, contact.email, false),
-    link("whatsapp", `https://wa.me/${contact.whatsapp}`, `WhatsApp — ${contact.phone}`),
     link("linkedin", contact.linkedin, "LinkedIn"),
-    link("behance", contact.behance, "Behance"),
     link("instagram", contact.instagram, "Instagram"),
     link("spotify", contact.spotify, "Spotify"),
   ];
@@ -567,7 +561,11 @@ export function renderProjectPage(strings, projects, id, base) {
               .join(" · ")}</p>`
           : ""
       }
-      ${p.credits ? `<p class="work-credits" data-reveal>${escapeHtml(p.credits)}</p>` : ""}
+      ${
+        p.credits?.length
+          ? `<p class="work-credits" data-reveal>${p.credits.map((c) => escapeHtml(c)).join("<br />")}</p>`
+          : ""
+      }
       ${p.agency ? `<p class="work-agency">${strings.work.agency} ${escapeHtml(p.agency)}</p>` : ""}
       ${p.recognition ? `<div class="recognition" data-reveal>${escapeHtml(p.recognition)}</div>` : ""}
     </section>
@@ -576,7 +574,7 @@ export function renderProjectPage(strings, projects, id, base) {
 
 export function renderAboutPage(strings, cv, base) {
   const a = strings.about;
-  const line = (arr) => arr.map((l) => inkRed(escapeHtml(l))).join("<br />");
+  const line = (arr) => arr.map((l) => emphasise(escapeHtml(l))).join("<br />");
 
   return `
     <section class="about-page">
@@ -594,7 +592,6 @@ export function renderAboutPage(strings, cv, base) {
           <h2 class="about-hey">${line(a.bioHeading)}</h2>
           ${a.bio.map((para) => `<p class="intro-para">${line(para)}</p>`).join("")}
           ${a.paragraphs.map((para, i) => `<p class="intro-para${i === 0 ? " intro-para--lead" : ""}">${line(para)}</p>`).join("")}
-          <p class="about-closing">${line(a.closing)}</p>
         </div>
 
         <figure class="about-stack" data-reveal>
@@ -606,6 +603,8 @@ export function renderAboutPage(strings, cv, base) {
             <img src="${mediaUrl(base, "munari1.webp")}" alt="${escapeHtml(a.munariAlt)}" loading="lazy" />
           </div>
         </figure>
+
+        <p class="about-closing">${line(a.closing)}</p>
       </div>
 
       ${renderCvColumns(strings, cv, base)}
@@ -773,66 +772,6 @@ export function renderStoryPage(strings, stories, id, base) {
       <h1 class="split-title" id="story-title">${splitWords(s.title)}</h1>
       ${switcher}
       <div class="story-body" id="story-body">${s.content}</div>
-    </section>
-  `;
-}
-
-// Rendered at the foot of the home page rather than on a route of its own.
-export function renderContactBlock(strings, contact, kickerNum = "") {
-  const behanceHandle = contact.behance.replace(/^.*behance\.net\//, "");
-  const instagramHandle = "@" + contact.instagram.replace(/^.*instagram\.com\//, "");
-  // LinkedIn vanity slugs carry a trailing id ("ludovica-piro-55327116a");
-  // drop it so the row reads like the other handles.
-  const linkedinHandle = contact.linkedin
-    .replace(/^.*linkedin\.com\/in\//, "")
-    .replace(/\/+$/, "")
-    .replace(/-[0-9a-z]{6,}$/, "");
-  const spotifyHandle = contact.spotify
-    .replace(/^.*spotify\.com\/user\//, "")
-    .replace(/[?/].*$/, "");
-
-  // Until a real CV URL exists the button is shown but inert, carrying a
-  // tooltip instead of a dead link.
-  const cvBlock = contact.cv
-    ? `<a class="cv-btn" href="${contact.cv}" target="_blank" rel="noopener noreferrer" data-reveal>${strings.contact.cv} <span class="go">↗</span></a>`
-    : `<span class="cv-btn cv-btn--pending" data-tooltip="${escapeHtml(strings.contact.cvPending)}" aria-disabled="true" data-reveal>${strings.contact.cv} <span class="go">↗</span></span>`;
-
-  return `
-    <section id="contact">
-      <div class="section-heading" data-reveal>
-        ${kickerNum ? `<span class="kicker-num">${kickerNum}</span>` : ""}
-        <h2>${strings.contact.heading}</h2>
-        <div class="rule"></div>
-      </div>
-      <div class="contact-list" data-reveal>
-        <div class="contact-row">
-          <span>${strings.contact.emailLabel}</span>
-          <a href="mailto:${contact.email}">${contact.email}</a>
-        </div>
-        <div class="contact-row">
-          <span>${strings.contact.phoneLabel}</span>
-          <a href="https://wa.me/${contact.whatsapp}" target="_blank" rel="noopener noreferrer">
-            ${contact.phone} <span class="contact-hint">WhatsApp ↗</span>
-          </a>
-        </div>
-        <div class="contact-row">
-          <span>LinkedIn</span>
-          <a href="${contact.linkedin}" target="_blank" rel="noopener noreferrer">${escapeHtml(linkedinHandle)} ↗</a>
-        </div>
-        <div class="contact-row">
-          <span>Behance</span>
-          <a href="${contact.behance}" target="_blank" rel="noopener noreferrer">${escapeHtml(behanceHandle)} ↗</a>
-        </div>
-        <div class="contact-row">
-          <span>Instagram</span>
-          <a href="${contact.instagram}" target="_blank" rel="noopener noreferrer">${escapeHtml(instagramHandle)} ↗</a>
-        </div>
-        <div class="contact-row">
-          <span>Spotify</span>
-          <a href="${contact.spotify}" target="_blank" rel="noopener noreferrer">${escapeHtml(spotifyHandle)} ↗</a>
-        </div>
-      </div>
-      ${cvBlock}
     </section>
   `;
 }
