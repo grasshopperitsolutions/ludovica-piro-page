@@ -1446,6 +1446,16 @@ body.previewing .cursor-ring {
   }
 }
 
+/* Phones: her name on its own line, the title beneath it. Inline everywhere
+   else, where the sentence fits comfortably on one line. Blocks rather than a
+   <br> so the break is a layout decision the stylesheet owns, and the sentence
+   still reads as one string to a screen reader either way. */
+@media (max-width: 699px) {
+  .intro-role .role-part {
+    display: block;
+  }
+}
+
 /* The line she closes the bio on — set apart from the paragraphs above it. */
 .about-closing {
   font-family: var(--serif);

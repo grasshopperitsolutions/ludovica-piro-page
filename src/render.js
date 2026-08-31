@@ -386,7 +386,7 @@ export function renderHomePage(strings, base, contact) {
       <div class="home-center">
         <h1 class="intro-title">${splitWords(strings.hero.greeting)}</h1>
         <p class="intro-role">
-          ${escapeHtml(strings.hero.role)}<br />
+          ${strings.hero.role.map((part) => `<span class="role-part">${escapeHtml(part)}</span>`).join(" ")}<br />
           <strong>${escapeHtml(strings.hero.tagline)}</strong>
         </p>
       </div>

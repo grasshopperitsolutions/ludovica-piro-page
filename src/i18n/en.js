@@ -28,7 +28,11 @@ export default {
     // The multilingual greeting is hers, not interface chrome — it survives the
     // English-only decision because it's part of how she introduces herself.
     greeting: "Hi, Hola, Olá, Ciao",
-    role: "I'm Ludovica, Senior Creative Copywriter and author.",
+    // Two parts, not one string: on a phone the line is too long to hold and
+    // would otherwise break wherever it ran out of room — mid-title, usually.
+    // Splitting it here puts the break after her name, which is where it should
+    // fall. On anything wider the parts sit inline and read as one sentence.
+    role: ["I'm Ludovica,", "Senior Creative Copywriter and author."],
     tagline: "I write a lot, sleep less and dream big.",
   },
   about: {
