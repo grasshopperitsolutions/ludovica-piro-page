@@ -676,7 +676,7 @@ function renderCvColumns(strings, cv, base) {
 // The deck's fourth section: short stories above, Poetry Camera below. Each
 // story is listed once as a piece, with the languages it exists in — listing
 // every translation separately would multiply the page for no reader.
-export function renderPersonalPage(strings, stories, groups, poetry, drawings, base) {
+export function renderPersonalPage(strings, stories, groups, poetry, base) {
   const storyRows = groups
     .map((g, i) => {
       const versions = g.storyIds
@@ -725,21 +725,6 @@ export function renderPersonalPage(strings, stories, groups, poetry, drawings, b
           <li data-reveal style="--i:${i}">
             <span class="poetry-title">${escapeHtml(item.title)}</span>
             <span class="needs-info-tag">⚠ ${escapeHtml(strings.pending.text)}</span>
-          </li>`,
-          )
-          .join("")}
-      </ul>
-
-      <h2 class="sub-heading" data-reveal>${strings.personal.drawingsHeading}</h2>
-      <ul class="drawing-list" data-reveal>
-        ${drawings
-          .map(
-            (d) => `
-          <li>
-            <figure>
-              <img src="${mediaUrl(base, d.file)}" alt="${escapeHtml(d.title)}" loading="lazy" />
-              <figcaption>${escapeHtml(d.title)}</figcaption>
-            </figure>
           </li>`,
           )
           .join("")}
@@ -876,7 +861,6 @@ export function renderPage(route, strings, ctx) {
         ctx.stories,
         ctx.storyGroups,
         ctx.poetry,
-        ctx.drawings,
         ctx.base,
       );
     case "story":

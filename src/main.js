@@ -8,7 +8,6 @@ import {
   stories,
   STORY_GROUPS,
   POETRY_CAMERA,
-  DRAWINGS,
 } from "./data.js";
 import {
   parsePath,
@@ -151,7 +150,6 @@ function render() {
     stories,
     storyGroups: STORY_GROUPS,
     poetry: POETRY_CAMERA,
-    drawings: DRAWINGS,
     contact,
     base: BASE,
   };

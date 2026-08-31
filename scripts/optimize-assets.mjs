@@ -38,8 +38,6 @@ const NAME_MAP = {
   "italian-hand": "italian-hand",
   ludovica2: "ludovica2",
   munari1: "munari1",
-  "Isola-delle-femmine": "isola-delle-femmine",
-  "Senza-fiato": "senza-fiato",
 };
 
 const slugify = (s) =>

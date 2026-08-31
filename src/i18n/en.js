@@ -112,7 +112,6 @@ export default {
     heading: "Personal projects",
     storiesHeading: "Short stories",
     poetryHeading: "Poetry Camera",
-    drawingsHeading: "Drawings",
     back: "Back to personal projects",
   },
   // The player on the radio spot: the button says what the next click will do.

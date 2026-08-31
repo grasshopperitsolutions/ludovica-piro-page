@@ -579,17 +579,6 @@ export const POETRY_CAMERA = [
   { id: "nuvole", title: "Nuvole" },
 ];
 
-// Her drawings, from ludovicapiro.com. A third strand of Personal projects,
-// alongside the short stories and Poetry Camera.
-export const DRAWINGS = [
-  {
-    id: "isola-delle-femmine",
-    title: "Isola delle femmine",
-    file: "isola-delle-femmine.webp",
-  },
-  { id: "senza-fiato", title: "Senza fiato", file: "senza-fiato.webp" },
-];
-
 export function storyGroupFor(id) {
   return STORY_GROUPS.find((g) => g.storyIds.includes(id));
 }
