@@ -24,6 +24,12 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+        with:
+          # Full history, not the default shallow clone: the sitemap's <lastmod>
+          # dates come from `git log` on the files behind each page. With one
+          # commit available every page would silently fall back to the build
+          # date, which is the behaviour this replaced.
+          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version: 22

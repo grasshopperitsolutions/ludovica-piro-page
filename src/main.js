@@ -10,6 +10,7 @@ import {
   POETRY_CAMERA,
 } from "./data.js";
 import {
+  SITE_ORIGIN,
   parsePath,
   buildPath,
   hrefFor,
@@ -20,7 +21,6 @@ import {
   splitWords,
 } from "./render.js";
 
-const SITE_ORIGIN = "https://ludovicapiro.com";
 // Vite always resolves this to the configured `base`, trailing slash
 // included (e.g. "/" at the eventual domain root, or
 // "/ludovica-piro-page/" while staged as an org-domain subpath) — every

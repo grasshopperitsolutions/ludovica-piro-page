@@ -8,6 +8,7 @@
 // <title>/description/OG tags baked in. The client bundle then hydrates
 // over this markup on load for interactivity.
 import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -30,6 +31,7 @@ import {
   excerpt,
 } from "../src/render.js";
 import viteConfig from "../vite.config.js";
+import { ogTargets } from "./og-images.mjs";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url)) + "/..";
 const DIST = path.join(ROOT, "dist");
@@ -38,6 +40,23 @@ const SITE = "https://ludovicapiro.com";
 // asset URLs baked into prerendered HTML must carry the same prefix as the
 // script/link tags Vite itself emits, or they 404 once deployed.
 const BASE = (viteConfig.base || "/").replace(/\/+$/, "");
+
+// A build served from a subpath is a staging build: the real site lives at the
+// domain root. Staging must not be indexed — otherwise the temporary address
+// collects search history and competes with the launch — so those builds get
+// `noindex` on every page and a robots.txt that closes the whole tree. The
+// canonical tag already points at the real domain, but a canonical is a hint
+// and a disallow is not.
+const IS_STAGING = BASE !== "";
+
+// Which works advertise a share image of their own. Derived from the same
+// function that generates them, so the two cannot disagree about a filename.
+const OG_BY_WORK = new Map(ogTargets().map((t) => [t.id, t.name]));
+
+function ogImageFor(route) {
+  const name = route.page === "project" ? OG_BY_WORK.get(route.id) : null;
+  return name ? `${SITE}/og/${name}` : `${SITE}/og-image.jpg`;
+}
 
 function buildRoutes() {
   const routes = [
@@ -53,7 +72,7 @@ function buildRoutes() {
   return routes;
 }
 
-function applyHead(template, { title, description, url }) {
+function applyHead(template, { title, description, url, image, imageAlt }) {
   let html = template;
   html = html.replace(/<title>.*?<\/title>/, `<title>${title}</title>`);
   html = html.replace(
@@ -78,6 +97,28 @@ function applyHead(template, { title, description, url }) {
     `$1${escapeAttr(description)}$2`,
   );
   html = html.replace(/(<link\s+rel="canonical"\s+href=")[^"]*(")/, `$1${url}$2`);
+
+  // Both image tags move together — a page whose OG card and Twitter card
+  // disagree previews differently depending on where it is pasted.
+  html = html.replace(
+    /(<meta\s+property="og:image"\s+content=")[^"]*(")/,
+    `$1${image}$2`,
+  );
+  html = html.replace(
+    /(<meta\s+name="twitter:image"\s+content=")[^"]*(")/,
+    `$1${image}$2`,
+  );
+  html = html.replace(
+    /(<meta\s+property="og:image:alt"\s+content=")[^"]*(")/,
+    `$1${escapeAttr(imageAlt)}$2`,
+  );
+
+  if (IS_STAGING) {
+    html = html.replace(
+      /(<meta\s+name="robots"\s+content=")[^"]*(")/,
+      `$1noindex, nofollow$2`,
+    );
+  }
   return html;
 }
 
@@ -121,6 +162,8 @@ async function main() {
       title: meta.title,
       description: meta.description,
       url,
+      image: ogImageFor(route),
+      imageAlt: meta.title,
     });
     html = html.replace(
       /<div id="app" class="app"><\/div>/,
@@ -135,8 +178,12 @@ async function main() {
   await writeSitemap(routes);
   await writeLlmsTxt();
   await writeRedirects();
+  if (IS_STAGING) await writeStagingRobots();
 
-  console.log(`Prerendered ${routes.length} routes.`);
+  console.log(
+    `Prerendered ${routes.length} routes` +
+      (IS_STAGING ? " (staging build: noindex + robots disallow)." : "."),
+  );
 }
 
 // Pages that used to be routes of their own and now live as a section of
@@ -185,8 +232,55 @@ async function writeRedirects() {
   }
 }
 
-async function writeSitemap(routes) {
+// Staging keeps its own robots.txt, replacing the permissive one from public/.
+// Belt and braces with the per-page `noindex`: a crawler that never fetches a
+// page still reads this.
+async function writeStagingRobots() {
+  const txt = [
+    "# Staging build — this is not the live site.",
+    "# The real site is https://ludovicapiro.com/ and is indexable there.",
+    "User-agent: *",
+    "Disallow: /",
+    "",
+  ].join("\n");
+  await writeFile(path.join(DIST, "robots.txt"), txt, "utf8");
+}
+
+/* When the content behind a page last actually changed.
+
+   Every entry used to carry the build date, so a rebuild that changed nothing
+   still told crawlers all 24 pages were new — which teaches them to ignore the
+   field. These come from git instead: the last commit touching the files a
+   page is built from. Pages made of copy in data.js move when data.js moves,
+   and no sooner.
+
+   Falls back to the build date outside a git checkout (a downloaded tarball,
+   some CI images) — the old behaviour, so no worse. */
+function lastCommitDate(files) {
+  try {
+    const out = execFileSync("git", ["log", "-1", "--format=%cs", "--", ...files], {
+      cwd: ROOT,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+    return /^\d{4}-\d{2}-\d{2}$/.test(out) ? out : null;
+  } catch {
+    return null;
+  }
+}
+
+function contentDates() {
   const today = new Date().toISOString().slice(0, 10);
+  const src = (f) => path.join(ROOT, f);
+  // Copy lives in data.js and en.js; the page shape in render.js. A page
+  // changed when any file that produces it changed.
+  const content = lastCommitDate([src("src/data.js"), src("src/i18n/en.js")]) ?? today;
+  const layout = lastCommitDate([src("src/render.js")]) ?? today;
+  return { content, newest: content > layout ? content : layout };
+}
+
+async function writeSitemap(routes) {
+  const { content, newest } = contentDates();
   const urls = routes
     .map((r) => {
       const loc = SITE + buildPath(r.page, r.id);
@@ -196,7 +290,13 @@ async function writeSitemap(routes) {
           : r.page === "project" || r.page === "story"
             ? "0.6"
             : "0.8";
-      return `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${today}</lastmod>\n    <priority>${priority}</priority>\n  </url>`;
+      // A single work, competition or story is pure content, so it moves with
+      // the copy. Index pages also reflect changes to the page shape.
+      const lastmod =
+        r.page === "project" || r.page === "competition" || r.page === "story"
+          ? content
+          : newest;
+      return `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <priority>${priority}</priority>\n  </url>`;
     })
     .join("\n");
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;

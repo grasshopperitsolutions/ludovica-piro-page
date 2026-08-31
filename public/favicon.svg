@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Poppy">
+  <title>Ludovica Piro</title>
+  <!--
+    The site's poppy, redrawn for a 16px tab. The nav's poppy is a detailed
+    public-domain illustration; at favicon size its outline and shading turn to
+    mud, so this is the same flower reduced to what still reads that small:
+    four petals, a dark eye, a ring of stamens.
+
+    The petals carry the identity in both themes — red holds against a light and
+    a dark tab strip alike — but the tones shift a little under
+    prefers-color-scheme so it stays bright on dark chrome rather than going
+    heavy. Colours are set in CSS rather than fill attributes so that one media
+    query can restate them; SVG favicons honour it in Chrome and Firefox, and
+    Safari falls back to the PNG declared alongside this file.
+  -->
+  <style>
+    .petal { fill: #d81f26; }
+    .eye { fill: #141414; }
+    .stamen { stroke: #141414; stroke-width: 2.6; stroke-linecap: round; }
+    @media (prefers-color-scheme: dark) {
+      .petal { fill: #ff4d4d; }
+      .eye { fill: #1c0708; }
+      .stamen { stroke: #1c0708; }
+    }
+  </style>
+
+  <g class="petal">
+    <ellipse cx="32" cy="21" rx="16" ry="14" />
+    <ellipse cx="19" cy="35" rx="15" ry="13" />
+    <ellipse cx="45" cy="35" rx="15" ry="13" />
+    <ellipse cx="32" cy="45" rx="14" ry="13" />
+  </g>
+
+  <g class="stamen">
+    <path d="M32 32 26 25M32 32 38 25M32 32 24 34M32 32 40 34M32 32 28 39M32 32 36 39" />
+  </g>
+
+  <circle class="eye" cx="32" cy="32" r="6.4" />
+</svg>

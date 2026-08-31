@@ -13,6 +13,12 @@
 
 import { storyGroupFor, previewFor } from "./data.js";
 
+// The address the site will live at, regardless of where it is staged right
+// now. Canonical URLs, share links and structured data all have to name the
+// real domain, never the subpath the build happens to be served from — so this
+// is deliberately not derived from `base`.
+export const SITE_ORIGIN = "https://ludovicapiro.com";
+
 export function escapeHtml(str) {
   return String(str)
     .replace(/&/g, "&amp;")
@@ -841,7 +847,98 @@ export function renderNotFoundPage(strings, base) {
   `;
 }
 
+/* ---------- Structured data ----------
+   index.html carries the site-wide Person record. This adds the per-page one:
+   each work and competition as a CreativeWork, with the client as `sponsor`,
+   the agency as `producer` and its prizes as `award`. That is what answer
+   engines and knowledge panels read to connect "who wrote Säkerhet" to her.
+
+   It is rendered inside the page rather than injected into <head>, so the same
+   markup serves the prerendered file and the client-side re-render — a stale
+   <head> script describing the previous work would be worse than none. JSON-LD
+   in <body> is valid and search engines read it there.
+
+   `</` is escaped in the serialised JSON: a copy line containing that sequence
+   would otherwise close the script tag early. */
+function renderStructuredData(route, strings, ctx) {
+  const url = (page, id) => SITE_ORIGIN + buildPath(page, id);
+  const author = { "@type": "Person", name: "Ludovica Inés Piro", url: SITE_ORIGIN };
+  let data = null;
+
+  if (route.page === "project") {
+    const p = ctx.projects.find((x) => x.id === route.id);
+    if (p) {
+      data = {
+        "@context": "https://schema.org",
+        "@type": "CreativeWork",
+        name: p.title,
+        headline: p.summary || p.title,
+        description: p.summary || excerpt(p.body?.[0] ?? "", 200),
+        url: url("project", p.id),
+        author,
+        creator: author,
+        inLanguage: "en",
+        sponsor: p.brand ? { "@type": "Organization", name: p.brand } : undefined,
+        producer: p.agency ? { "@type": "Organization", name: p.agency } : undefined,
+        award: p.recognition || undefined,
+      };
+    }
+  } else if (route.page === "competition") {
+    const c = ctx.competitions.find((x) => x.id === route.id);
+    if (c) {
+      data = {
+        "@context": "https://schema.org",
+        "@type": "CreativeWork",
+        name: c.title,
+        description: c.body?.[0],
+        url: url("competition", c.id),
+        author,
+        creator: author,
+        genre: c.format,
+        inLanguage: "en",
+        sponsor: c.brand ? { "@type": "Organization", name: c.brand } : undefined,
+        award: c.award ? `${c.brand} — ${c.award}` : undefined,
+      };
+    }
+  } else if (route.page === "story") {
+    const s = ctx.stories.find((x) => x.id === route.id);
+    if (s) {
+      data = {
+        "@context": "https://schema.org",
+        "@type": "ShortStory",
+        name: s.title,
+        description: excerpt(s.content, 200),
+        url: url("story", s.id),
+        author,
+        inLanguage: { ITA: "it", PT: "pt", ES: "es", ENG: "en" }[s.lang] || "en",
+      };
+    }
+  } else if (route.page === "work" || route.page === "competitions") {
+    const items = route.page === "work" ? ctx.projects : ctx.competitions;
+    const page = route.page === "work" ? "project" : "competition";
+    data = {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: route.page === "work" ? strings.work.heading : strings.competitions.heading,
+      itemListElement: items.map((item, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        name: item.title,
+        url: url(page, item.id),
+      })),
+    };
+  }
+
+  if (!data) return "";
+  const json = JSON.stringify(data).replace(/<\//g, "<\\/");
+  return `<script type="application/ld+json">${json}</script>`;
+}
+
 export function renderPage(route, strings, ctx) {
+  return renderStructuredData(route, strings, ctx) + renderRoute(route, strings, ctx);
+}
+
+function renderRoute(route, strings, ctx) {
   switch (route.page) {
     case "home":
       return renderHomePage(strings, ctx.base, ctx.contact);

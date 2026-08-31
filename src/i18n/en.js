@@ -43,7 +43,7 @@ export default {
     // paragraph is an array of lines because the line breaks are hers — she's a
     // copywriter, the breaks are part of the writing, so they are preserved
     // rather than reflowed.
-    bioHeading: ["Nice to meet you!", "I'm Ludovica."],
+    bioHeading: ["Nice to meet you!", "I'm Ludovica,"],
     bio: [
       [
         "I was born and raised in Palermo (Sicily) and I've put down roots in different cities throughout this 30-year journey of experiencing life (to the fullest).",
