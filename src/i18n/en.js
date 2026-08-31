@@ -33,7 +33,7 @@ export default {
     // Splitting it here puts the break after her name, which is where it should
     // fall. On anything wider the parts sit inline and read as one sentence.
     role: ["I'm Ludovica,", "Senior Creative Copywriter and author."],
-    tagline: "I write a lot, sleep less and dream big.",
+    tagline: "I write a lot, sleep a little and dream big.",
   },
   about: {
     heading: "About",
