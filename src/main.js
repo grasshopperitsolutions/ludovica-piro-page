@@ -7,7 +7,9 @@ import {
   cv,
   stories,
   STORY_GROUPS,
+  STORY_PASSPHRASE,
   POETRY_CAMERA,
+  storyGroupFor,
 } from "./data.js";
 import {
   SITE_ORIGIN,
@@ -104,6 +106,8 @@ function navigate(page, id) {
   }
   state.route = { page, id };
   clearTimeout(previewTimer);
+  // Leaving the page re-locks the gated story, so coming back asks again.
+  lockStory();
   withTransition(() => {
     render();
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -112,6 +116,7 @@ function navigate(page, id) {
 
 window.addEventListener("popstate", () => {
   state.route = parsePath(window.location.pathname, BASE);
+  lockStory();
   withTransition(() => {
     render();
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -139,6 +144,26 @@ function setMeta(selector, content) {
   if (el) el.setAttribute("content", content);
 }
 
+/* TEMPORARY — passphrase gate. Nothing is stored: this lives in memory for the
+   current view of the page only, and `lockStory()` clears it on every
+   navigation, so arriving at the piece always asks again. A reload asks again
+   too, since the variable starts false.
+
+   See STORY_PASSPHRASE in data.js for what this is and is not. */
+let storyUnlocked = false;
+
+function isUnlocked() {
+  return storyUnlocked;
+}
+
+function setUnlocked() {
+  storyUnlocked = true;
+}
+
+function lockStory() {
+  storyUnlocked = false;
+}
+
 function render() {
   updateHead();
 
@@ -151,8 +176,11 @@ function render() {
     poetry: POETRY_CAMERA,
     contact,
     base: BASE,
+    unlocked: isUnlocked(),
   };
 
+  // The footer sits outside <main> so that `main { flex: 1 }` can push it to
+  // the bottom of the viewport on pages whose content is shorter than a screen.
   document.getElementById("app").innerHTML = `
     ${renderChrome({
       strings,
@@ -162,8 +190,8 @@ function render() {
     })}
     <main id="main">
       ${renderPage(state.route, strings, ctx)}
-      ${renderFooter(strings, state.route)}
     </main>
+    ${renderFooter(strings, state.route)}
   `;
 
   bindEvents();
@@ -185,8 +213,34 @@ function bindEvents() {
   );
 
   bindStoryLangSwitch();
+  bindLockForm();
   setupWorkPreview();
   setupAudioPlayers();
+}
+
+/* TEMPORARY — passphrase gate. Compares in the client against a constant that
+   ships in the bundle: a courtesy lock, not security. See data.js. */
+function bindLockForm() {
+  const form = document.querySelector("[data-lock]");
+  if (!form) return;
+  const input = form.querySelector("[data-lock-input]");
+  const error = form.querySelector("[data-lock-error]");
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (input.value === STORY_PASSPHRASE) {
+      setUnlocked();
+      render();
+      return;
+    }
+    error.hidden = false;
+    input.value = "";
+    input.focus();
+  });
+
+  input.addEventListener("input", () => {
+    error.hidden = true;
+  });
 }
 
 /* ---------- Audio: a transport that matches the page ----------
@@ -315,6 +369,9 @@ function bindStoryLangSwitch() {
       const id = btn.dataset.storyLang;
       const story = stories.find((s) => s.id === id);
       if (!story || btn.classList.contains("active")) return;
+      // The switcher writes content straight into the DOM, so it has to honour
+      // the gate too — otherwise it would be a way round it.
+      if (storyGroupFor(id)?.locked && !isUnlocked()) return;
 
       const body = document.getElementById("story-body");
       const title = document.getElementById("story-title");

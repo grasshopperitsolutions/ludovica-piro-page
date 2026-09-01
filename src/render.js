@@ -13,7 +13,7 @@
 // the staging subpath be a one-line config change, and it is what any future
 // preview deploy would need again.
 
-import { storyGroupFor, previewFor, previewForCompetition } from "./data.js";
+import { storyGroupFor, poemFor, previewFor, previewForCompetition } from "./data.js";
 
 // The site's canonical address. Canonical URLs, share links and structured
 // data must always name the real domain rather than whatever host the build is
@@ -78,6 +78,10 @@ export function parsePath(pathname, base = "/") {
   if (segs[0] === "personal-projects") {
     return segs[1] ? { page: "story", id: segs[1] } : { page: "personal" };
   }
+  // Poems get their own segment rather than sharing /personal-projects/<id>
+  // with the stories — otherwise ids would have to stay unique across two
+  // unrelated collections for routing to keep working.
+  if (segs[0] === "poetry" && segs[1]) return { page: "poem", id: segs[1] };
   // Former home of the short stories, before the deck folded them into
   // Personal projects.
   if (segs[0] === "stories") {
@@ -104,6 +108,8 @@ export function buildPath(page, id) {
       return "/personal-projects";
     case "story":
       return `/personal-projects/${id}`;
+    case "poem":
+      return `/poetry/${id}`;
     default:
       return "/";
   }
@@ -161,8 +167,19 @@ export function routeMeta(route, strings, projects, stories, competitions = []) 
       };
     case "story": {
       const s = stories.find((x) => x.id === route.id);
-      return s
-        ? { title: `${s.title} — ${site}`, description: excerpt(s.content, 150) }
+      if (!s) return { title: site, description: strings.meta.description };
+      // A locked piece must not leak through its own meta description — that
+      // is the one place the text would otherwise reach a crawler intact.
+      const locked = storyGroupFor(s.id)?.locked;
+      return {
+        title: `${s.title} — ${site}`,
+        description: locked ? strings.personal.note : excerpt(s.content, 150),
+      };
+    }
+    case "poem": {
+      const p = poemFor(route.id);
+      return p
+        ? { title: `${p.title} — ${site}`, description: p.lines.join(" ") }
         : { title: site, description: strings.meta.description };
     }
     default:
@@ -748,9 +765,17 @@ export function renderPersonalPage(strings, stories, groups, poetry, base) {
     })
     .join("");
 
-  // No content for these yet, so none of them link anywhere.
+  // A poem links once it has its lines; anything still without them says so
+  // rather than offering a link to an empty page.
   const poetryItems = poetry
-    .map((item_) => item({ title: item_.title, pending: strings.pending.text }))
+    .map((poem) =>
+      item({
+        title: poem.title,
+        meta: poem.place || "",
+        href: poem.lines?.length ? hrefFor(base, "poem", poem.id) : null,
+        pending: poem.lines?.length ? null : strings.pending.text,
+      }),
+    )
     .join("");
 
   const group = (title, items, i) => `
@@ -771,7 +796,7 @@ export function renderPersonalPage(strings, stories, groups, poetry, base) {
   `;
 }
 
-export function renderStoryPage(strings, stories, id, base) {
+export function renderStoryPage(strings, stories, id, base, unlocked = false) {
   const s = stories.find((x) => x.id === id);
   if (!s) return renderNotFoundPage(strings, base);
 
@@ -782,6 +807,30 @@ export function renderStoryPage(strings, stories, id, base) {
   const siblings = group
     ? group.storyIds.map((sid) => stories.find((x) => x.id === sid)).filter(Boolean)
     : [];
+
+  /* TEMPORARY — the passphrase gate. `unlocked` is always false in the
+     prerenderer, so the text never reaches the static HTML; the client passes
+     the real value once the reader has entered the passphrase this session.
+     See STORY_PASSPHRASE in data.js for what this is and is not. */
+  if (group?.locked && !unlocked) {
+    return `
+    <section class="project-detail story-page">
+      <a class="back-link" href="${hrefFor(base, "personal")}" data-link><span class="arrow">←</span> ${strings.personal.back}</a>
+      <span class="kicker">${escapeHtml(strings.lock.kicker)}</span>
+      <h1 class="split-title">${splitWords(group.title)}</h1>
+      <form class="lock" data-lock>
+        <p class="lock-note">${escapeHtml(strings.lock.note)}</p>
+        <div class="lock-row">
+          <label class="lock-label" for="lock-input">${escapeHtml(strings.lock.label)}</label>
+          <input class="lock-input" id="lock-input" type="password" name="passphrase"
+            autocomplete="off" autocapitalize="off" spellcheck="false" data-lock-input />
+          <button class="lock-btn" type="submit">${escapeHtml(strings.lock.submit)}</button>
+        </div>
+        <p class="lock-error" data-lock-error hidden>${escapeHtml(strings.lock.wrong)}</p>
+      </form>
+    </section>
+  `;
+  }
 
   const switcher =
     siblings.length > 1
@@ -805,6 +854,38 @@ export function renderStoryPage(strings, stories, id, base) {
       <h1 class="split-title" id="story-title">${splitWords(s.title)}</h1>
       ${switcher}
       <div class="story-body" id="story-body">${s.content}</div>
+    </section>
+  `;
+}
+
+/* One Poetry Camera piece, laid out as the deck lays it: the poem down the
+   left, the photograph large on the right, and — where the slide has one — the
+   place and date in the bottom corner under the image.
+
+   Her line breaks are the poem, so each line is its own element rather than a
+   paragraph left to reflow. `lang` is set on the verse because the two pieces
+   are in different languages from the English interface around them, which
+   matters for screen readers and for hyphenation. */
+export function renderPoemPage(strings, id, base) {
+  const p = poemFor(id);
+  if (!p) return renderNotFoundPage(strings, base);
+
+  return `
+    <section class="project-detail poem-page">
+      <a class="back-link" href="${hrefFor(base, "personal")}" data-link><span class="arrow">←</span> ${strings.personal.back}</a>
+      <span class="kicker">${escapeHtml(strings.personal.poetryHeading)}</span>
+      <h1 class="split-title">${splitWords(p.title)}</h1>
+
+      <div class="poem-layout">
+        <div class="poem-verse" lang="${escapeHtml(p.lang)}" data-reveal>
+          ${p.lines.map((l) => `<span class="poem-line">${escapeHtml(l)}</span>`).join("")}
+        </div>
+
+        <figure class="poem-figure" data-reveal>
+          <img src="${mediaUrl(base, p.image)}" alt="${escapeHtml(p.alt)}" loading="lazy" />
+          ${p.place ? `<figcaption class="poem-place">${escapeHtml(p.place)}</figcaption>` : ""}
+        </figure>
+      </div>
     </section>
   `;
 }
@@ -875,14 +956,31 @@ function renderStructuredData(route, strings, ctx) {
   } else if (route.page === "story") {
     const s = ctx.stories.find((x) => x.id === route.id);
     if (s) {
+      const locked = storyGroupFor(s.id)?.locked;
       data = {
         "@context": "https://schema.org",
         "@type": "ShortStory",
         name: s.title,
-        description: excerpt(s.content, 200),
+        // Same reason as routeMeta: a locked piece must not be published here.
+        description: locked ? undefined : excerpt(s.content, 200),
         url: url("story", s.id),
         author,
         inLanguage: { ITA: "it", PT: "pt", ES: "es", ENG: "en" }[s.lang] || "en",
+      };
+    }
+  } else if (route.page === "poem") {
+    const p = poemFor(route.id);
+    if (p) {
+      data = {
+        "@context": "https://schema.org",
+        "@type": "Poem",
+        name: p.title,
+        text: p.lines.join("\n"),
+        url: url("poem", p.id),
+        author,
+        creator: author,
+        inLanguage: p.lang,
+        locationCreated: p.place || undefined,
       };
     }
   } else if (route.page === "work" || route.page === "competitions") {
@@ -933,7 +1031,9 @@ function renderRoute(route, strings, ctx) {
         ctx.base,
       );
     case "story":
-      return renderStoryPage(strings, ctx.stories, route.id, ctx.base);
+      return renderStoryPage(strings, ctx.stories, route.id, ctx.base, ctx.unlocked);
+    case "poem":
+      return renderPoemPage(strings, route.id, ctx.base);
     default:
       return renderNotFoundPage(strings, ctx.base);
   }

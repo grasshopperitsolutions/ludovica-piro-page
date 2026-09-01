@@ -16,9 +16,9 @@ export default {
   nav: {
     home: "Home",
     about: "About",
-    work: "works",
-    competitions: "competitions",
-    personal: "personal projects",
+    work: "Works",
+    competitions: "Competitions",
+    personal: "Personal Projects",
   },
   // The short forms the nav falls back to when the bar is tight. They are the
   // same words now — "projects" alone read as a different section from
@@ -26,9 +26,9 @@ export default {
   navShort: {
     home: "Home",
     about: "About",
-    work: "works",
-    competitions: "competitions",
-    personal: "personal projects",
+    work: "Works",
+    competitions: "Competitions",
+    personal: "Personal Projects",
   },
   hero: {
     // The multilingual greeting is hers, not interface chrome — it survives the
@@ -142,6 +142,15 @@ export default {
     heading: "Short Stories",
     read: "Read",
     close: "Close",
+  },
+  // TEMPORARY — the passphrase gate on "Sete di verità". Remove along with
+  // STORY_PASSPHRASE and the `locked` flag in src/data.js.
+  lock: {
+    kicker: "Protected",
+    note: "This one is not public yet. Enter the passphrase to read it.",
+    label: "Passphrase",
+    submit: "Read",
+    wrong: "That is not it. Try again.",
   },
   // Shown wherever the deck names something she has not sent yet.
   pending: {

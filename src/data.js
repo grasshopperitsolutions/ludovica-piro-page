@@ -354,26 +354,26 @@ export const competitions = [
 // rather than guessed at.
 export const cv = {
   education: [
-    { school: "Brother Lisboa", detail: "Creative Intensive", dates: "June–August 2026" },
+    { school: "Brother Lisboa", detail: "Creative Intensive", dates: "Jun–Aug 2026" },
     {
       school: "Accademia di Comunicazione",
       detail: "Master in Copywriting and Advertising",
-      dates: "Oct. 2020 – May 2021",
+      dates: "Oct 2020 – May 2021",
     },
     {
       school: "Politecnico di Milano — Poli.design",
       detail: "Master in Brand Communication",
-      dates: "Sept. 2018 – May 2020",
+      dates: "Sept 2018 – May 2020",
     },
     {
       school: "University of Palermo",
       detail: "Faculty of Law — 110 cum laude",
-      dates: "Sept. 2012 – July 2018",
+      dates: "Sept 2012 – Jul 2018",
     },
     {
       school: "Universidade da Coruña",
       detail: "Faculty of Law and Sociology (Erasmus+)",
-      dates: "Sept. 2015 – Sept. 2016",
+      dates: "Sept 2015 – Sept 2016",
     },
     { school: "Classical Studies High School", detail: "", dates: "2007–2012" },
   ],
@@ -391,13 +391,13 @@ export const cv = {
     {
       agency: "UZINA (Lisbon)",
       role: "Creative Copywriter — ADCE Agency Exchange Program",
-      dates: "November – December 2025",
+      dates: "Nov – Dec 2025",
       clients: "IKEA, ERA",
     },
     {
       agency: "Ogilvy & Mather (Milan)",
       role: "Creative Copywriter",
-      dates: "September 2023 – April 2026",
+      dates: "Sept 2023 – Apr 2026",
       clients:
         "IKEA, Electrolux Professional, Sanbittèr, Nutella, IVECO, Emergency (NGO)",
       pitches: "IKEA, Electrolux Professional, Sanbittèr (Sanpellegrino Group)",
@@ -405,20 +405,20 @@ export const cv = {
     {
       agency: "DDB (Milan)",
       role: "Creative Copywriter",
-      dates: "Jan. 2022 – Sept. 2023",
+      dates: "Jan 2022 – Sept 2023",
       clients: "IKEA, Volkswagen, Zurich, Tanqueray (DIAGEO)",
       pitches: "Tanqueray (DIAGEO)",
     },
     {
       agency: "TBWA (Milan)",
       role: "Junior Creative Copywriter",
-      dates: "May 2021 – Jan. 2022",
+      dates: "May 2021 – Jan 2022",
       clients: "Iliad, Cargill, Carrera Eyewear, Loro Piana, GNV, Frosta frozen foods",
     },
     {
       agency: "HAVAS PR (Milan)",
       role: "Media Relations Account",
-      dates: "May 2019 – Oct. 2020",
+      dates: "May 2019 – Oct 2020",
       clients:
         "Reckitt Benckiser (Durex, Finish), Peugeot, OPPO, Courmayeur Mont Blanc, Imperial Brands",
     },
@@ -583,6 +583,18 @@ export const stories = [
   },
 ];
 
+/* TEMPORARY — to be removed.
+
+   The passphrase gating "Sete di verità". This is a courtesy lock, not
+   security: it lives in the client bundle, so anyone who opens devtools can
+   read both it and the story. It keeps the piece off the prerendered HTML and
+   away from casual readers and crawlers, and nothing more. Do not use this
+   pattern for anything that actually needs protecting.
+
+   All three languages are gated together — the same text in three languages,
+   so locking one and leaving the others open would protect nothing. */
+export const STORY_PASSPHRASE = "Ludovic@";
+
 // Each group is the *same* piece written in several languages — grouping them
 // lets a story page offer an in-place language morph instead of treating each
 // translation as an unrelated item.
@@ -591,6 +603,8 @@ export const STORY_GROUPS = [
     id: "sete-di-verita",
     title: "Sete di verità",
     storyIds: ["sete-ita", "sete-pt", "sete-es"],
+    // TEMPORARY: see STORY_PASSPHRASE above.
+    locked: true,
   },
   {
     id: "desideri",
@@ -599,11 +613,52 @@ export const STORY_GROUPS = [
   },
 ];
 
-// The deck's second Personal Projects section. Titles only so far.
+/* The deck's second Personal Projects section: a photograph she took and the
+   lines it prompted, taken verbatim from slides 46 and 47.
+
+   `lines` are hers — each entry is a line as she broke it, not a paragraph to
+   be reflowed, so they are rendered one per line. `place` carries the caption
+   she set in the slide's bottom corner; Mulheres has none in the deck, so it
+   is simply omitted rather than invented. */
 export const POETRY_CAMERA = [
-  { id: "mulheres", title: "Mulheres" },
-  { id: "nuvole", title: "Nuvole" },
+  {
+    id: "mulheres",
+    title: "Mulheres",
+    lang: "pt",
+    image: "poetry-mulheres.webp",
+    alt: "Two women in white shirts, facing each other and laughing, on a sunlit street",
+    lines: [
+      "As mulheres",
+      "que se olham",
+      "e reconhecem",
+      "a mesma força",
+      "que anima a vida",
+      "nunca estão perdidas.",
+    ],
+    place: "Lisboa, 5 april 2026",
+  },
+  {
+    id: "nuvole",
+    title: "Nuvole",
+    lang: "it",
+    image: "poetry-nuvole.webp",
+    alt: "A single cloud against a deep blue sky",
+    lines: [
+      "Che ne sanno le nuvole",
+      "della fatica di tenere i piedi per terra,",
+      "della ricerca di una destinazione,",
+      "del desiderio di essere altrove.",
+      "Le nuvole stanno e non lo sanno.",
+      "Sospese in cielo,",
+      "per un attimo.",
+    ],
+    place: "Barcelona, 11 april 2026",
+  },
 ];
+
+export function poemFor(id) {
+  return POETRY_CAMERA.find((p) => p.id === id);
+}
 
 export function storyGroupFor(id) {
   return STORY_GROUPS.find((g) => g.storyIds.includes(id));

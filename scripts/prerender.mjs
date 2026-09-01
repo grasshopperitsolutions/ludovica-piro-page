@@ -69,6 +69,10 @@ function buildRoutes() {
     ...projects.map((p) => ({ page: "project", id: p.id })),
     ...competitions.map((c) => ({ page: "competition", id: c.id })),
     ...stories.map((s) => ({ page: "story", id: s.id })),
+    ...POETRY_CAMERA.filter((p) => p.lines?.length).map((p) => ({
+      page: "poem",
+      id: p.id,
+    })),
   ];
   return routes;
 }
@@ -155,8 +159,8 @@ async function main() {
       })}
       <main id="main">
         ${renderPage(route, en, ctx)}
-        ${renderFooter(en, route)}
       </main>
+      ${renderFooter(en, route)}
     `;
 
     let html = applyHead(template, {
@@ -331,8 +335,20 @@ async function writeLlmsTxt() {
   lines.push("");
   lines.push("## Personal projects — short stories");
   for (const s of stories) {
+    // A gated piece is listed but not quoted — this file is written for
+    // crawlers, so an excerpt here would publish exactly what the gate holds
+    // back. TEMPORARY, alongside the gate itself.
+    const locked = STORY_GROUPS.find((g) => g.storyIds.includes(s.id))?.locked;
+    const tail = locked ? "not public yet" : excerpt(s.content, 140);
     lines.push(
-      `- [${s.title}](${SITE}${buildPath("story", s.id)}) (${s.lang}) — ${excerpt(s.content, 140)}`,
+      `- [${s.title}](${SITE}${buildPath("story", s.id)}) (${s.lang}) — ${tail}`,
+    );
+  }
+  lines.push("");
+  lines.push("## Personal projects — Poetry Camera");
+  for (const p of POETRY_CAMERA.filter((x) => x.lines?.length)) {
+    lines.push(
+      `- [${p.title}](${SITE}${buildPath("poem", p.id)})${p.place ? ` (${p.place})` : ""} — ${p.lines.join(" ")}`,
     );
   }
   lines.push("");

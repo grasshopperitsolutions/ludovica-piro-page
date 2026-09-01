@@ -619,6 +619,12 @@ section {
   gap: 1.25rem;
   margin-bottom: 3rem;
 }
+/* A heading followed by a standfirst pulls the two together: the line belongs
+   to the title above it, not to the list below, and 3rem of air between them
+   read as though it belonged to neither. */
+.section-heading:has(+ .lede) {
+  margin-bottom: 1rem;
+}
 .section-heading .kicker-num {
   font-family: var(--serif);
   font-size: 0.85rem;
@@ -969,7 +975,12 @@ section {
   transform: translateY(-2px);
 }
 
+/* A sticky footer, not a fixed one: `.app` is a full-height flex column and
+   `main` takes the free space, so on a short page this lands at the bottom of
+   the viewport, and on a long one it sits after the content where it belongs.
+   It has to be a sibling of `main` rather than inside it for that to work. */
 footer {
+  flex-shrink: 0;
   text-align: center;
   padding: 3rem 1.25rem;
   font-size: 0.7rem;
@@ -1753,15 +1764,15 @@ body.previewing .cursor-ring {
 }
 
 /* Her radio script, kept in Portuguese — it is the work, not interface copy.
-   Set as verse and centred on the page: the piece repeats "Quantas vezes…" at
-   the head of each stanza, and centred short lines let that repetition land the
-   way it does when the spot is read aloud. No rule, no card — a poem on the
-   page, with the stanza breaks doing the structuring. */
+   Set as verse, ranged left with the rest of the page: the piece repeats
+   "Quantas vezes…" at the head of each stanza, and a common left edge is what
+   makes that repetition visible down the margin. No rule, no card — a poem on
+   the page, with the stanza breaks doing the structuring. */
 .script {
-  margin: 3.5rem auto;
+  margin: 3.5rem 0;
   padding: 0;
   max-width: 46ch;
-  text-align: center;
+  text-align: left;
   background: none;
   border: 0;
 }
@@ -2130,4 +2141,133 @@ a.contact-icon:focus-visible {
   .work-media--grid-2 {
     grid-template-columns: 1fr 1fr;
   }
+}
+
+/* ---------- Poetry Camera ----------
+   The deck's layout: the poem down the left, the photograph large on the
+   right, and the place and date tucked under the image's bottom corner. Below
+   900px the two stack, poem first — the words are the piece, the photograph is
+   what prompted them. */
+.poem-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  align-items: start;
+  margin-top: 2.5rem;
+}
+
+@media (min-width: 900px) {
+  .poem-layout {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: 3.5rem;
+  }
+}
+
+/* Her line breaks are the poem, so each line is its own block rather than
+   prose left to reflow at whatever width the column happens to be. */
+.poem-verse {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15em;
+  font-family: var(--serif);
+  font-size: clamp(1.1rem, 2.4vw, 1.5rem);
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.poem-line {
+  display: block;
+}
+
+.poem-figure {
+  margin: 0;
+}
+
+.poem-figure img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 6px;
+  background: var(--bg-raised);
+}
+
+/* Bottom-right under the photograph, as the slide sets it. */
+.poem-place {
+  margin-top: 0.75rem;
+  text-align: right;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+/* ---------- TEMPORARY: passphrase gate ----------
+   Remove with STORY_PASSPHRASE and the `locked` flag in src/data.js. */
+.lock {
+  margin-top: 2.5rem;
+  max-width: 34rem;
+}
+
+.lock-note {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 1.25rem;
+}
+
+.lock-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.lock-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.lock-input {
+  flex: 1 1 12rem;
+  min-width: 0;
+  font-family: var(--serif);
+  font-size: 1rem;
+  color: var(--text);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  padding: 0.45rem 0.1rem;
+  transition: border-color 0.25s var(--ease);
+}
+
+.lock-input:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+
+.lock-btn {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: none;
+  color: var(--text-muted);
+  font-family: var(--serif);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  padding: 0.45rem 1.1rem;
+  transition:
+    color 0.25s var(--ease),
+    border-color 0.25s var(--ease);
+}
+
+.lock-btn:hover,
+.lock-btn:focus-visible {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.lock-error {
+  margin-top: 0.9rem;
+  font-size: 0.85rem;
+  color: var(--text);
 }
