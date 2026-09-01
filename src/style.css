@@ -1250,18 +1250,19 @@ body.previewing .cursor-ring {
   color: var(--text);
 }
 
-/* "The room I love the most…" — a step down and italic rather than set large
-   with a rule beside it. It was competing with the opening and the closing,
-   and on this page only those two are meant to carry weight; everything else
-   reads at one level. */
+/* "The room I love the most…" — a step down and italic rather than set large,
+   so it doesn't compete with the opening and the closing (the only two things
+   on this page meant to carry weight). The vertical rule stays, at the same
+   weight as everywhere else it marks a lead line — it's a quieter line, not an
+   unmarked one. */
 .about-lead .intro-para--lead {
   font-family: var(--serif);
   font-style: italic;
   font-size: clamp(0.78rem, 1.25vw, 0.92rem);
   line-height: 1.6;
   color: var(--text);
-  border-left: 0;
-  padding-left: 0;
+  border-left: 2px solid var(--accent);
+  padding-left: 1.05rem;
 }
 /* Its two halves carry different weight, so the size lives on the spans below
    rather than on the paragraph. */
@@ -1509,7 +1510,7 @@ body.previewing .cursor-ring {
   font-size: clamp(1rem, 2vw, 1.35rem);
   line-height: 1.35;
   color: var(--text);
-  margin-top: 1.25rem;
+  margin-top: 0;
   grid-column: 2;
 }
 
@@ -1943,12 +1944,6 @@ body.previewing .cursor-ring {
   font-size: clamp(1.25rem, 2.6vw, 1.85rem);
   line-height: 1.15;
   margin: 0 0 0.35rem;
-}
-
-.pp-group-note {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  margin: 0 0 0.75rem;
 }
 
 .pp-items {

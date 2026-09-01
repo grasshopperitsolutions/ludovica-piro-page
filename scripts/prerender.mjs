@@ -36,17 +36,18 @@ import { ogTargets } from "./og-images.mjs";
 const ROOT = path.dirname(fileURLToPath(import.meta.url)) + "/..";
 const DIST = path.join(ROOT, "dist");
 const SITE = "https://ludovicapiro.com";
-// Vite's build `base` (e.g. "/ludovica-piro-page/" when hosted as a subpath) —
-// asset URLs baked into prerendered HTML must carry the same prefix as the
-// script/link tags Vite itself emits, or they 404 once deployed.
+// Vite's build `base` — "/" at the site's own domain. Asset URLs baked into
+// prerendered HTML must carry the same prefix as the script/link tags Vite
+// itself emits, or they 404 once deployed.
 const BASE = (viteConfig.base || "/").replace(/\/+$/, "");
 
-// A build served from a subpath is a staging build: the real site lives at the
-// domain root. Staging must not be indexed — otherwise the temporary address
-// collects search history and competes with the launch — so those builds get
+// A build served from a subpath is a preview build: the real site lives at the
+// domain root. Previews must not be indexed — a temporary address collects
+// search history and competes with the real one — so those builds get
 // `noindex` on every page and a robots.txt that closes the whole tree. The
 // canonical tag already points at the real domain, but a canonical is a hint
-// and a disallow is not.
+// and a disallow is not. At `base: "/"` this is false and the site is fully
+// indexable, which is the live configuration.
 const IS_STAGING = BASE !== "";
 
 // Which works advertise a share image of their own. Derived from the same

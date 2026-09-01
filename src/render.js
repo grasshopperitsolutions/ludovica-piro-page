@@ -3,20 +3,21 @@
 // browser client (src/main.js) and by the Node prerender script
 // (scripts/prerender.mjs), so it must run in either environment unchanged.
 //
-// `buildPath()` returns app-relative paths ("/work/sakerhet") and is what
+// `buildPath()` returns app-relative paths ("/works/sakerhet") and is what
 // canonical/OG URLs, the sitemap, and the prerender output folders use —
-// those intentionally point at the eventual root-domain deployment
-// regardless of where the site is staged right now. `hrefFor()` is the
-// base-aware version used for every actual in-page `<a href>`, since the
-// site may currently be served from a subpath (e.g. when staged at
-// grasshoppersolutions.online/ludovica-piro-page/ ahead of its own domain).
+// those always name the real domain. `hrefFor()` is the base-aware version
+// used for every actual in-page `<a href>`.
+//
+// The site now lives at its own domain, so `base` is "/" and the two produce
+// the same path. The distinction is kept because it is what let the move off
+// the staging subpath be a one-line config change, and it is what any future
+// preview deploy would need again.
 
 import { storyGroupFor, previewFor, previewForCompetition } from "./data.js";
 
-// The address the site will live at, regardless of where it is staged right
-// now. Canonical URLs, share links and structured data all have to name the
-// real domain, never the subpath the build happens to be served from — so this
-// is deliberately not derived from `base`.
+// The site's canonical address. Canonical URLs, share links and structured
+// data must always name the real domain rather than whatever host the build is
+// being served from — so this is deliberately not derived from `base`.
 export const SITE_ORIGIN = "https://ludovicapiro.com";
 
 export function escapeHtml(str) {
@@ -156,7 +157,7 @@ export function routeMeta(route, strings, projects, stories, competitions = []) 
     case "personal":
       return {
         title: `${strings.personal.heading} — ${site}`,
-        description: strings.stories.subheading,
+        description: strings.personal.note,
       };
     case "story": {
       const s = stories.find((x) => x.id === route.id);
@@ -752,19 +753,19 @@ export function renderPersonalPage(strings, stories, groups, poetry, base) {
     .map((item_) => item({ title: item_.title, pending: strings.pending.text }))
     .join("");
 
-  const group = (title, note, items, i) => `
+  const group = (title, items, i) => `
       <div class="pp-group" data-reveal style="--i:${i}">
         <h2 class="pp-group-title">${escapeHtml(title)}</h2>
-        ${note ? `<p class="pp-group-note">${escapeHtml(note)}</p>` : ""}
         <ul class="pp-items">${items}</ul>
       </div>`;
 
   return `
     <section>
       <div class="section-heading" data-reveal><h1>${strings.personal.heading}</h1><div class="rule"></div></div>
+      <p class="lede" data-reveal>${escapeHtml(strings.personal.note)}</p>
       <div class="pp-groups">
-        ${group(strings.personal.storiesHeading, strings.stories.subheading, storyItems, 0)}
-        ${group(strings.personal.poetryHeading, "", poetryItems, 1)}
+        ${group(strings.personal.storiesHeading, storyItems, 0)}
+        ${group(strings.personal.poetryHeading, poetryItems, 1)}
       </div>
     </section>
   `;

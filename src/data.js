@@ -224,7 +224,7 @@ export const projects = [
     id: "liga-te",
     title: "Liga-te",
     brand: "FOCA FC Lisboa",
-    agency: "UZINA",
+    agency: "Brother Lisboa",
     summary: "The league is ready. You just have to step onto the pitch.",
     body: [
       "Foca FC is a women's and LGBTQIA+ football collective based in Lisbon, created to build an independent, inclusive league for anyone who has felt excluded from the game.",

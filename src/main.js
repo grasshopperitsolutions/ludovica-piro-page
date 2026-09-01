@@ -21,10 +21,9 @@ import {
   splitWords,
 } from "./render.js";
 
-// Vite always resolves this to the configured `base`, trailing slash
-// included (e.g. "/" at the eventual domain root, or
-// "/ludovica-piro-page/" while staged as an org-domain subpath) — every
-// in-page link has to carry this prefix or it 404s once deployed.
+// Vite resolves this to the configured `base`, trailing slash included — "/"
+// now that the site is at its own domain. Every in-page link carries it, which
+// is what allows the build to be relocated to a subpath without code changes.
 const BASE = import.meta.env.BASE_URL;
 
 const state = {

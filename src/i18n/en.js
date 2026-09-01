@@ -4,8 +4,11 @@
 export default {
   meta: {
     title: "Ludovica Piro — Senior Creative Copywriter & Author",
+    // First person — this is what shows up as the share-preview text on
+    // WhatsApp, LinkedIn and the like, so it should sound like her talking
+    // rather than a bio written about her.
     description:
-      "Ludovica Piro is a Senior Creative Copywriter and author based in Madrid, at TBWA\\España. Cannes Lions-shortlisted work for IKEA, Volkswagen, Emergency International and more.",
+      "I'm Ludovica, a Senior Creative Copywriter and author based in Madrid, at TBWA\\España. I write a lot, sleep a little and dream big — Cannes Lions-shortlisted work for IKEA, Volkswagen, Emergency International and more.",
   },
   // The deck writes the menu as one line: "About, works, competitions, personal
   // projects". Her capitalisation is kept exactly — only the first item is
@@ -121,10 +124,14 @@ export default {
   },
   // The deck's fourth section. It holds the short stories and Poetry Camera.
   personal: {
-    heading: "Personal projects",
-    storiesHeading: "Short stories",
+    heading: "Personal Projects",
+    // Sits under the page heading, not under "Short Stories" — it covers both
+    // strands (stories and Poetry Camera), so it belongs to the page, not to
+    // one half of it.
+    note: "Full of copywriting. Fully covered by copyright.",
+    storiesHeading: "Short Stories",
     poetryHeading: "Poetry Camera",
-    back: "Back to personal projects",
+    back: "Back to Personal Projects",
   },
   // The player on the radio spot: the button says what the next click will do.
   audio: {
@@ -132,8 +139,7 @@ export default {
     pause: "Pause",
   },
   stories: {
-    heading: "Short stories",
-    subheading: "Full of copywriting. Fully covered by copyright.",
+    heading: "Short Stories",
     read: "Read",
     close: "Close",
   },
