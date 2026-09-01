@@ -1241,16 +1241,51 @@ body.previewing .cursor-ring {
    pictures, and at the home page's scale the lines were breaking awkwardly and
    crowding them; smaller type gives the bio room to hold its own line breaks,
    which are hers and part of the writing. */
+/* The bio is set in full ink, not the muted grey the home page uses. The only
+   grey text on this page is the caption between her photograph and the forks —
+   that one is a note about the pictures, not part of the bio. */
 .about-lead .intro-para {
   font-size: clamp(0.84rem, 1.35vw, 0.98rem);
   line-height: 1.65;
+  color: var(--text);
 }
+
+/* "The room I love the most…" — a step down and italic rather than set large
+   with a rule beside it. It was competing with the opening and the closing,
+   and on this page only those two are meant to carry weight; everything else
+   reads at one level. */
 .about-lead .intro-para--lead {
-  font-size: clamp(0.92rem, 1.6vw, 1.15rem);
-  line-height: 1.4;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(0.78rem, 1.25vw, 0.92rem);
+  line-height: 1.6;
+  color: var(--text);
+  border-left: 0;
+  padding-left: 0;
 }
-.about-columns .about-closing {
-  font-size: clamp(0.9rem, 1.5vw, 1.08rem);
+/* Its two halves carry different weight, so the size lives on the spans below
+   rather than on the paragraph. */
+.about-closing-lead,
+.about-closing-line {
+  display: block;
+}
+
+.about-closing-lead {
+  font-size: clamp(0.84rem, 1.35vw, 0.98rem);
+  line-height: 1.65;
+}
+
+/* Matched to .about-hey: the greeting that opens the page and the line that
+   closes it are the two things meant to stand out, so they are the same size.
+
+   At that size the sentence is wider than the column it sits in, so it wraps.
+   `balance` makes it break near the middle — which lands on her comma — rather
+   than filling the first line and orphaning "everywhere." on the second.
+   Browsers without it still wrap, just less evenly. */
+.about-closing-line {
+  font-size: clamp(1.2rem, 2.6vw, 1.65rem);
+  line-height: 1.25;
+  text-wrap: balance;
 }
 
 /* An award that links to the work that won it. Underlined on hover only — the
@@ -1481,12 +1516,6 @@ body.previewing .cursor-ring {
 @media (max-width: 699px) {
   .about-columns .about-closing {
     grid-column: 1 / -1;
-    /* Her second line is 45 characters and has to stay one line — at a fixed
-       size it fits a 375px phone by three pixels and breaks on a 360px one.
-       Sized against the viewport instead, it holds down to 320px; the rem cap
-       stops it growing past the fixed size on a wide phone. Measured from the
-       string itself: it needs about 23px of width per pixel of type. */
-    font-size: min(1.05rem, 3.7vw);
   }
 }
 

@@ -67,14 +67,19 @@ export default {
         "I'm passionate about [[stand-up comedy, screenwriting, photography and learning languages]].",
       ],
       [
-        "I currently speak 4: spanish, portuguese, english and italian (of course).",
+        "I currently speak 4: spanish, portuguese, english and italian.",
         "So I could call myself a polyglot wannabe.",
         "Or maybe I'm just hyperactive?",
         "Surely deeply curious.",
       ],
     ],
-    // The line she closes on, set apart from the paragraphs above it.
-    closing: ["Yes, because", "even when I go nowhere, my mind goes everywhere."],
+    // The line she closes on. `lead` runs at body size; `line` is the one that
+    // lands, set at the same size as the "Nice to meet you" that opens the page
+    // — those two are the only things on About that are meant to stand out.
+    closing: {
+      lead: "Yes, because",
+      line: "even when I go nowhere, my mind goes everywhere.",
+    },
     // Sits under the pair of images on the home page. Contains inline markup on
     // purpose (the work title and "mental gymnastics" are italicised), so it is
     // injected unescaped. The deck stacks the two photos vertically and the copy

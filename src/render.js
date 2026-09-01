@@ -628,7 +628,10 @@ export function renderAboutPage(strings, cv, base) {
           </div>
         </figure>
 
-        <p class="about-closing">${line(a.closing)}</p>
+        <p class="about-closing">
+          <span class="about-closing-lead">${line([a.closing.lead])}</span>
+          <span class="about-closing-line">${line([a.closing.line])}</span>
+        </p>
       </div>
 
       ${renderCvColumns(strings, cv, base)}

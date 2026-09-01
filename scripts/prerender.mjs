@@ -312,7 +312,7 @@ async function writeLlmsTxt() {
   // Paragraphs are stored as arrays of authored lines; flatten for plain text.
   for (const para of en.about.bio) lines.push(para.join(" "));
   for (const para of en.about.paragraphs) lines.push(para.join(" "));
-  lines.push(en.about.closing.join(" "));
+  lines.push(`${en.about.closing.lead} ${en.about.closing.line}`);
   lines.push("");
   lines.push("## Work");
   for (const p of projects) {
