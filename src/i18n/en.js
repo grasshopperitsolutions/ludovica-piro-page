@@ -42,7 +42,8 @@ export default {
     heading: "About",
     // Verbatim from her PORTFOLIO deck, which supersedes both the old
     // ludovicapiro.com and anything scraped from it. [[Double brackets]] mark
-    // the phrases the deck picks out in red — the only red on the site. Each
+    // the phrases the deck picks out; the site sets them in full ink rather than
+    // the deck's red, since there is no red in the palette. Each
     // paragraph is an array of lines because the line breaks are hers — she's a
     // copywriter, the breaks are part of the writing, so they are preserved
     // rather than reflowed.
@@ -107,7 +108,10 @@ export default {
   },
   competitions: {
     heading: "Competitions",
-    subheading: "Self-initiated work and competition entries.",
+    // Not shown on the page any more — the index is a plain list like Works.
+    // It stays as the section's meta description, where a sentence explaining
+    // what these are is still worth having for search results.
+    metaDescription: "Self-initiated work and competition entries.",
     back: "Back to competitions",
   },
   // The deck's fourth section. It holds the short stories and Poetry Camera.

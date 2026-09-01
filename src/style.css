@@ -911,40 +911,6 @@ section {
     grid-template-columns: 1fr 1fr;
   }
 }
-.story-card {
-  display: block;
-  text-align: left;
-  background: var(--bg-card);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 1.6rem;
-  transition:
-    border-color 0.3s var(--ease),
-    transform 0.3s var(--ease);
-}
-.story-card:hover {
-  border-color: var(--accent);
-  transform: translateY(-3px);
-}
-.story-card .lang {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: var(--text-muted);
-  display: block;
-  margin-bottom: 0.6rem;
-}
-.story-card h4 {
-  font-size: 1.1rem;
-  margin: 0;
-  font-weight: 400;
-}
-.story-excerpt {
-  margin: 0.6rem 0 0;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
 /* contact */
 .contact-list {
   display: grid;
@@ -1487,6 +1453,12 @@ body.previewing .cursor-ring {
   .intro-role .role-part {
     display: block;
   }
+  /* The parts are blocks here, so they already end their own lines — the <br>
+     that separates the role from the tagline on a wide screen would add a
+     second, empty one on top of that. */
+  .intro-role .role-break {
+    display: none;
+  }
 }
 
 /* The line she closes the bio on — set apart from the paragraphs above it. */
@@ -1610,14 +1582,6 @@ body.previewing .cursor-ring {
 .cv-item-meta {
   color: var(--text-muted);
   font-size: 0.83rem;
-}
-
-/* Four language chips on one story card. */
-.story-langs-line {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-bottom: 0.6rem;
 }
 
 /* ---------- About: the deck's three columns ----------
@@ -1910,38 +1874,9 @@ body.previewing .cursor-ring {
   margin-top: 0.5rem;
 }
 
-/* ---------- Competitions: a list, like Works ---------- */
-.comp-list,
-.story-list,
-.poetry-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.comp-row {
-  display: grid;
-  gap: 0.2rem;
-  padding: 1.1rem 0;
-  border-bottom: 1px solid var(--line);
-  transition: border-color 0.3s var(--ease);
-}
-
-.comp-row:hover {
-  border-color: var(--accent);
-}
-
-.comp-title {
-  font-family: var(--serif);
-  font-size: clamp(1.15rem, 2.2vw, 1.6rem);
-  line-height: 1.2;
-}
-
-.comp-meta {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
+/* ---------- Competitions: the award line on a competition's own page ----------
+   The index uses the Works list and preview panel now, so the row styles that
+   used to live here are gone. */
 .comp-award {
   font-size: 0.72rem;
   text-transform: uppercase;
@@ -1953,62 +1888,90 @@ body.previewing .cursor-ring {
   margin-bottom: 1.5rem;
 }
 
-/* ---------- Personal projects ---------- */
-.sub-heading {
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: var(--text-muted);
-  margin: 3.5rem 0 1rem;
-}
-
-.story-list {
+/* ---------- Personal projects ----------
+   The Works list, nested one level: two collections, each with its pieces
+   underneath. Side by side from 900px — the same breakpoint at which Works
+   splits into list and panel — so both strands are on screen at once, which is
+   the whole point of the page. */
+.pp-groups {
   display: grid;
-  gap: 1.25rem;
-  margin-bottom: 1rem;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+  align-items: start;
 }
 
-.story-row {
-  display: grid;
-  gap: 0.45rem;
-  padding: 1.25rem 1.4rem;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  transition: border-color 0.3s var(--ease);
+@media (min-width: 900px) {
+  .pp-groups {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 3.5rem;
+  }
 }
 
-.story-row:hover {
-  border-color: var(--accent);
+/* The collection's name, set like a work's title so the two pages rhyme. */
+.pp-group-title {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(1.25rem, 2.6vw, 1.85rem);
+  line-height: 1.15;
+  margin: 0 0 0.35rem;
 }
 
-/* A piece she has named but not yet sent — shown, and said so. */
-.story-row.is-pending {
-  border-style: dashed;
-}
-
-.story-alt {
+.pp-group-note {
   font-size: 0.85rem;
   color: var(--text-muted);
-  font-style: italic;
+  margin: 0 0 0.75rem;
 }
 
-.poetry-list {
-  display: grid;
-  gap: 0.75rem;
+.pp-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
 }
 
-.poetry-list li {
+/* A step down from the collection above it — these are the entries, not the
+   headings. Same hover as a work row: the title underlines, the meta lifts. */
+.pp-item {
   display: flex;
-  flex-wrap: wrap;
   align-items: baseline;
-  gap: 0.75rem;
-  padding: 0.9rem 0;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.7rem;
+  padding: 0.75rem 0;
   border-bottom: 1px solid var(--line);
+  color: var(--text-muted);
+  transition: color 0.25s var(--ease);
 }
 
-.poetry-title {
+.pp-item-title {
   font-family: var(--serif);
-  font-size: 1.15rem;
+  font-size: clamp(1rem, 1.7vw, 1.15rem);
+  line-height: 1.2;
+  color: var(--text);
+  transition: opacity 0.25s var(--ease);
+}
+
+.pp-item-meta {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+a.pp-item:hover,
+a.pp-item:focus-visible {
+  color: var(--text);
+}
+
+a.pp-item:hover .pp-item-title,
+a.pp-item:focus-visible .pp-item-title {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
+}
+
+/* Named but not yet written. It is shown rather than hidden, and it is plainly
+   not a link — nothing to click through to yet. */
+.pp-item.is-pending .pp-item-title {
+  color: var(--text-muted);
 }
 
 /* ---------- The one red ----------

@@ -11,9 +11,10 @@ export const contact = {
   instagram: "https://instagram.com/lodevicapire",
   linkedin: "https://www.linkedin.com/in/ludovica-piro-55327116a/",
   spotify: "https://open.spotify.com/user/ludovicainespiro",
-  // TODO: real CV URL needed. While this is empty the CV button is not
-  // rendered at all, rather than shipping a dead link.
-  cv: "",
+  // Her CV. A bare filename is a file in public/, resolved against the build's
+  // base path; an absolute URL would be used as given. Empty renders the button
+  // inert with a tooltip rather than shipping a dead link.
+  cv: "Ludovica-Piro-CV.pdf",
 };
 
 // Order, titles, clients and copy are taken literally from the client's
@@ -486,10 +487,25 @@ export function previewFor(project) {
   const stills = project.media?.find((m) => m.images?.length);
   if (stills) return { type: "image", file: stills.images[0] };
 
-  const film = project.media?.find((m) => m.video)?.video;
+  return previewFromFilm(project.media?.find((m) => m.video)?.video);
+}
+
+// A competition is only ever its film — there is no board or photography — so
+// its index row previews straight from that. Shared with previewFor so the two
+// lists behave identically: same muted, looping, chrome-less playback.
+export function previewForCompetition(competition) {
+  return previewFromFilm(competition.video);
+}
+
+function previewFromFilm(film) {
   if (!film) return null;
 
-  if (film.kind === "file") return { type: "video", file: film.url };
+  if (film.kind === "file") {
+    // Competitions link an absolute URL; works name a file in public/work.
+    return /^https?:/.test(film.url)
+      ? { type: "video", url: film.url }
+      : { type: "video", file: film.url };
+  }
 
   // Query strings are assembled by hand rather than with URLSearchParams: this
   // module is imported by the browser and by the Node prerenderer, and every

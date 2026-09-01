@@ -11,7 +11,7 @@
 // site may currently be served from a subpath (e.g. when staged at
 // grasshoppersolutions.online/ludovica-piro-page/ ahead of its own domain).
 
-import { storyGroupFor, previewFor } from "./data.js";
+import { storyGroupFor, previewFor, previewForCompetition } from "./data.js";
 
 // The address the site will live at, regardless of where it is staged right
 // now. Canonical URLs, share links and structured data all have to name the
@@ -142,14 +142,14 @@ export function routeMeta(route, strings, projects, stories, competitions = []) 
     case "competitions":
       return {
         title: `${strings.competitions.heading} — ${site}`,
-        description: strings.competitions.subheading,
+        description: strings.competitions.metaDescription,
       };
     case "competition": {
       const c = competitions.find((x) => x.id === route.id);
       return c
         ? {
             title: `${c.title} — ${c.brand} — ${site}`,
-            description: c.body?.[0] ?? strings.competitions.subheading,
+            description: c.body?.[0] ?? strings.competitions.metaDescription,
           }
         : { title: site, description: strings.meta.description };
     }
@@ -261,6 +261,15 @@ export function renderChrome({ strings, route, isDark, base }) {
 export function mediaUrl(base, file) {
   const b = (base || "/").replace(/\/+$/, "");
   return `${b}/work/${file}`;
+}
+
+// For files at the root of public/ — the CV, and anything else that is not
+// work media. An absolute URL passes through untouched, so a hosted file can
+// replace a local one without changing the call site.
+export function assetUrl(base, file) {
+  if (/^https?:/.test(file)) return file;
+  const b = (base || "/").replace(/\/+$/, "");
+  return `${b}/${file.replace(/^\/+/, "")}`;
 }
 
 /* ---------- Video ----------
@@ -394,12 +403,12 @@ export function renderHomePage(strings, base, contact) {
       <div class="home-center">
         <h1 class="intro-title">${splitWords(strings.hero.greeting)}</h1>
         <p class="intro-role">
-          ${strings.hero.role.map((part) => `<span class="role-part">${escapeHtml(part)}</span>`).join(" ")}<br />
+          ${strings.hero.role.map((part) => `<span class="role-part">${escapeHtml(part)}</span>`).join(" ")}<br class="role-break" />
           <strong>${escapeHtml(strings.hero.tagline)}</strong>
         </p>
       </div>
 
-      ${renderHomeContacts(strings, contact)}
+      ${renderHomeContacts(strings, contact, base)}
     </section>
   `;
 }
@@ -423,7 +432,7 @@ const ICONS = {
   pause: `<svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9.5 7.5v9M14.5 7.5v9"/></svg>`,
 };
 
-function renderHomeContacts(strings, contact) {
+function renderHomeContacts(strings, contact, base) {
   // Icons carry no text, so each one needs its own accessible name and a
   // tooltip — otherwise the row is five unlabelled shapes.
   const link = (key, href, label, external = true) =>
@@ -431,8 +440,10 @@ function renderHomeContacts(strings, contact) {
       external ? ' target="_blank" rel="noopener noreferrer"' : ""
     }>${ICONS[key]}</a>`;
 
+  // `download` rather than a plain link: the button says "Download CV", so it
+  // should hand over the file instead of opening a PDF viewer in a new tab.
   const cv = contact.cv
-    ? link("cv", contact.cv, strings.contact.cv)
+    ? `<a class="contact-icon" href="${assetUrl(base, contact.cv)}" download aria-label="${escapeHtml(strings.contact.cv)}" title="${escapeHtml(strings.contact.cv)}">${ICONS.cv}</a>`
     : `<span class="contact-icon is-pending" data-tooltip="${escapeHtml(strings.contact.cvPending)}" aria-disabled="true" role="img" aria-label="${escapeHtml(strings.contact.cv)}">${ICONS.cv}</span>`;
 
   // The deck's five, in its order: the CV, a way to write to her, then the
@@ -452,29 +463,31 @@ function renderHomeContacts(strings, contact) {
 // Resting on a row for two seconds opens its preview in the panel alongside;
 // the panel then stays put until another row earns it, so nothing flickers as
 // the cursor crosses the list. Clicking a row opens the work's own page.
-export function renderWorkIndexPage(strings, projects, base) {
-  const rows = projects
-    .map((p) => {
-      // A still where the work has one, otherwise its film. `url` is already
-      // absolute (a Vimeo/YouTube player); `file` lives in public/work.
-      const media = previewFor(p);
-      const src = media ? (media.url ?? mediaUrl(base, media.file)) : "";
-      const preview = media
-        ? ` data-preview-type="${media.type}" data-preview-src="${escapeHtml(src)}" data-preview-alt="${escapeHtml(p.title)}"`
-        : "";
-      return `
+/* One row of an index: the title, a muted line beside it, and the attributes
+   the hover preview reads. `url` is already absolute (a Vimeo/YouTube player,
+   or a film hosted elsewhere); `file` names something in public/work. An item
+   with no preview simply carries no attributes, and the panel holds whatever
+   was there before. */
+function renderIndexRow({ href, title, meta, media, base, incomplete = false }) {
+  const src = media ? (media.url ?? mediaUrl(base, media.file)) : "";
+  const preview = media
+    ? ` data-preview-type="${media.type}" data-preview-src="${escapeHtml(src)}" data-preview-alt="${escapeHtml(title)}"`
+    : "";
+  return `
       <li>
-        <a href="${hrefFor(base, "project", p.id)}" data-link class="work-row ${p.needsInfo ? "is-incomplete" : ""}"${preview}>
-          <span class="work-row-title">${escapeHtml(p.title)}</span>
-          <span class="work-row-brand">${escapeHtml(p.brand)}</span>
+        <a href="${href}" data-link class="work-row ${incomplete ? "is-incomplete" : ""}"${preview}>
+          <span class="work-row-title">${escapeHtml(title)}</span>
+          <span class="work-row-brand">${escapeHtml(meta)}</span>
         </a>
       </li>`;
-    })
-    .join("");
+}
 
+// List left, preview panel right. Shared by Works and Competitions so the two
+// read as the same kind of index — see renderCompetitionsPage.
+function renderIndexPage(heading, rows) {
   return `
     <section>
-      <div class="section-heading" data-reveal><h1>${strings.work.heading}</h1><div class="rule"></div></div>
+      <div class="section-heading" data-reveal><h1>${heading}</h1><div class="rule"></div></div>
       <div class="work-layout">
         <ul class="work-list">${rows}</ul>
         <aside class="work-preview" data-work-preview aria-hidden="true"></aside>
@@ -483,28 +496,39 @@ export function renderWorkIndexPage(strings, projects, base) {
   `;
 }
 
-export function renderCompetitionsPage(strings, competitions, base) {
-  return `
-    <section>
-      <div class="section-heading" data-reveal><h1>${strings.competitions.heading}</h1><div class="rule"></div></div>
-      <p class="lede" data-reveal>${strings.competitions.subheading}</p>
+export function renderWorkIndexPage(strings, projects, base) {
+  const rows = projects
+    .map((p) =>
+      renderIndexRow({
+        href: hrefFor(base, "project", p.id),
+        title: p.title,
+        meta: p.brand,
+        media: previewFor(p),
+        base,
+        incomplete: Boolean(p.needsInfo),
+      }),
+    )
+    .join("");
+  return renderIndexPage(strings.work.heading, rows);
+}
 
-      <ul class="comp-list">
-        ${competitions
-          .map(
-            (c) => `
-          <li data-reveal>
-            <a href="${hrefFor(base, "competition", c.id)}" data-link class="comp-row">
-              <span class="comp-title">${escapeHtml(c.title)}</span>
-              <span class="comp-meta">${escapeHtml(c.format)} · ${escapeHtml(c.brand)}</span>
-              <span class="comp-award">${escapeHtml(c.award)}</span>
-            </a>
-          </li>`,
-          )
-          .join("")}
-      </ul>
-    </section>
-  `;
+// Same list and hover preview as Works. A competition has no stills, so every
+// row previews its film — which is the whole of the work anyway.
+export function renderCompetitionsPage(strings, competitions, base) {
+  const rows = competitions
+    .map((c) =>
+      renderIndexRow({
+        href: hrefFor(base, "competition", c.id),
+        title: c.title,
+        // The award earns its place on the row: it is the reason the piece is
+        // in this section rather than in Works.
+        meta: `${c.brand} · ${c.award}`,
+        media: previewForCompetition(c),
+        base,
+      }),
+    )
+    .join("");
+  return renderIndexPage(strings.competitions.heading, rows);
 }
 
 // One competition, with its film. Same shape as a work page, minus the client.
@@ -681,59 +705,64 @@ function renderCvColumns(strings, cv, base) {
 // The deck's fourth section: short stories above, Poetry Camera below. Each
 // story is listed once as a piece, with the languages it exists in — listing
 // every translation separately would multiply the page for no reader.
+/* Personal projects: two strands, both on one screen.
+
+   It reads like Works and Competitions — a title set large in the serif, a
+   small uppercase line beside it — but nested one level, because these are two
+   named collections rather than a flat list. The excerpt each story used to
+   carry is gone: it made every row three lines deep and pushed Poetry Camera
+   below the fold, and the point of this page is to show that both exist.
+
+   A sub-entry links to its piece when there is one to link to. The ones still
+   waiting on text render as plain text with a marker, never as a link that
+   goes nowhere. */
 export function renderPersonalPage(strings, stories, groups, poetry, base) {
-  const storyRows = groups
-    .map((g, i) => {
+  const item = ({ title, meta, href, pending }) => {
+    const inner = `
+        <span class="pp-item-title">${escapeHtml(title)}</span>
+        ${meta ? `<span class="pp-item-meta">${escapeHtml(meta)}</span>` : ""}
+        ${pending ? `<span class="needs-info-tag">⚠ ${escapeHtml(pending)}</span>` : ""}`;
+    return href
+      ? `<li><a class="pp-item" href="${href}" data-link>${inner}</a></li>`
+      : `<li><div class="pp-item is-pending">${inner}</div></li>`;
+  };
+
+  const storyItems = groups
+    .map((g) => {
       const versions = g.storyIds
         .map((id) => stories.find((x) => x.id === id))
         .filter(Boolean);
-
-      // A group with no text yet still appears — it says what is coming rather
-      // than pretending the section is complete.
-      if (!versions.length) {
-        return `
-        <li data-reveal style="--i:${i}">
-          <div class="story-row is-pending">
-            <span class="story-langs-line">${(g.plannedLangs || []).map((l) => `<span class="lang">${escapeHtml(l)}</span>`).join("")}</span>
-            <span class="story-title">${escapeHtml(g.title)}</span>
-            ${g.plannedTitles ? `<span class="story-alt">${g.plannedTitles.map((t) => escapeHtml(t)).join(" · ")}</span>` : ""}
-            ${needsInfoBadge(strings, g.needsInfo)}
-          </div>
-        </li>`;
-      }
-
-      const lead = versions[0];
-      return `
-        <li data-reveal style="--i:${i}">
-          <a href="${hrefFor(base, "story", lead.id)}" data-link class="story-row">
-            <span class="story-langs-line">${versions.map((v) => `<span class="lang">${escapeHtml(v.lang)}</span>`).join("")}</span>
-            <span class="story-title">${escapeHtml(g.title || lead.title)}</span>
-            <span class="story-excerpt">${escapeHtml(excerpt(lead.content, 110))}</span>
-          </a>
-        </li>`;
+      const langs = versions.length
+        ? versions.map((v) => v.lang)
+        : (g.plannedLangs ?? []);
+      return item({
+        title: g.title || versions[0]?.title,
+        meta: langs.join(" · "),
+        href: versions.length ? hrefFor(base, "story", versions[0].id) : null,
+        pending: versions.length ? null : strings.pending.text,
+      });
     })
     .join("");
+
+  // No content for these yet, so none of them link anywhere.
+  const poetryItems = poetry
+    .map((item_) => item({ title: item_.title, pending: strings.pending.text }))
+    .join("");
+
+  const group = (title, note, items, i) => `
+      <div class="pp-group" data-reveal style="--i:${i}">
+        <h2 class="pp-group-title">${escapeHtml(title)}</h2>
+        ${note ? `<p class="pp-group-note">${escapeHtml(note)}</p>` : ""}
+        <ul class="pp-items">${items}</ul>
+      </div>`;
 
   return `
     <section>
       <div class="section-heading" data-reveal><h1>${strings.personal.heading}</h1><div class="rule"></div></div>
-
-      <h2 class="sub-heading" data-reveal>${strings.personal.storiesHeading}</h2>
-      <p class="lede" data-reveal>${strings.stories.subheading}</p>
-      <ul class="story-list">${storyRows}</ul>
-
-      <h2 class="sub-heading" data-reveal>${strings.personal.poetryHeading}</h2>
-      <ul class="poetry-list">
-        ${poetry
-          .map(
-            (item, i) => `
-          <li data-reveal style="--i:${i}">
-            <span class="poetry-title">${escapeHtml(item.title)}</span>
-            <span class="needs-info-tag">⚠ ${escapeHtml(strings.pending.text)}</span>
-          </li>`,
-          )
-          .join("")}
-      </ul>
+      <div class="pp-groups">
+        ${group(strings.personal.storiesHeading, strings.stories.subheading, storyItems, 0)}
+        ${group(strings.personal.poetryHeading, "", poetryItems, 1)}
+      </div>
     </section>
   `;
 }
