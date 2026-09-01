@@ -625,6 +625,14 @@ section {
 .section-heading:has(+ .lede) {
   margin-bottom: 1rem;
 }
+/* The copyright line is an aside on the section, not the section itself, so it
+   sits back a step and lets the strand titles below stay the loudest thing on
+   the page. Scoped to a lede that follows a section heading: the standfirst on
+   a work page follows an h1 and is the page speaking, so it keeps full
+   contrast. */
+.section-heading + .lede {
+  color: var(--text-muted);
+}
 .section-heading .kicker-num {
   font-family: var(--serif);
   font-size: 0.85rem;
