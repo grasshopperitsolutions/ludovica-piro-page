@@ -139,8 +139,8 @@ export const projects = [
       "For over 40% of the LGBTQIA+ community, sexual orientation is a penalizing factor in the workplace. WPP is 'not open to discriminations' and demonstrates that terms such as 'orientation,' 'tendencies,' and 'inclination' in the workplace should refer exclusively to the professional sphere, and never to sexual orientation or gender identity.",
     ],
     languages: "ITA, PT, ES, ENG",
-    // One set per language: three posters each for Italian and Portuguese, and
-    // a single composite for Spanish and English.
+    // One set per language: three separate posters for Italian, and a single
+    // composite for Portuguese, Spanish and English.
     media: [
       {
         layout: "grid-3",
@@ -151,15 +151,7 @@ export const projects = [
           "discriminations-ita-3.webp",
         ],
       },
-      {
-        layout: "grid-3",
-        label: "PT",
-        images: [
-          "discriminations-pt-1.webp",
-          "discriminations-pt-2.webp",
-          "discriminations-pt-3.webp",
-        ],
-      },
+      { layout: "full", label: "PT", images: ["discriminations-pt.webp"] },
       { layout: "full", label: "ES", images: ["discriminations-es.webp"] },
       { layout: "full", label: "ENG", images: ["discriminations-eng.webp"] },
     ],
