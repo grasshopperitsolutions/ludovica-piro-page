@@ -833,7 +833,7 @@ section {
   font-weight: 400;
   font-size: 1.15rem;
   line-height: 1.9;
-  color: var(--text-muted);
+  color: var(--text);
   margin-top: 2rem;
   max-width: 68ch;
 }
@@ -1183,7 +1183,7 @@ body.previewing .cursor-ring {
 }
 
 .body-copy {
-  color: var(--text-muted);
+  color: var(--text);
   font-size: 1.05rem;
 }
 

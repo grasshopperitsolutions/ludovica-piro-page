@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: "/ludovica-piro-page/",
+  base: "/",
   build: {
     target: "es2020",
     cssMinify: true,
