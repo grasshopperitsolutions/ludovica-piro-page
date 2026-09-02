@@ -866,6 +866,23 @@ export function renderStoryPage(strings, stories, id, base, unlocked = false) {
    paragraph left to reflow. `lang` is set on the verse because the two pieces
    are in different languages from the English interface around them, which
    matters for screen readers and for hyphenation. */
+/* The verse is set to fit its column rather than to a fixed size: her line
+   breaks are the poem, so a line that wraps is a line she did not write, and the
+   composition — verse left, photograph right — holds at every width.
+
+   0.47em is a deliberate over-estimate of Garabosse Perle's average character
+   width; measured across these lines it runs 0.40–0.46em depending on which
+   letters a line happens to use. Erring high costs a little space at the right
+   edge. Erring low would wrap the line, which is the one thing this must never
+   do. The scale is emitted per poem from its longest line, so adding a poem with
+   longer lines sizes itself without touching the CSS. */
+const POEM_CHAR_EM = 0.47;
+
+export function poemScaleFor(lines) {
+  const longest = lines.reduce((n, l) => Math.max(n, l.length), 1);
+  return (1 / (longest * POEM_CHAR_EM)).toFixed(5);
+}
+
 export function renderPoemPage(strings, id, base) {
   const p = poemFor(id);
   if (!p) return renderNotFoundPage(strings, base);
@@ -877,8 +894,10 @@ export function renderPoemPage(strings, id, base) {
       <h1 class="split-title">${splitWords(p.title)}</h1>
 
       <div class="poem-layout">
-        <div class="poem-verse" lang="${escapeHtml(p.lang)}" data-reveal>
-          ${p.lines.map((l) => `<span class="poem-line">${escapeHtml(l)}</span>`).join("")}
+        <div class="poem-col" style="--poem-scale: ${poemScaleFor(p.lines)}">
+          <div class="poem-verse" lang="${escapeHtml(p.lang)}" data-reveal>
+            ${p.lines.map((l) => `<span class="poem-line">${escapeHtml(l)}</span>`).join("")}
+          </div>
         </div>
 
         <figure class="poem-figure" data-reveal>

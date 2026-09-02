@@ -2172,19 +2172,187 @@ a.contact-icon:focus-visible {
    right, and the place and date tucked under the image's bottom corner. Below
    900px the two stack, poem first — the words are the piece, the photograph is
    what prompted them. */
-.poem-layout {
+/* ---------- The papyrus sheet ----------
+   Poem, photograph and date sit together on one aged sheet. This is the only
+   colour on the site — the rest is strictly black and white — and it is
+   deliberate: it is the page the poem is written on, not a decorated interface.
+   Scoped to .poem-page so the short stories keep the plain ground.
+
+   The tint, the fibres and the aged edge are three separate layers rather than
+   a photograph of paper: the sheet has to stretch from a phone to a wide screen
+   without a seam or a resolution ceiling, and CSS gradients cost nothing to
+   load. `--papyrus-*` are local so the panel can carry its own ink colour —
+   inheriting --text would put white type on parchment in dark mode. */
+.poem-page .poem-layout {
+  --papyrus: #f0e6d2;
+  --papyrus-warm: #e4d5b3;
+  --papyrus-edge: rgba(120, 96, 56, 0.28);
+  --papyrus-ink: #2a2318;
+  --papyrus-ink-soft: #6d5f47;
+  --papyrus-fibre: rgba(120, 96, 56, 0.055);
+
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
-  align-items: start;
+  /* Verse left, photograph right, at every width down to the smallest phone —
+     the composition is the piece, so it does not stack. The verse keeps the
+     larger share where space is tightest, because it is the half that has to
+     hold whole unbroken lines. */
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  gap: 1rem;
+  align-items: center;
   margin-top: 2.5rem;
+  /* Margin on a phone is width taken from the verse, and the verse is what
+     sizes the type — so the sheet keeps only enough border to still read as a
+     sheet, and spends the rest on the poem. */
+  padding: clamp(0.9rem, 3.5vw, 3.25rem);
+  color: var(--papyrus-ink);
+  border-radius: 3px;
+  position: relative;
+  isolation: isolate;
+  background-color: var(--papyrus);
+  /* Aged blotching, then the fibre weave. Both are gradients, so they scale
+     with the sheet instead of tiling at a fixed size. */
+  background-image:
+    radial-gradient(
+      ellipse 70% 55% at 18% 12%,
+      rgba(255, 252, 244, 0.85),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 60% 50% at 88% 82%,
+      rgba(190, 162, 112, 0.3),
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse 55% 45% at 72% 18%,
+      rgba(198, 172, 124, 0.22),
+      transparent 65%
+    ),
+    repeating-linear-gradient(90deg, var(--papyrus-fibre) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(0deg, var(--papyrus-fibre) 0 1px, transparent 1px 6px),
+    linear-gradient(160deg, var(--papyrus) 0%, var(--papyrus-warm) 100%);
+  box-shadow:
+    /* the sheet lifting off the page */
+    0 1px 2px rgba(60, 46, 22, 0.1),
+    0 12px 34px -18px rgba(60, 46, 22, 0.45),
+    /* darkened, handled edges */ inset 0 0 2.5rem -0.75rem var(--papyrus-edge),
+    inset 0 0 0 1px rgba(120, 96, 56, 0.14);
 }
 
-@media (min-width: 900px) {
-  .poem-layout {
-    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+/* In dark mode the sheet ages further rather than glowing: a lit page on a
+   black screen is a lamp. Same fibres, ink inverted to the paper. */
+:root[data-theme="dark"] .poem-page .poem-layout {
+  --papyrus: #241d14;
+  --papyrus-warm: #191410;
+  --papyrus-edge: rgba(0, 0, 0, 0.55);
+  --papyrus-ink: #ece2cd;
+  --papyrus-ink-soft: #a1937a;
+  --papyrus-fibre: rgba(236, 226, 205, 0.045);
+  background-image:
+    radial-gradient(
+      ellipse 70% 55% at 18% 12%,
+      rgba(120, 100, 66, 0.22),
+      transparent 60%
+    ),
+    radial-gradient(ellipse 60% 50% at 88% 82%, rgba(0, 0, 0, 0.5), transparent 62%),
+    radial-gradient(ellipse 55% 45% at 72% 18%, rgba(96, 80, 52, 0.16), transparent 65%),
+    repeating-linear-gradient(90deg, var(--papyrus-fibre) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(0deg, var(--papyrus-fibre) 0 1px, transparent 1px 6px),
+    linear-gradient(160deg, var(--papyrus) 0%, var(--papyrus-warm) 100%);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.5),
+    0 12px 34px -18px rgba(0, 0, 0, 0.75),
+    inset 0 0 2.5rem -0.75rem var(--papyrus-edge),
+    inset 0 0 0 1px rgba(236, 226, 205, 0.07);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .poem-page .poem-layout {
+    --papyrus: #241d14;
+    --papyrus-warm: #191410;
+    --papyrus-edge: rgba(0, 0, 0, 0.55);
+    --papyrus-ink: #ece2cd;
+    --papyrus-ink-soft: #a1937a;
+    --papyrus-fibre: rgba(236, 226, 205, 0.045);
+    background-image:
+      radial-gradient(
+        ellipse 70% 55% at 18% 12%,
+        rgba(120, 100, 66, 0.22),
+        transparent 60%
+      ),
+      radial-gradient(ellipse 60% 50% at 88% 82%, rgba(0, 0, 0, 0.5), transparent 62%),
+      radial-gradient(
+        ellipse 55% 45% at 72% 18%,
+        rgba(96, 80, 52, 0.16),
+        transparent 65%
+      ),
+      repeating-linear-gradient(90deg, var(--papyrus-fibre) 0 1px, transparent 1px 4px),
+      repeating-linear-gradient(0deg, var(--papyrus-fibre) 0 1px, transparent 1px 6px),
+      linear-gradient(160deg, var(--papyrus) 0%, var(--papyrus-warm) 100%);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.5),
+      0 12px 34px -18px rgba(0, 0, 0, 0.75),
+      inset 0 0 2.5rem -0.75rem var(--papyrus-edge),
+      inset 0 0 0 1px rgba(236, 226, 205, 0.07);
+  }
+}
+
+/* A grain pass over the whole sheet. SVG turbulence gives the irregular tooth
+   that gradients cannot — gradients repeat, and paper does not. Sits under the
+   content and ignores the pointer. */
+.poem-page .poem-layout::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23p)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
+:root[data-theme="dark"] .poem-page .poem-layout::before {
+  mix-blend-mode: overlay;
+  opacity: 0.32;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .poem-page .poem-layout::before {
+    mix-blend-mode: overlay;
+    opacity: 0.32;
+  }
+}
+
+/* The sheet's padding takes width the verse used to have, and her line breaks
+   are the poem — a line that wraps is a line she did not write. The verse column
+   gets an even share until there is room for the photograph to take the larger
+   one. */
+@media (min-width: 700px) {
+  .poem-page .poem-layout {
+    gap: 2rem;
+  }
+}
+
+@media (min-width: 1100px) {
+  .poem-page .poem-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 3rem;
+  }
+}
+
+@media (min-width: 1320px) {
+  .poem-page .poem-layout {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
     gap: 3.5rem;
   }
+}
+
+/* The verse column is its own containment context so the type can be sized
+   against the width it actually has, rather than against the viewport. */
+.poem-col {
+  container-type: inline-size;
+  min-width: 0;
 }
 
 /* Her line breaks are the poem, so each line is its own block rather than
@@ -2194,13 +2362,23 @@ a.contact-icon:focus-visible {
   flex-direction: column;
   gap: 0.15em;
   font-family: var(--prose);
-  font-size: clamp(1.1rem, 2.4vw, 1.5rem);
+  /* Fallback for anything without container queries — sized to the viewport,
+     which is close enough on a phone and correct above the breakpoints. */
+  font-size: clamp(0.55rem, 2.4vw, 1.5rem);
+  /* The real rule: fit the longest line to the column exactly, and stop growing
+     at the size the piece was designed to be read at. --poem-scale comes from
+     the poem's own longest line — see poemScaleFor() in render.js. */
+  font-size: min(1.5rem, calc(100cqi * var(--poem-scale, 0.052)));
   line-height: 1.45;
-  color: var(--text);
+  /* Ink on the sheet, not text on the page — --papyrus-ink follows the paper
+     through the theme change, where --text would invert against it. */
+  color: var(--papyrus-ink, var(--text));
 }
 
+/* The guarantee. Whatever the column width, a line she wrote stays one line. */
 .poem-line {
   display: block;
+  white-space: nowrap;
 }
 
 .poem-figure {
@@ -2211,18 +2389,43 @@ a.contact-icon:focus-visible {
   width: 100%;
   height: auto;
   display: block;
-  border-radius: 6px;
+  border-radius: 2px;
   background: var(--bg-raised);
 }
 
-/* Bottom-right under the photograph, as the slide sets it. */
+/* Mounted on the sheet rather than laid over it: a hairline and a short shadow
+   keep a white-cornered photograph from looking pasted onto the paper. */
+.poem-page .poem-figure img {
+  box-shadow:
+    0 0 0 1px rgba(120, 96, 56, 0.22),
+    0 8px 20px -12px rgba(60, 46, 22, 0.6);
+}
+
+:root[data-theme="dark"] .poem-page .poem-figure img {
+  box-shadow:
+    0 0 0 1px rgba(236, 226, 205, 0.12),
+    0 8px 20px -12px rgba(0, 0, 0, 0.8);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .poem-page .poem-figure img {
+    box-shadow:
+      0 0 0 1px rgba(236, 226, 205, 0.12),
+      0 8px 20px -12px rgba(0, 0, 0, 0.8);
+  }
+}
+
+/* Bottom-right under the photograph, as the slide sets it. It scales with the
+   sheet: at a fixed size it ends up larger than the poem on a phone, which puts
+   the caption above the work in the hierarchy and reads as a mistake. */
 .poem-place {
   margin-top: 0.75rem;
   text-align: right;
-  font-size: 0.72rem;
+  font-size: clamp(0.42rem, 1.75vw, 0.72rem);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  color: var(--papyrus-ink-soft, var(--text-muted));
 }
 
 /* ---------- TEMPORARY: passphrase gate ----------
