@@ -8,6 +8,20 @@
   font-display: swap;
 }
 
+/* Her own writing — the short stories and the Poetry Camera poems — is set in
+   Garabosse Perle rather than Coconat. It marks the personal work as a
+   different kind of thing from the campaign pages: the site speaks in Coconat,
+   she speaks in this. Supplied as a TTF and converted to WOFF2 (96KB -> 33KB);
+   it covers every character the pieces use, accents included, so nothing falls
+   back mid-word across the Italian, Portuguese and Spanish versions. */
+@font-face {
+  font-family: "Garabosse Perle";
+  src: url("./fonts/Garabosse-Perle.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Black and white, with no exceptions. Type is either --text or --text-muted;
    there is no accent colour anywhere in the interface. Phrases the deck used to
    pick out in red now lift to the full ink colour against the muted body text
@@ -32,6 +46,8 @@
      referenced it keep reading sensibly. */
   --serif: "Coconat", Georgia, "Times New Roman", serif;
   --sans: "Coconat", Georgia, "Times New Roman", serif;
+  /* Reserved for her own writing — see the @font-face note above. */
+  --prose: "Garabosse Perle", "Coconat", Georgia, "Times New Roman", serif;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   /* Ceiling for any single piece of work media — a board, a photograph, a film.
      Campaign artwork arrives at wildly different shapes, and a tall one at full
@@ -843,7 +859,7 @@ section {
 }
 
 .story-body {
-  font-family: var(--serif);
+  font-family: var(--prose);
   font-weight: 400;
   font-size: 1.15rem;
   line-height: 1.9;
@@ -2177,7 +2193,7 @@ a.contact-icon:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 0.15em;
-  font-family: var(--serif);
+  font-family: var(--prose);
   font-size: clamp(1.1rem, 2.4vw, 1.5rem);
   line-height: 1.45;
   color: var(--text);
