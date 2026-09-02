@@ -821,7 +821,6 @@ section {
 .project-detail .kicker {
   /* Its own line: inline it would run straight on from the back link. */
   display: block;
-  margin-top: 2rem;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.2em;
@@ -2198,7 +2197,10 @@ a.contact-icon:focus-visible {
      hold whole unbroken lines. */
   grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
   gap: 1rem;
-  align-items: center;
+  /* The verse starts at the top of the sheet, and the photograph hangs below
+     it — the image sits lower than the text, so the eye lands on the words
+     first and then falls into the picture. */
+  align-items: start;
   margin-top: 2.5rem;
   /* Margin on a phone is width taken from the verse, and the verse is what
      sizes the type — so the sheet keeps only enough border to still read as a
@@ -2383,6 +2385,10 @@ a.contact-icon:focus-visible {
 
 .poem-figure {
   margin: 0;
+  /* Drops the photograph below the top of the verse — the image (and the date
+     under its bottom corner) sits lower than the text. Scales with the sheet:
+     a small nudge on a phone, a generous drop on a wide screen. */
+  margin-top: clamp(1.25rem, 30vw, 6rem);
 }
 
 .poem-figure img {
