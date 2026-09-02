@@ -2421,7 +2421,7 @@ a.contact-icon:focus-visible {
 .poem-place {
   margin-top: 0.75rem;
   text-align: right;
-  font-size: clamp(0.42rem, 1.75vw, 0.72rem);
+  font-size: clamp(0.36rem, 1.75vw, 0.72rem);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   white-space: nowrap;
