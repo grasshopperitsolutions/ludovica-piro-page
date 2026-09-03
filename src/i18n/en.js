@@ -28,7 +28,7 @@ export default {
     about: "About",
     work: "Works",
     competitions: "Competitions",
-    personal: "Personal Projects",
+    personal: "Projects",
   },
   hero: {
     // The multilingual greeting is hers, not interface chrome — it survives the

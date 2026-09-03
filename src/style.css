@@ -2171,24 +2171,21 @@ a.contact-icon:focus-visible {
    right, and the place and date tucked under the image's bottom corner. Below
    900px the two stack, poem first — the words are the piece, the photograph is
    what prompted them. */
-/* ---------- The papyrus sheet ----------
-   Poem, photograph and date sit together on one aged sheet. This is the only
-   colour on the site — the rest is strictly black and white — and it is
-   deliberate: it is the page the poem is written on, not a decorated interface.
-   Scoped to .poem-page so the short stories keep the plain ground.
+/* ---------- The sheet ----------
+   Poem, photograph and date sit together on one flat sheet — an egg-white /
+   dirty-white ground with no texture: no fibres, no blotching, no grain. This
+   is the only colour on the site — the rest is strictly black and white — and
+   it is deliberate: it is the page the poem is written on, not a decorated
+   interface. Scoped to .poem-page so the short stories keep the plain ground.
 
-   The tint, the fibres and the aged edge are three separate layers rather than
-   a photograph of paper: the sheet has to stretch from a phone to a wide screen
-   without a seam or a resolution ceiling, and CSS gradients cost nothing to
-   load. `--papyrus-*` are local so the panel can carry its own ink colour —
-   inheriting --text would put white type on parchment in dark mode. */
+   `--papyrus-*` are local so the panel can carry its own ink colour —
+   inheriting --text would put white type on parchment in dark mode. The ink is
+   true black on the light sheet and true white on the dark one, keeping the
+   piece inside the site's monochrome. */
 .poem-page .poem-layout {
-  --papyrus: #f0e6d2;
-  --papyrus-warm: #e4d5b3;
-  --papyrus-edge: rgba(120, 96, 56, 0.28);
-  --papyrus-ink: #2a2318;
-  --papyrus-ink-soft: #6d5f47;
-  --papyrus-fibre: rgba(120, 96, 56, 0.055);
+  --papyrus: #f0ead6;
+  --papyrus-ink: #000000;
+  --papyrus-ink-soft: #4c4b48;
 
   display: grid;
   /* Verse left, photograph right, at every width down to the smallest phone —
@@ -2211,119 +2208,40 @@ a.contact-icon:focus-visible {
   position: relative;
   isolation: isolate;
   background-color: var(--papyrus);
-  /* Aged blotching, then the fibre weave. Both are gradients, so they scale
-     with the sheet instead of tiling at a fixed size. */
-  background-image:
-    radial-gradient(
-      ellipse 70% 55% at 18% 12%,
-      rgba(255, 252, 244, 0.85),
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 60% 50% at 88% 82%,
-      rgba(190, 162, 112, 0.3),
-      transparent 62%
-    ),
-    radial-gradient(
-      ellipse 55% 45% at 72% 18%,
-      rgba(198, 172, 124, 0.22),
-      transparent 65%
-    ),
-    repeating-linear-gradient(90deg, var(--papyrus-fibre) 0 1px, transparent 1px 4px),
-    repeating-linear-gradient(0deg, var(--papyrus-fibre) 0 1px, transparent 1px 6px),
-    linear-gradient(160deg, var(--papyrus) 0%, var(--papyrus-warm) 100%);
   box-shadow:
     /* the sheet lifting off the page */
-    0 1px 2px rgba(60, 46, 22, 0.1),
-    0 12px 34px -18px rgba(60, 46, 22, 0.45),
-    /* darkened, handled edges */ inset 0 0 2.5rem -0.75rem var(--papyrus-edge),
-    inset 0 0 0 1px rgba(120, 96, 56, 0.14);
+    0 1px 2px rgba(0, 0, 0, 0.08),
+    0 12px 34px -18px rgba(0, 0, 0, 0.35);
 }
 
-/* In dark mode the sheet ages further rather than glowing: a lit page on a
-   black screen is a lamp. Same fibres, ink inverted to the paper. */
+/* Dark mode keeps the same flat, texture-free sheet — ink turned white on it. */
 :root[data-theme="dark"] .poem-page .poem-layout {
-  --papyrus: #241d14;
-  --papyrus-warm: #191410;
-  --papyrus-edge: rgba(0, 0, 0, 0.55);
-  --papyrus-ink: #ece2cd;
-  --papyrus-ink-soft: #a1937a;
-  --papyrus-fibre: rgba(236, 226, 205, 0.045);
-  background-image:
-    radial-gradient(
-      ellipse 70% 55% at 18% 12%,
-      rgba(120, 100, 66, 0.22),
-      transparent 60%
-    ),
-    radial-gradient(ellipse 60% 50% at 88% 82%, rgba(0, 0, 0, 0.5), transparent 62%),
-    radial-gradient(ellipse 55% 45% at 72% 18%, rgba(96, 80, 52, 0.16), transparent 65%),
-    repeating-linear-gradient(90deg, var(--papyrus-fibre) 0 1px, transparent 1px 4px),
-    repeating-linear-gradient(0deg, var(--papyrus-fibre) 0 1px, transparent 1px 6px),
-    linear-gradient(160deg, var(--papyrus) 0%, var(--papyrus-warm) 100%);
+  --papyrus: #1b1a17;
+  --papyrus-ink: #ffffff;
+  --papyrus-ink-soft: #b5b2ab;
+  background-color: var(--papyrus);
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.5),
-    0 12px 34px -18px rgba(0, 0, 0, 0.75),
-    inset 0 0 2.5rem -0.75rem var(--papyrus-edge),
-    inset 0 0 0 1px rgba(236, 226, 205, 0.07);
+    0 12px 34px -18px rgba(0, 0, 0, 0.75);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .poem-page .poem-layout {
-    --papyrus: #241d14;
-    --papyrus-warm: #191410;
-    --papyrus-edge: rgba(0, 0, 0, 0.55);
-    --papyrus-ink: #ece2cd;
-    --papyrus-ink-soft: #a1937a;
-    --papyrus-fibre: rgba(236, 226, 205, 0.045);
-    background-image:
-      radial-gradient(
-        ellipse 70% 55% at 18% 12%,
-        rgba(120, 100, 66, 0.22),
-        transparent 60%
-      ),
-      radial-gradient(ellipse 60% 50% at 88% 82%, rgba(0, 0, 0, 0.5), transparent 62%),
-      radial-gradient(
-        ellipse 55% 45% at 72% 18%,
-        rgba(96, 80, 52, 0.16),
-        transparent 65%
-      ),
-      repeating-linear-gradient(90deg, var(--papyrus-fibre) 0 1px, transparent 1px 4px),
-      repeating-linear-gradient(0deg, var(--papyrus-fibre) 0 1px, transparent 1px 6px),
-      linear-gradient(160deg, var(--papyrus) 0%, var(--papyrus-warm) 100%);
+    --papyrus: #1b1a17;
+    --papyrus-ink: #ffffff;
+    --papyrus-ink-soft: #b5b2ab;
+    background-color: var(--papyrus);
     box-shadow:
       0 1px 2px rgba(0, 0, 0, 0.5),
-      0 12px 34px -18px rgba(0, 0, 0, 0.75),
-      inset 0 0 2.5rem -0.75rem var(--papyrus-edge),
-      inset 0 0 0 1px rgba(236, 226, 205, 0.07);
+      0 12px 34px -18px rgba(0, 0, 0, 0.75);
   }
 }
 
-/* A grain pass over the whole sheet. SVG turbulence gives the irregular tooth
-   that gradients cannot — gradients repeat, and paper does not. Sits under the
-   content and ignores the pointer. */
-.poem-page .poem-layout::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  border-radius: inherit;
-  opacity: 0.5;
-  mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23p)'/%3E%3C/svg%3E");
-  background-size: 180px 180px;
-}
-
-:root[data-theme="dark"] .poem-page .poem-layout::before {
-  mix-blend-mode: overlay;
-  opacity: 0.32;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .poem-page .poem-layout::before {
-    mix-blend-mode: overlay;
-    opacity: 0.32;
-  }
+/* The sheet is flat by design — no grain pass over it. The site's ambient
+   film grain (`.grain`) floats above every page, so on the poem page it is
+   switched off too: the ground is plain egg-white, nothing animated on it. */
+.app:has(.poem-page) .grain {
+  display: none;
 }
 
 /* The sheet's padding takes width the verse used to have, and her line breaks
@@ -2414,20 +2332,20 @@ a.contact-icon:focus-visible {
    keep a white-cornered photograph from looking pasted onto the paper. */
 .poem-page .poem-figure img {
   box-shadow:
-    0 0 0 1px rgba(120, 96, 56, 0.22),
-    0 8px 20px -12px rgba(60, 46, 22, 0.6);
+    0 0 0 1px rgba(0, 0, 0, 0.1),
+    0 8px 20px -12px rgba(0, 0, 0, 0.4);
 }
 
 :root[data-theme="dark"] .poem-page .poem-figure img {
   box-shadow:
-    0 0 0 1px rgba(236, 226, 205, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.12),
     0 8px 20px -12px rgba(0, 0, 0, 0.8);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .poem-page .poem-figure img {
     box-shadow:
-      0 0 0 1px rgba(236, 226, 205, 0.12),
+      0 0 0 1px rgba(255, 255, 255, 0.12),
       0 8px 20px -12px rgba(0, 0, 0, 0.8);
   }
 }
