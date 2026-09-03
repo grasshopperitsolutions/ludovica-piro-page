@@ -2168,9 +2168,9 @@ a.contact-icon:focus-visible {
 
 /* ---------- Poetry Camera ----------
    The deck's layout: the poem down the left, the photograph large on the
-   right, and the place and date tucked under the image's bottom corner. Below
-   900px the two stack, poem first — the words are the piece, the photograph is
-   what prompted them. */
+   right, and the place and date tucked under the image's bottom corner. The
+   two stay side by side at every width — the words are the piece, the
+   photograph is what prompted them. */
 /* ---------- The sheet ----------
    Poem, photograph and date sit together on one flat sheet — an egg-white /
    dirty-white ground with no texture: no fibres, no blotching, no grain. This
@@ -2188,11 +2188,12 @@ a.contact-icon:focus-visible {
   --papyrus-ink-soft: #4c4b48;
 
   display: grid;
-  /* Verse left, photograph right, at every width down to the smallest phone —
-     the composition is the piece, so it does not stack. The verse keeps the
-     larger share where space is tightest, because it is the half that has to
-     hold whole unbroken lines. */
-  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  /* Verse left, photograph right, at every width down to the smallest phone.
+     The photograph holds the larger share — a 40/60 split — and the verse the
+     rest: at 60% the image dominates the sheet while the words keep a column
+     of their own. fr units share out the space after the gaps, so this can
+     never overflow. */
+  grid-template-columns: minmax(0, 0.4fr) minmax(0, 0.6fr);
   gap: 1rem;
   /* The verse starts at the top of the sheet, and the photograph hangs below
      it — the image sits lower than the text, so the eye lands on the words
@@ -2245,9 +2246,9 @@ a.contact-icon:focus-visible {
 }
 
 /* The sheet's padding takes width the verse used to have, and her line breaks
-   are the poem — a line that wraps is a line she did not write. The verse column
-   gets an even share until there is room for the photograph to take the larger
-   one. */
+   are the poem — a line that wraps is a line she did not write. The verse
+   keeps the smaller share and the photograph the larger one; the breakpoints
+   only widen the gap between them, never the ratio. */
 /* On a phone the verse filling its column edge to edge leaves the poem no air
    inside the sheet. Backing it off to two thirds gives the lines a margin to sit
    in and keeps the sheet reading as paper rather than as a full text block. */
@@ -2265,14 +2266,14 @@ a.contact-icon:focus-visible {
 
 @media (min-width: 1100px) {
   .poem-page .poem-layout {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 0.4fr) minmax(0, 0.6fr);
     gap: 3rem;
   }
 }
 
 @media (min-width: 1320px) {
   .poem-page .poem-layout {
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    grid-template-columns: minmax(0, 0.4fr) minmax(0, 0.6fr);
     gap: 3.5rem;
   }
 }
