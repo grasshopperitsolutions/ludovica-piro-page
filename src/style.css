@@ -858,7 +858,7 @@ section {
 }
 
 .story-body {
-  font-family: var(--prose);
+  font-family: var(--serif);
   font-weight: 400;
   font-size: 1.15rem;
   line-height: 1.9;
@@ -2330,6 +2330,15 @@ a.contact-icon:focus-visible {
    are the poem — a line that wraps is a line she did not write. The verse column
    gets an even share until there is room for the photograph to take the larger
    one. */
+/* On a phone the verse filling its column edge to edge leaves the poem no air
+   inside the sheet. Backing it off to two thirds gives the lines a margin to sit
+   in and keeps the sheet reading as paper rather than as a full text block. */
+@media (max-width: 699px) {
+  .poem-page .poem-layout {
+    --poem-fit: 0.67;
+  }
+}
+
 @media (min-width: 700px) {
   .poem-page .poem-layout {
     gap: 2rem;
@@ -2366,11 +2375,13 @@ a.contact-icon:focus-visible {
   font-family: var(--prose);
   /* Fallback for anything without container queries — sized to the viewport,
      which is close enough on a phone and correct above the breakpoints. */
-  font-size: clamp(0.55rem, 2.4vw, 1.5rem);
+  font-size: clamp(0.4rem, 1.7vw, 1.5rem);
   /* The real rule: fit the longest line to the column exactly, and stop growing
      at the size the piece was designed to be read at. --poem-scale comes from
-     the poem's own longest line — see poemScaleFor() in render.js. */
-  font-size: min(1.5rem, calc(100cqi * var(--poem-scale, 0.052)));
+     the poem's own longest line — see poemScaleFor() in render.js;
+     --poem-fit backs the type off that maximum where filling the column would
+     crowd the sheet. */
+  font-size: min(1.5rem, calc(100cqi * var(--poem-scale, 0.052) * var(--poem-fit, 1)));
   line-height: 1.45;
   /* Ink on the sheet, not text on the page — --papyrus-ink follows the paper
      through the theme change, where --text would invert against it. */
@@ -2388,7 +2399,7 @@ a.contact-icon:focus-visible {
   /* Drops the photograph below the top of the verse — the image (and the date
      under its bottom corner) sits lower than the text. Scales with the sheet:
      a small nudge on a phone, a generous drop on a wide screen. */
-  margin-top: clamp(1.25rem, 30vw, 6rem);
+  margin-top: clamp(1rem, 15vw, 3rem);
 }
 
 .poem-figure img {
