@@ -2188,12 +2188,13 @@ a.contact-icon:focus-visible {
   --papyrus-ink-soft: #4c4b48;
 
   display: grid;
-  /* Verse left, photograph right, at every width down to the smallest phone.
-     The photograph holds the larger share — a 40/60 split — and the verse the
-     rest: at 60% the image dominates the sheet while the words keep a column
-     of their own. fr units share out the space after the gaps, so this can
-     never overflow. */
-  grid-template-columns: minmax(0, 0.4fr) minmax(0, 0.6fr);
+  /* Verse left, photograph right, at every width down to the smallest phone,
+     in equal shares — the poem and the photograph split the sheet 50/50. The
+     image gives up 10 points from its usual 60 so that every poem can be set
+     at one shared size (see poemScaleFor() in render.js) and still clear the
+     widest line in the set. fr units share out the space after the gaps, so
+     this can never overflow. */
+  grid-template-columns: minmax(0, 0.5fr) minmax(0, 0.5fr);
   gap: 1rem;
   /* The verse starts at the top of the sheet, and the photograph hangs below
      it — the image sits lower than the text, so the eye lands on the words
@@ -2246,17 +2247,12 @@ a.contact-icon:focus-visible {
 }
 
 /* The sheet's padding takes width the verse used to have, and her line breaks
-   are the poem — a line that wraps is a line she did not write. The verse
-   keeps the smaller share and the photograph the larger one; the breakpoints
-   only widen the gap between them, never the ratio. */
-/* On a phone the verse filling its column edge to edge leaves the poem no air
-   inside the sheet. Backing it off to two thirds gives the lines a margin to sit
-   in and keeps the sheet reading as paper rather than as a full text block. */
-@media (max-width: 699px) {
-  .poem-page .poem-layout {
-    --poem-fit: 0.67;
-  }
-}
+   are the poem — a line that wraps is a line she did not write. Every poem is
+   set from the same reference (the widest line in the collection), so the two
+   share one size and nothing ever needs to wrap. */
+/* No `--poem-fit` backoff on a phone: the shared scale already fits the
+   widest line in the set exactly, so there is nothing to back off — the old
+   two-thirds shrink only made both poems smaller for no reason. */
 
 @media (min-width: 700px) {
   .poem-page .poem-layout {
@@ -2266,14 +2262,12 @@ a.contact-icon:focus-visible {
 
 @media (min-width: 1100px) {
   .poem-page .poem-layout {
-    grid-template-columns: minmax(0, 0.4fr) minmax(0, 0.6fr);
     gap: 3rem;
   }
 }
 
 @media (min-width: 1320px) {
   .poem-page .poem-layout {
-    grid-template-columns: minmax(0, 0.4fr) minmax(0, 0.6fr);
     gap: 3.5rem;
   }
 }
@@ -2295,11 +2289,11 @@ a.contact-icon:focus-visible {
   /* Fallback for anything without container queries — sized to the viewport,
      which is close enough on a phone and correct above the breakpoints. */
   font-size: clamp(0.4rem, 1.7vw, 1.5rem);
-  /* The real rule: fit the longest line to the column exactly, and stop growing
-     at the size the piece was designed to be read at. --poem-scale comes from
-     the poem's own longest line — see poemScaleFor() in render.js;
-     --poem-fit backs the type off that maximum where filling the column would
-     crowd the sheet. */
+  /* The real rule: fit the widest line to the column exactly, and stop growing
+     at the size the piece was designed to be read at. --poem-scale is shared
+     across all poems — it comes from the widest line in the whole set, see
+     poemScaleFor() in render.js — so every shorter line simply sits inside
+     its column and the widest one can never exceed it. */
   font-size: min(1.5rem, calc(100cqi * var(--poem-scale, 0.052) * var(--poem-fit, 1)));
   line-height: 1.45;
   /* Ink on the sheet, not text on the page — --papyrus-ink follows the paper

@@ -13,7 +13,7 @@
 // the staging subpath be a one-line config change, and it is what any future
 // preview deploy would need again.
 
-import { storyGroupFor, poemFor, previewFor, previewForCompetition } from "./data.js";
+import { storyGroupFor, poemFor, previewFor, previewForCompetition, POETRY_CAMERA } from "./data.js";
 
 // The site's canonical address. Canonical URLs, share links and structured
 // data must always name the real domain rather than whatever host the build is
@@ -866,21 +866,27 @@ export function renderStoryPage(strings, stories, id, base, unlocked = false) {
    paragraph left to reflow. `lang` is set on the verse because the two pieces
    are in different languages from the English interface around them, which
    matters for screen readers and for hyphenation. */
-/* The verse is set to fit its column rather than to a fixed size: her line
-   breaks are the poem, so a line that wraps is a line she did not write, and the
-   composition — verse left, photograph right — holds at every width.
+/* Every poem is set at the same size: the scale is computed once, from the
+   widest line in the whole collection, rather than from each piece's own
+   longest line. Because the reference is the longest line that exists — 41
+   characters, Nuvole's "della fatica di tenere i piedi per terra," — no line
+   can ever be wider than its column, so the unbroken-line guarantee holds for
+   every poem at every width while they all render at an identical size.
 
    0.47em is a deliberate over-estimate of Garabosse Perle's average character
    width; measured across these lines it runs 0.40–0.46em depending on which
    letters a line happens to use. Erring high costs a little space at the right
    edge. Erring low would wrap the line, which is the one thing this must never
-   do. The scale is emitted per poem from its longest line, so adding a poem with
-   longer lines sizes itself without touching the CSS. */
+   do. */
 const POEM_CHAR_EM = 0.47;
 
-export function poemScaleFor(lines) {
-  const longest = lines.reduce((n, l) => Math.max(n, l.length), 1);
-  return (1 / (longest * POEM_CHAR_EM)).toFixed(5);
+const POEM_REFERENCE_CHARS = Math.max(
+  1,
+  ...POETRY_CAMERA.filter((p) => p.lines?.length).flatMap((p) => p.lines.map((l) => l.length)),
+);
+
+export function poemScaleFor() {
+  return (1 / (POEM_REFERENCE_CHARS * POEM_CHAR_EM)).toFixed(5);
 }
 
 export function renderPoemPage(strings, id, base) {
@@ -894,7 +900,7 @@ export function renderPoemPage(strings, id, base) {
       <h1 class="split-title">${splitWords(p.title)}</h1>
 
       <div class="poem-layout">
-        <div class="poem-col" style="--poem-scale: ${poemScaleFor(p.lines)}">
+        <div class="poem-col" style="--poem-scale: ${poemScaleFor()}">
           <div class="poem-verse" lang="${escapeHtml(p.lang)}" data-reveal>
             ${p.lines.map((l) => `<span class="poem-line">${escapeHtml(l)}</span>`).join("")}
           </div>
