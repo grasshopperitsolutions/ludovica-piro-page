@@ -13,7 +13,13 @@
 // the staging subpath be a one-line config change, and it is what any future
 // preview deploy would need again.
 
-import { storyGroupFor, poemFor, previewFor, previewForCompetition, POETRY_CAMERA } from "./data.js";
+import {
+  storyGroupFor,
+  poemFor,
+  previewFor,
+  previewForCompetition,
+  POETRY_CAMERA,
+} from "./data.js";
 
 // The site's canonical address. Canonical URLs, share links and structured
 // data must always name the real domain rather than whatever host the build is
@@ -882,7 +888,9 @@ const POEM_CHAR_EM = 0.47;
 
 const POEM_REFERENCE_CHARS = Math.max(
   1,
-  ...POETRY_CAMERA.filter((p) => p.lines?.length).flatMap((p) => p.lines.map((l) => l.length)),
+  ...POETRY_CAMERA.filter((p) => p.lines?.length).flatMap((p) =>
+    p.lines.map((l) => l.length),
+  ),
 );
 
 export function poemScaleFor() {

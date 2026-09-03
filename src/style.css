@@ -2254,6 +2254,28 @@ a.contact-icon:focus-visible {
    widest line in the set exactly, so there is nothing to back off — the old
    two-thirds shrink only made both poems smaller for no reason. */
 
+/* On a phone the type is set outright rather than fitted, and the grid inverts
+   to match: the verse column takes exactly the width its longest line needs
+   (`max-content`, with nowrap still holding the line), and the photograph takes
+   whatever is left. The poem sets the measure; the image fits around it.
+
+   Containment is switched off here because a container cannot size itself from
+   its own content — once the column's width comes from the text, the text can
+   no longer be sized from the column. `minmax(0, max-content)` rather than bare
+   `max-content` so a future poem with a very long line shrinks the track instead
+   of pushing the sheet wider than the screen. */
+@media (max-width: 699px) {
+  .poem-page .poem-layout {
+    grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  }
+  .poem-page .poem-col {
+    container-type: normal;
+  }
+  .poem-page .poem-verse {
+    font-size: 0.375rem;
+  }
+}
+
 @media (min-width: 700px) {
   .poem-page .poem-layout {
     gap: 2rem;
@@ -2299,6 +2321,16 @@ a.contact-icon:focus-visible {
   /* Ink on the sheet, not text on the page — --papyrus-ink follows the paper
      through the theme change, where --text would invert against it. */
   color: var(--papyrus-ink, var(--text));
+  /* Thinned. Garabosse Perle ships as a single Regular — there is no Light cut
+     and no variable weight axis — so the stems are shaved by stroking the
+     glyphs in the paper colour, which eats the outer half of the outline. The
+     stroke is --papyrus itself, the base tone under the gradient, so it reads as
+     less ink rather than as an outline; in em so it stays proportional from 10px
+     on a phone to 24px on a desk. Lightening the colour instead was tried and
+     looks faded rather than finer.
+
+     Ignored by browsers without text-stroke, which simply get the Regular. */
+  -webkit-text-stroke: var(--poem-thin, 0.032em) var(--papyrus, transparent);
 }
 
 /* The guarantee. Whatever the column width, a line she wrote stays one line. */
