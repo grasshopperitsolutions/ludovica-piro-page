@@ -901,8 +901,15 @@ export function renderPoemPage(strings, id, base) {
   const p = poemFor(id);
   if (!p) return renderNotFoundPage(strings, base);
 
+  // The Poetry Camera sheets alternate: odd entries (1st, 3rd, …) keep the
+  // photograph on the right and the verse on the left; even entries (2nd, 4th,
+  // …) mirror the composition — image left, its corner date under the image's
+  // left corner, verse right. The index is over the collection, so the
+  // alternation stays stable as pieces are added.
+  const mirrored = POETRY_CAMERA.findIndex((entry) => entry.id === id) % 2 === 1;
+
   return `
-    <section class="project-detail poem-page">
+    <section class="project-detail poem-page${mirrored ? " poem-page--mirrored" : ""}">
       <a class="back-link" href="${hrefFor(base, "personal")}" data-link><span class="arrow">←</span> ${strings.personal.back}</a>
       <span class="kicker">${escapeHtml(strings.personal.poetryHeading)}</span>
       <h1 class="split-title">${splitWords(p.title)}</h1>

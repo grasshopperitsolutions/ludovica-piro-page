@@ -2216,6 +2216,20 @@ a.contact-icon:focus-visible {
     0 12px 34px -18px rgba(0, 0, 0, 0.35);
 }
 
+/* Alternating sheets: odd entries keep the photograph on the right (below);
+   even entries mirror it exactly — image and its corner date on the left,
+   verse on the right. The columns are swapped, and the date stays under the
+   image, just aligned to its own side. */
+.poem-page--mirrored .poem-col {
+  grid-column: 2;
+}
+.poem-page--mirrored .poem-figure {
+  grid-column: 1;
+}
+.poem-page--mirrored .poem-place {
+  text-align: left;
+}
+
 /* Dark mode keeps the same flat, texture-free sheet — ink turned white on it. */
 :root[data-theme="dark"] .poem-page .poem-layout {
   --papyrus: #1b1a17;
@@ -2254,8 +2268,9 @@ a.contact-icon:focus-visible {
    widest line in the set exactly, so there is nothing to back off — the old
    two-thirds shrink only made both poems smaller for no reason. */
 
-/* On a phone the type is set outright rather than fitted, and the grid inverts
-   to match: the verse column takes exactly the width its longest line needs
+/* On a phone the type is set outright rather than fitted — a fixed 8px (the
+   minimum the verse is ever allowed) — and the grid inverts to match: the
+   verse column takes exactly the width its longest line needs
    (`max-content`, with nowrap still holding the line), and the photograph takes
    whatever is left. The poem sets the measure; the image fits around it.
 
@@ -2272,7 +2287,19 @@ a.contact-icon:focus-visible {
     container-type: normal;
   }
   .poem-page .poem-verse {
-    font-size: 0.375rem;
+    /* 8px — the phone floor. Well under the 16px ceiling, so mobile always
+       sits between the two bounds. */
+    font-size: 0.5rem;
+  }
+}
+
+/* On a phone the mirrored sheet mirrors the same intent: the image takes the
+   flexible column (left, col 1) and the verse takes exactly the width its
+   longest line needs (right, col 2). The verse and figure are pinned to the
+   same row by the rules above, so the vertical centering holds here too. */
+@media (max-width: 699px) {
+  .poem-page--mirrored .poem-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, max-content);
   }
 }
 
@@ -2295,10 +2322,14 @@ a.contact-icon:focus-visible {
 }
 
 /* The verse column is its own containment context so the type can be sized
-   against the width it actually has, rather than against the viewport. */
+   against the width it actually has, rather than against the viewport. The
+   explicit grid-row pins verse and photograph to the one sheet row — without
+   it, the auto-placement cursor pushes the second item into a second row and
+   the vertical centering (align-items: center) is lost. */
 .poem-col {
   container-type: inline-size;
   min-width: 0;
+  grid-row: 1;
 }
 
 /* Her line breaks are the poem, so each line is its own block rather than
@@ -2310,15 +2341,19 @@ a.contact-icon:focus-visible {
   font-family: var(--prose);
   /* Fallback for anything without container queries — sized to the viewport,
      which is close enough on a phone and correct above the breakpoints. The
-     0.5rem floor (8px) keeps the type legible on the smallest screens. */
-  font-size: clamp(0.5rem, 1.7vw, 1.5rem);
-  /* The real rule: fit the widest line to the column exactly, and stop growing
-     at the size the piece was designed to be read at. --poem-scale is shared
-     across all poems — it comes from the widest line in the whole set, see
-     poemScaleFor() in render.js — so every shorter line simply sits inside
-     its column and the widest one can never exceed it. The 0.5rem floor (8px)
-     is the smallest the verse ever gets, on the narrowest phones. */
-  font-size: max(0.5rem, min(1.5rem, calc(100cqi * var(--poem-scale, 0.052) * var(--poem-fit, 1))));
+     0.5rem floor (8px) keeps the type legible on the smallest screens and the
+     1rem cap (16px) is the largest any poem text ever gets. */
+  font-size: clamp(0.5rem, 1.7vw, 1rem);
+  /* The real rule: fit the widest line to the column exactly, and never grow
+     past 16px. --poem-scale is shared across all poems — it comes from the
+     widest line in the whole set, see poemScaleFor() in render.js — so every
+     shorter line simply sits inside its column and the widest one can never
+     exceed it. The 0.5rem floor (8px) is the smallest the verse ever gets, on
+     the narrowest phones, and 1rem (16px) is the ceiling everywhere. */
+  font-size: max(
+    0.5rem,
+    min(1rem, calc(100cqi * var(--poem-scale, 0.052) * var(--poem-fit, 1)))
+  );
   line-height: 1.45;
   /* Ink on the sheet, not text on the page — --papyrus-ink follows the paper
      through the theme change, where --text would invert against it. */
@@ -2327,8 +2362,8 @@ a.contact-icon:focus-visible {
      and no variable weight axis — so the stems are shaved by stroking the
      glyphs in the paper colour, which eats the outer half of the outline. The
      stroke is --papyrus itself, the base tone under the gradient, so it reads as
-     less ink rather than as an outline; in em so it stays proportional from 10px
-     on a phone to 24px on a desk. Lightening the colour instead was tried and
+     less ink rather than as an outline; in em so it stays proportional from 8px
+     on a phone to 16px on a desk. Lightening the colour instead was tried and
      looks faded rather than finer.
 
      Ignored by browsers without text-stroke, which simply get the Regular. */
@@ -2343,6 +2378,7 @@ a.contact-icon:focus-visible {
 
 .poem-figure {
   margin: 0;
+  grid-row: 1;
 }
 
 .poem-figure img {
