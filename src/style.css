@@ -2183,7 +2183,7 @@ a.contact-icon:focus-visible {
    true black on the light sheet and true white on the dark one, keeping the
    piece inside the site's monochrome. */
 .poem-page .poem-layout {
-  --papyrus: #f0ead6;
+  --papyrus: #f3f3f3ff;
   --papyrus-ink: #000000;
   --papyrus-ink-soft: #4c4b48;
 
@@ -2196,10 +2196,10 @@ a.contact-icon:focus-visible {
      this can never overflow. */
   grid-template-columns: minmax(0, 0.5fr) minmax(0, 0.5fr);
   gap: 1rem;
-  /* The verse starts at the top of the sheet, and the photograph hangs below
-     it — the image sits lower than the text, so the eye lands on the words
-     first and then falls into the picture. */
-  align-items: start;
+  /* The poem and the photograph are centered against each other: the verse
+     sits in the middle of the sheet height, lined up with the middle of the
+     photograph rather than hanging from the top. */
+  align-items: center;
   margin-top: 2.5rem;
   /* Margin on a phone is width taken from the verse, and the verse is what
      sizes the type — so the sheet keeps only enough border to still read as a
@@ -2309,14 +2309,16 @@ a.contact-icon:focus-visible {
   gap: 0.15em;
   font-family: var(--prose);
   /* Fallback for anything without container queries — sized to the viewport,
-     which is close enough on a phone and correct above the breakpoints. */
-  font-size: clamp(0.4rem, 1.7vw, 1.5rem);
+     which is close enough on a phone and correct above the breakpoints. The
+     0.5rem floor (8px) keeps the type legible on the smallest screens. */
+  font-size: clamp(0.5rem, 1.7vw, 1.5rem);
   /* The real rule: fit the widest line to the column exactly, and stop growing
      at the size the piece was designed to be read at. --poem-scale is shared
      across all poems — it comes from the widest line in the whole set, see
      poemScaleFor() in render.js — so every shorter line simply sits inside
-     its column and the widest one can never exceed it. */
-  font-size: min(1.5rem, calc(100cqi * var(--poem-scale, 0.052) * var(--poem-fit, 1)));
+     its column and the widest one can never exceed it. The 0.5rem floor (8px)
+     is the smallest the verse ever gets, on the narrowest phones. */
+  font-size: max(0.5rem, min(1.5rem, calc(100cqi * var(--poem-scale, 0.052) * var(--poem-fit, 1))));
   line-height: 1.45;
   /* Ink on the sheet, not text on the page — --papyrus-ink follows the paper
      through the theme change, where --text would invert against it. */
@@ -2341,10 +2343,6 @@ a.contact-icon:focus-visible {
 
 .poem-figure {
   margin: 0;
-  /* Drops the photograph below the top of the verse — the image (and the date
-     under its bottom corner) sits lower than the text. Scales with the sheet:
-     a small nudge on a phone, a generous drop on a wide screen. */
-  margin-top: clamp(1rem, 15vw, 3rem);
 }
 
 .poem-figure img {
